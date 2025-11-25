@@ -44,7 +44,7 @@ const FormularioReporte: React.FC = () => {
       { tipo: '', modelo: '', numeroEconomico: '', horasOperacion: 0, operador: '', actividad: '' }
     ],
     observaciones: '',
-    creadoPor: user?.name || '' // Usar nombre del usuario si está disponible
+    creadoPor: user?.nombre || '' // Usar nombre del usuario si está disponible
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -95,23 +95,23 @@ const FormularioReporte: React.FC = () => {
   const agregarControlAcarreo = () => {
     setFormData({
       ...formData,
-      controlAcarreos: [
-        ...formData.controlAcarreos,
+      controlAcarreo: [
+        ...formData.controlAcarreo,
         { material: '', noViaje: 0, capacidad: '', volSuelto: '', capaNo: '', elevacionAriza: '', capaOrigen: '', destino: '' }
       ]
     });
   };
 
   const actualizarControlAcarreo = (index: number, campo: keyof ControlAcarreo, valor: string | number) => {
-    const nuevosAcarreos = [...formData.controlAcarreos];
+    const nuevosAcarreos = [...formData.controlAcarreo];
     nuevosAcarreos[index] = { ...nuevosAcarreos[index], [campo]: valor };
-    setFormData({ ...formData, controlAcarreos: nuevosAcarreos });
+    setFormData({ ...formData, controlAcarreo: nuevosAcarreos });
   };
 
   const eliminarControlAcarreo = (index: number) => {
-    if (formData.controlAcarreos.length > 1) {
-      const nuevosAcarreos = formData.controlAcarreos.filter((_, i) => i !== index);
-      setFormData({ ...formData, controlAcarreos: nuevosAcarreos });
+    if (formData.controlAcarreo.length > 1) {
+      const nuevosAcarreos = formData.controlAcarreo.filter((_, i) => i !== index);
+      setFormData({ ...formData, controlAcarreo: nuevosAcarreos });
     }
   };
 
@@ -317,7 +317,7 @@ const FormularioReporte: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {formData.controlAcarreos.map((acarreo, index) => (
+                {formData.controlAcarreo.map((acarreo, index) => (
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="px-4 py-2 border border-red-200">
                       <input
@@ -396,9 +396,9 @@ const FormularioReporte: React.FC = () => {
                         type="button"
                         onClick={() => eliminarControlAcarreo(index)}
                         className="text-red-600 hover:text-red-800 text-sm font-semibold bg-red-100 px-2 py-1 rounded"
-                        disabled={formData.controlAcarreos.length === 1}
+                        disabled={formData.controlAcarreo.length === 1}
                       >
-                        {formData.controlAcarreos.length === 1 ? '—' : 'Eliminar'}
+                        {formData.controlAcarreo.length === 1 ? '—' : 'Eliminar'}
                       </button>
                     </td>
                   </tr>

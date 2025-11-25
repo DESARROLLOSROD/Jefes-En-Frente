@@ -1,5 +1,5 @@
 import express from 'express';
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import Usuario from '../models/Usuario.js';
 import Proyecto from '../models/Proyecto.js';
 import { ApiResponse } from '../types/reporte.js';
@@ -16,9 +16,9 @@ router.post('/login', async (req, res) => {
 
     if (!email || !password) {
       console.log('❌ Campos faltantes');
-      const response: ApiResponse<null> = { 
-        success: false, 
-        error: 'Email y password son requeridos' 
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'Email y password son requeridos'
       };
       return res.status(400).json(response);
     }
@@ -30,9 +30,9 @@ router.post('/login', async (req, res) => {
 
     if (!usuario) {
       console.log('❌ Usuario no encontrado:', email);
-      const response: ApiResponse<null> = { 
-        success: false, 
-        error: 'Credenciales inválidas' 
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'Credenciales inválidas'
       };
       return res.status(401).json(response);
     }
@@ -42,12 +42,12 @@ router.post('/login', async (req, res) => {
     // Comparar password con debug
     console.log('🔑 Comparando password...');
     const passwordValido = await usuario.compararPassword(password);
-    
+
     if (!passwordValido) {
       console.log('❌ Password incorrecto');
-      const response: ApiResponse<null> = { 
-        success: false, 
-        error: 'Credenciales inválidas' 
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'Credenciales inválidas'
       };
       return res.status(401).json(response);
     }
@@ -56,10 +56,10 @@ router.post('/login', async (req, res) => {
 
     // Generar token
     const token = jwt.sign(
-      { 
-        userId: usuario._id, 
+      {
+        userId: usuario._id,
         email: usuario.email,
-        rol: usuario.rol 
+        rol: usuario.rol
       },
       JWT_SECRET,
       { expiresIn: '24h' }
@@ -86,10 +86,10 @@ router.post('/login', async (req, res) => {
   } catch (error: any) {
     console.error('💥 ERROR en /auth/login:', error);
     console.error('Stack:', error.stack);
-    
-    const response: ApiResponse<null> = { 
-      success: false, 
-      error: 'Error interno del servidor' 
+
+    const response: ApiResponse<null> = {
+      success: false,
+      error: 'Error interno del servidor'
     };
     res.status(500).json(response);
   }
@@ -99,18 +99,18 @@ router.post('/login', async (req, res) => {
 router.get('/proyectos', async (req, res) => {
   try {
     const proyectos = await Proyecto.find({ activo: true });
-    
+
     const response: ApiResponse<any[]> = {
       success: true,
       data: proyectos
     };
-    
+
     res.json(response);
   } catch (error: any) {
     console.error('Error en /auth/proyectos:', error);
-    const response: ApiResponse<null> = { 
-      success: false, 
-      error: (error as Error).message 
+    const response: ApiResponse<null> = {
+      success: false,
+      error: (error as Error).message
     };
     res.status(500).json(response);
   }
