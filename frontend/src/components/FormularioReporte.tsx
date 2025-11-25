@@ -181,14 +181,13 @@ const FormularioReporte: React.FC = () => {
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-800">REPORTE DE ACTIVIDADES</h1>
         <p className="text-lg text-gray-600 mt-2">GENERAL CONTRACTOR</p>
-        <p className="text-gray-700">UBICACIÓN: </p>
+        <p className="text-gray-700">UBICACIÓN : {proyecto?.nombre} </p>
       </div>
-      
+
       {mensaje && (
-        <div className={`p-4 mb-6 rounded-lg ${
-          mensaje.includes('✅') ? 'bg-green-100 text-green-700 border border-green-300' : 
+        <div className={`p-4 mb-6 rounded-lg ${mensaje.includes('✅') ? 'bg-green-100 text-green-700 border border-green-300' :
           'bg-red-100 text-red-700 border border-red-300'
-        }`}>
+          }`}>
           {mensaje}
         </div>
       )}
@@ -300,7 +299,7 @@ const FormularioReporte: React.FC = () => {
               + Agregar Fila
             </button>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white rounded-lg overflow-hidden border border-red-300">
               <thead className="bg-red-100">
@@ -420,7 +419,7 @@ const FormularioReporte: React.FC = () => {
               + Agregar Fila
             </button>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white rounded-lg overflow-hidden border border-cyan-300">
               <thead className="bg-cyan-100">
@@ -523,7 +522,7 @@ const FormularioReporte: React.FC = () => {
               + Agregar Equipo
             </button>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="min-w-full bg-white rounded-lg overflow-hidden border border-indigo-300">
               <thead className="bg-indigo-100">
