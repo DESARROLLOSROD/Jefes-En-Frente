@@ -1,6 +1,6 @@
 import express from 'express';
 import Vehiculo from '../models/Vehiculo.js';
-import { verificarToken, verificarAdmin } from './auth.js';
+import { verificarToken, verificarAdmin } from '../middleware/auth.middleware.js';
 
 export const vehiculosRouter = express.Router();
 

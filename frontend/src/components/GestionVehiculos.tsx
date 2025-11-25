@@ -18,7 +18,7 @@ const GestionVehiculos: React.FC = () => {
         horometroInicial: 0,
         horometroFinal: 0,
         noEconomico: '',
-        proyectos: [] as string[]
+        proyectos: [] as string[],
     });
 
     useEffect(() => {
@@ -50,7 +50,6 @@ const GestionVehiculos: React.FC = () => {
         const response = editando && vehiculoActual
             ? await vehiculoService.actualizarVehiculo(vehiculoActual._id, formData)
             : await vehiculoService.crearVehiculo(formData);
-
         if (response.success) {
             mostrarMensaje(editando ? 'Vehículo actualizado correctamente' : 'Vehículo creado correctamente');
             cerrarModal();
@@ -82,7 +81,7 @@ const GestionVehiculos: React.FC = () => {
                 horometroInicial: vehiculo.horometroInicial,
                 horometroFinal: vehiculo.horometroFinal || 0,
                 noEconomico: vehiculo.noEconomico,
-                proyectos: Array.isArray(vehiculo.proyectos) ? vehiculo.proyectos.map(p => typeof p === 'string' ? p : p._id) : []
+                proyectos: Array.isArray(vehiculo.proyectos) ? vehiculo.proyectos.map(p => typeof p === 'string' ? p : p._id) : [],
             });
         } else {
             setEditando(false);
@@ -93,7 +92,7 @@ const GestionVehiculos: React.FC = () => {
                 horometroInicial: 0,
                 horometroFinal: 0,
                 noEconomico: '',
-                proyectos: []
+                proyectos: [],
             });
         }
         setModalAbierto(true);
@@ -207,28 +206,25 @@ const GestionVehiculos: React.FC = () => {
                         </h3>
                         <form onSubmit={handleSubmit}>
                             <div className="space-y-4">
+                                {/* Nombre */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Nombre *
-                                    </label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
                                     <input
                                         type="text"
                                         required
                                         value={formData.nombre}
-                                        onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                                        onChange={e => setFormData({ ...formData, nombre: e.target.value })}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                                         placeholder="Ej: Excavadora CAT 320"
                                     />
                                 </div>
-
+                                {/* Tipo */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Tipo *
-                                    </label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
                                     <select
                                         required
                                         value={formData.tipo}
-                                        onChange={(e) => setFormData({ ...formData, tipo: e.target.value as any })}
+                                        onChange={e => setFormData({ ...formData, tipo: e.target.value as any })}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                                     >
                                         <option value="Camioneta">Camioneta</option>
@@ -237,58 +233,52 @@ const GestionVehiculos: React.FC = () => {
                                         <option value="Otro">Otro</option>
                                     </select>
                                 </div>
-
+                                {/* No. Económico */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        No. Económico *
-                                    </label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">No. Económico *</label>
                                     <input
                                         type="text"
                                         required
                                         value={formData.noEconomico}
-                                        onChange={(e) => setFormData({ ...formData, noEconomico: e.target.value.toUpperCase() })}
+                                        onChange={e => setFormData({ ...formData, noEconomico: e.target.value.toUpperCase() })}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                                        placeholder="Ej: VEH-001"
                                     />
                                 </div>
-
+                                {/* Horómetro Inicial */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Horómetro Inicial *
+                                        Horómetro Inicial *{editando && <span className="text-xs text-gray-500"> (Se actualiza automáticamente desde reportes)</span>}
                                     </label>
                                     <input
                                         type="number"
                                         required
                                         min="0"
                                         value={formData.horometroInicial}
-                                        onChange={(e) => setFormData({ ...formData, horometroInicial: Number(e.target.value) })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                                        readOnly={editando}
+                                        className={`w-full px-3 py-2 border border-gray-300 rounded-lg ${editando ? 'bg-gray-100 cursor-not-allowed' : 'focus:ring-2 focus:ring-orange-500'}`}
                                         placeholder="0"
                                     />
                                 </div>
-
+                                {/* Horómetro Final */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Horómetro Final
-                                    </label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Horómetro Final *</label>
                                     <input
                                         type="number"
+                                        required
                                         min="0"
                                         value={formData.horometroFinal}
-                                        onChange={(e) => setFormData({ ...formData, horometroFinal: Number(e.target.value) })}
+                                        onChange={e => setFormData({ ...formData, horometroFinal: Number(e.target.value) })}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                                         placeholder="0"
                                     />
                                 </div>
-
+                                {/* Proyectos Asignados */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Proyectos Asignados
-                                    </label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Proyectos Asignados</label>
                                     <select
                                         multiple
                                         value={formData.proyectos}
-                                        onChange={(e) => {
+                                        onChange={e => {
                                             const selected = Array.from(e.target.selectedOptions, option => option.value);
                                             setFormData({ ...formData, proyectos: selected });
                                         }}
@@ -305,7 +295,6 @@ const GestionVehiculos: React.FC = () => {
                                     </p>
                                 </div>
                             </div>
-
                             <div className="flex justify-end space-x-3 mt-6">
                                 <button
                                     type="button"

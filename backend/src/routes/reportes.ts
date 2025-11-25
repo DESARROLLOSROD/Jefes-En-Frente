@@ -1,5 +1,6 @@
 import express from 'express';
 import ReporteActividades from '../models/ReporteActividades.js';
+import Vehiculo from '../models/Vehiculo.js';
 import { ApiResponse } from '../types/reporte.js';
 import { verificarToken, AuthRequest } from '../middleware/auth.middleware.js';
 
@@ -20,6 +21,27 @@ router.post('/', async (req: AuthRequest, res) => {
     const reporte = new ReporteActividades(reporteData);
     await reporte.save();
     console.log('✅ Reporte creado:', reporte._id);
+
+    // Actualizar horómetros de los vehículos usados
+    if (reporteData.controlMaquinaria && Array.isArray(reporteData.controlMaquinaria)) {
+      for (const maquinaria of reporteData.controlMaquinaria) {
+        if (maquinaria.vehiculoId && maquinaria.horometroFinal) {
+          try {
+            await Vehiculo.findByIdAndUpdate(
+              maquinaria.vehiculoId,
+              {
+                horometroInicial: maquinaria.horometroFinal,
+                horometroFinal: maquinaria.horometroFinal
+              }
+            );
+            console.log(`🔄 Horómetro actualizado para vehículo ${maquinaria.vehiculoId}: ${maquinaria.horometroFinal}`);
+          } catch (error) {
+            console.error(`⚠️ Error actualizando horómetro del vehículo ${maquinaria.vehiculoId}:`, error);
+            // No fallar el reporte si falla la actualización del horómetro
+          }
+        }
+      }
+    }
 
     const response: ApiResponse<typeof reporte> = {
       success: true,
