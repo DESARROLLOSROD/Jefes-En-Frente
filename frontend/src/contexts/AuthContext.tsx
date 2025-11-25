@@ -1,7 +1,6 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { User, Proyecto, AuthContextType } from '../types/auth';
 import { authService } from '../services/auth';
-//import { authService } from '../services/auth.mock';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -44,11 +43,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const resultado = await authService.login(email, password);
       if (resultado.success && resultado.data) {
         const { token, user } = resultado.data;
-        
+
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(user));
-        
+
         setUser(user);
+
+        // Auto-seleccionar proyecto si el usuario tiene solo 1 asignado
+        // Los admin siempre pueden elegir
+        if (user.proyectos && user.proyectos.length === 1 && user.rol !== 'admin') {
+          const proyectoUnico = user.proyectos[0];
+          setProyecto(proyectoUnico);
+          localStorage.setItem('proyecto', JSON.stringify(proyectoUnico));
+        }
+
         return true;
       }
       return false;

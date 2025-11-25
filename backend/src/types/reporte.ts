@@ -52,6 +52,8 @@ export interface IReporteActividades extends Document {
   controlAgua: Types.Array<IControlAgua>;
   observaciones: string;
   creadoPor: string;
+  proyectoId: string;
+  usuarioId: string;
   fechaCreacion: Date;
 }
 

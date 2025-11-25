@@ -4,6 +4,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { reporteRouter } from './routes/reportes.js';
 import { authRouter } from './routes/auth.js';
+import { usuariosRouter } from './routes/usuarios.js';
 
 dotenv.config();
 
@@ -37,10 +38,11 @@ mongoose.connect(MONGODB_URI)
 // Rutas
 app.use('/api/auth', authRouter);
 app.use('/api/reportes', reporteRouter);
+app.use('/api/usuarios', usuariosRouter);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     message: '🚀 API Jefes en Frente funcionando!',
     version: '2.0',
     features: ['Autenticación JWT', 'Múltiples Proyectos', 'Gestión de Usuarios']

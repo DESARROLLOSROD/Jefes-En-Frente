@@ -8,6 +8,7 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "seed": "tsc && node dist/scripts/seedData.js",
+    "init": "tsx src/scripts/createInitialUsers.ts",
     "check": "tsc && node dist/scripts/checkData.js",
     "clean": "rmdir /s /q dist",
     "clean:force": "if exist dist rmdir /s /q dist"

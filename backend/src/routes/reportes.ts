@@ -1,55 +1,72 @@
 import express from 'express';
-import ReporteActividades from '../models/ReporteActividades.js'; // Corregido: ../models/
+import ReporteActividades from '../models/ReporteActividades.js';
 import { ApiResponse } from '../types/reporte.js';
-import { authMiddleware, AuthRequest } from '../middleware/auth.js';
+import { verificarToken, AuthRequest } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
-
 // TODAS las rutas requieren autenticación
-router.use(authMiddleware);
+router.use(verificarToken);
 
 // Crear nuevo reporte
 router.post('/', async (req: AuthRequest, res) => {
   try {
     const reporteData = {
       ...req.body,
-      usuarioId: req.user?.userId
+      usuarioId: req.userId
     };
 
+    console.log('📝 Creando reporte:', reporteData);
     const reporte = new ReporteActividades(reporteData);
     await reporte.save();
-    
-    const response: ApiResponse<typeof reporte> = { 
-      success: true, 
-      data: reporte 
+    console.log('✅ Reporte creado:', reporte._id);
+
+    const response: ApiResponse<typeof reporte> = {
+      success: true,
+      data: reporte
     };
     res.status(201).json(response);
   } catch (error) {
-    const response: ApiResponse<null> = { 
-      success: false, 
-      error: (error as Error).message 
+    console.error('❌ Error creando reporte:', error);
+    const response: ApiResponse<null> = {
+      success: false,
+      error: (error as Error).message
     };
     res.status(400).json(response);
   }
 });
 
-// Obtener reportes del usuario
+// Obtener reportes del proyecto
 router.get('/', async (req: AuthRequest, res) => {
   try {
-    const reportes = await ReporteActividades.find({ 
-      usuarioId: req.user?.userId 
-    }).sort({ fecha: -1 });
-    
-    const response: ApiResponse<typeof reportes> = { 
-      success: true, 
-      data: reportes 
+    const { proyectoId } = req.query;
+
+    console.log('📋 Obteniendo reportes para proyecto:', proyectoId);
+
+    if (!proyectoId) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'proyectoId es requerido'
+      };
+      return res.status(400).json(response);
+    }
+
+    const reportes = await ReporteActividades.find({
+      proyectoId: proyectoId
+    }).sort({ fecha: -1, fechaCreacion: -1 });
+
+    console.log(`✅ ${reportes.length} reportes encontrados`);
+
+    const response: ApiResponse<typeof reportes> = {
+      success: true,
+      data: reportes
     };
     res.json(response);
   } catch (error) {
-    const response: ApiResponse<null> = { 
-      success: false, 
-      error: (error as Error).message 
+    console.error('❌ Error obteniendo reportes:', error);
+    const response: ApiResponse<null> = {
+      success: false,
+      error: (error as Error).message
     };
     res.status(500).json(response);
   }
@@ -60,21 +77,81 @@ router.get('/:id', async (req: AuthRequest, res) => {
   try {
     const reporte = await ReporteActividades.findById(req.params.id);
     if (!reporte) {
-      const response: ApiResponse<null> = { 
-        success: false, 
-        error: 'Reporte no encontrado' 
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'Reporte no encontrado'
       };
       return res.status(404).json(response);
     }
-    const response: ApiResponse<typeof reporte> = { 
-      success: true, 
-      data: reporte 
+    const response: ApiResponse<typeof reporte> = {
+      success: true,
+      data: reporte
     };
     res.json(response);
   } catch (error) {
-    const response: ApiResponse<null> = { 
-      success: false, 
-      error: (error as Error).message 
+    const response: ApiResponse<null> = {
+      success: false,
+      error: (error as Error).message
+    };
+    res.status(500).json(response);
+  }
+});
+
+// Actualizar reporte
+router.put('/:id', async (req: AuthRequest, res) => {
+  try {
+    const reporte = await ReporteActividades.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    if (!reporte) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'Reporte no encontrado'
+      };
+      return res.status(404).json(response);
+    }
+
+    const response: ApiResponse<typeof reporte> = {
+      success: true,
+      data: reporte
+    };
+    res.json(response);
+  } catch (error) {
+    console.error('❌ Error actualizando reporte:', error);
+    const response: ApiResponse<null> = {
+      success: false,
+      error: (error as Error).message
+    };
+    res.status(500).json(response);
+  }
+});
+
+// Eliminar reporte
+router.delete('/:id', async (req: AuthRequest, res) => {
+  try {
+    const reporte = await ReporteActividades.findByIdAndDelete(req.params.id);
+
+    if (!reporte) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'Reporte no encontrado'
+      };
+      return res.status(404).json(response);
+    }
+
+    const response: ApiResponse<null> = {
+      success: true,
+      data: null
+    };
+    res.json(response);
+  } catch (error) {
+    console.error('❌ Error eliminando reporte:', error);
+    const response: ApiResponse<null> = {
+      success: false,
+      error: (error as Error).message
     };
     res.status(500).json(response);
   }

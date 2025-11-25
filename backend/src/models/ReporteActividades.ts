@@ -45,7 +45,6 @@ const reporteActividadesSchema = new Schema<IReporteActividades>({
   },
   ubicacion: {
     type: String,
-    default: "SAN SEBASTIAN DEL OESTE, JALISCO, MEXICO"
   },
   turno: String,
   inicioActividades: String,
@@ -59,6 +58,15 @@ const reporteActividadesSchema = new Schema<IReporteActividades>({
   controlAgua: [controlAguaSchema],
   observaciones: String,
   creadoPor: String,
+  proyectoId: {
+    type: String,
+    required: true,
+    index: true
+  },
+  usuarioId: {
+    type: String,
+    required: true
+  },
   fechaCreacion: {
     type: Date,
     default: Date.now

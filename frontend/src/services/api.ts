@@ -10,7 +10,7 @@ const api = axios.create({
   },
 });
 
-// Interceptor para agregar token automáticamente
+// Interceptor to add auth token automatically
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -19,7 +19,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Interceptor para manejar errores de autenticación
+// Interceptor to handle authentication errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -41,22 +41,46 @@ export const reporteService = {
     } catch (error: any) {
       return {
         success: false,
-        error: error.response?.data?.error || 'Error de conexión'
+        error: error.response?.data?.error || 'Error de conexión',
       };
     }
   },
 
-  async obtenerReportes(): Promise<ApiResponse<ReporteActividades[]>> {
+  async obtenerReportes(proyectoId: string): Promise<ApiResponse<ReporteActividades[]>> {
     try {
-      const response = await api.get<ApiResponse<ReporteActividades[]>>('/reportes');
+      const response = await api.get<ApiResponse<ReporteActividades[]>>(`/reportes?proyectoId=${proyectoId}`);
       return response.data;
     } catch (error: any) {
       return {
         success: false,
-        error: error.response?.data?.error || 'Error de conexión'
+        error: error.response?.data?.error || 'Error de conexión',
       };
     }
   },
 
-  // ... otros métodos
+  async actualizarReporte(id: string, reporte: Partial<ReporteActividades>): Promise<ApiResponse<ReporteActividades>> {
+    try {
+      const response = await api.put<ApiResponse<ReporteActividades>>(`/reportes/${id}`, reporte);
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Error de conexión',
+      };
+    }
+  },
+
+  async eliminarReporte(id: string): Promise<ApiResponse<null>> {
+    try {
+      const response = await api.delete<ApiResponse<null>>(`/reportes/${id}`);
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Error de conexión',
+      };
+    }
+  },
+
+  // ... other methods can be added here
 };

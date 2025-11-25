@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ReporteActividades, controlAcarreo, controlAgua, controlMaquinaria, Seccion2Dato } from '../types/reporte';
+import { ReporteActividades, ControlAcarreo, ControlAgua, ControlMaquinaria, Seccion2Dato } from '../types/reporte';
 import { reporteService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -46,6 +46,28 @@ const FormularioReporte: React.FC = () => {
     observaciones: '',
     creadoPor: user?.nombre || '' // Usar nombre del usuario si está disponible
   });
+
+  // Actualizar ubicación y proyectoId cuando cambia el proyecto
+  useEffect(() => {
+    if (proyecto) {
+      setFormData(prev => ({
+        ...prev,
+        ubicacion: proyecto.ubicacion,
+        proyectoId: proyecto._id || ''
+      }));
+    }
+  }, [proyecto]);
+
+  // Actualizar usuarioId cuando cambia el usuario
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        usuarioId: user._id || '',
+        creadoPor: user.nombre
+      }));
+    }
+  }, [user]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
