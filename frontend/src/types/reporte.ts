@@ -5,23 +5,6 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
-export interface Mediciones {
-  lupoBSeccion1_1: string;
-  lupoBSeccion2: string;
-  lupoBSeccion3: string;
-  emparinado: string;
-}
-
-export interface Seccion2Dato {
-  daj: string;
-  valores: string[];
-}
-
-export interface Seccion2 {
-  plantaIncorporacion: string;
-  datos: Seccion2Dato[];
-}
-
 export interface ControlAcarreo {
   material: string;
   noViaje: number;
@@ -31,6 +14,14 @@ export interface ControlAcarreo {
   elevacionAriza: string;
   capaOrigen: string;
   destino: string;
+}
+
+export interface ControlMaterial {
+  material: string;
+  unidad: string;
+  cantidad: string;
+  zona: string;
+  elevacion: string;
 }
 
 export interface ControlAgua {
@@ -43,10 +34,13 @@ export interface ControlAgua {
 }
 
 export interface ControlMaquinaria {
+  vehiculoId?: string;  // ✨ NUEVO - ID del vehículo seleccionado
+  nombre: string;       // ✨ NUEVO - Nombre del vehículo
   tipo: string;
-  modelo: string;
   numeroEconomico: string;
-  horasOperacion: number;
+  horometroInicial: number;    // ✨ NUEVO
+  horometroFinal: number;      // ✨ NUEVO
+  horasOperacion: number;      // Calculado automáticamente
   operador: string;
   actividad: string;
 }
@@ -57,7 +51,6 @@ export interface ReporteActividades {
   usuarioId: string;
   proyectoId: string;
   ubicacion: string; // Ahora se obtiene del proyecto
-
   fecha: string;
   turno: 'primer' | 'segundo';
   inicioActividades: string;
@@ -66,9 +59,8 @@ export interface ReporteActividades {
   seccionTrabajo: string;
   jefeFrente: string;
   sobrestante: string;
-  mediciones: Mediciones;
-  seccion2: Seccion2;
   controlAcarreo: ControlAcarreo[];
+  controlMaterial: ControlMaterial[];
   controlAgua: ControlAgua[];
   controlMaquinaria: ControlMaquinaria[];
   observaciones: string;

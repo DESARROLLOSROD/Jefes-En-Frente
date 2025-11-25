@@ -10,6 +10,13 @@ export interface IControlAcarreo {
   capaOrigen: string;
   destino: string;
 }
+export interface IControlMaterial {
+  material: string;
+  unidad: string;
+  cantidad: string;
+  zona: string;
+  elevacion: string;
+}
 
 export interface IControlAgua {
   noEconomico: string;
@@ -20,22 +27,16 @@ export interface IControlAgua {
   destino: string;
 }
 
-export interface IMediciones {
-  lupoBSeccion1_1: string;
-  lupoBSeccion2: string;
-  lupoBSeccion3: string;
-  emparinado: string;
+export interface IControlMaquinaria {
+  tipo: string;
+  modelo: string;
+  numeroEconomico: string;
+  horasOperacion: number;
+  operador: string;
+  actividad: string;
 }
 
-export interface ISeccion2Dato {
-  daj: string;
-  valores: string[];
-}
 
-export interface ISeccion2 {
-  plantaIncorporacion: string;
-  datos: ISeccion2Dato[];
-}
 
 export interface IReporteActividades extends Document {
   fecha: Date;
@@ -46,10 +47,10 @@ export interface IReporteActividades extends Document {
   zonaTrabajo: string;
   jefeFrente: string;
   sobrestante: string;
-  mediciones: IMediciones;
-  seccion2: ISeccion2;
   controlAcarreos: Types.Array<IControlAcarreo>;
+  controlMaterial: Types.Array<IControlMaterial>;
   controlAgua: Types.Array<IControlAgua>;
+  controlMaquinaria: Types.Array<IControlMaquinaria>;
   observaciones: string;
   creadoPor: string;
   proyectoId: string;

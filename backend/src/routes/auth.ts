@@ -116,4 +116,38 @@ router.get('/proyectos', async (req, res) => {
   }
 });
 
+// Middleware para verificar token JWT
+export const verificarToken = (req: any, res: any, next: any) => {
+  const token = req.header('Authorization')?.replace('Bearer ', '');
+
+  if (!token) {
+    return res.status(401).json({
+      success: false,
+      error: 'Token de acceso requerido'
+    });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    req.user = decoded;
+    next();
+  } catch (error) {
+    res.status(401).json({
+      success: false,
+      error: 'Token inválido'
+    });
+  }
+};
+
+// Middleware para verificar que el usuario es admin
+export const verificarAdmin = (req: any, res: any, next: any) => {
+  if (req.user?.rol !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      error: 'Acceso denegado. Se requieren permisos de administrador.'
+    });
+  }
+  next();
+};
+
 export { router as authRouter };

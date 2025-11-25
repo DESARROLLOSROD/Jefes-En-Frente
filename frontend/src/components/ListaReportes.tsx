@@ -3,14 +3,14 @@ import { useAuth } from '../contexts/AuthContext';
 import { ReporteActividades } from '../types/reporte';
 import { reporteService } from '../services/api';
 
-
 const ListaReportes: React.FC = () => {
   const [reportes, setReportes] = useState<ReporteActividades[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
   const { proyecto, user } = useAuth();
-
+  const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
+  const [reporteEliminar, setReporteEliminar] = useState<ReporteActividades | null>(null);
 
   // Load reports when project changes
   useEffect(() => {
@@ -38,16 +38,28 @@ const ListaReportes: React.FC = () => {
     }
   };
 
-  const eliminar = async (id: string) => {
-    const result = await reporteService.eliminarReporte(id);
-    if (result.success) {
-      setReportes(prev => prev.filter(r => r._id !== id));
-      setAlertMessage('Reporte eliminado correctamente');
+  const handleEliminarClick = (reporte: ReporteActividades) => {
+    setReporteEliminar(reporte);
+    setMostrarConfirmacion(true);
+  };
+  const mostrarMensaje = (texto: string) => {
+    setAlertMessage(texto);
+    setTimeout(() => setAlertMessage(''), 5000);
+  };
+
+  const handleConfirmarEliminar = async () => {
+    if (!reporteEliminar) return;
+
+    const response = await reporteService.eliminarReporte(reporteEliminar._id!);
+
+    if (response.success) {
+      mostrarMensaje('Reporte eliminado correctamente');
+      setMostrarConfirmacion(false);
+      setReporteEliminar(null);
+      cargarReportes();
     } else {
-      setAlertMessage('Error al eliminar: ' + (result.error || 'Desconocido'));
+      mostrarMensaje(response.error || 'Error al eliminar reporte');
     }
-    // Clear alert after 3 seconds
-    setTimeout(() => setAlertMessage(''), 3000);
   };
 
   if (loading) {
@@ -122,17 +134,9 @@ const ListaReportes: React.FC = () => {
                     <td className="px-6 py-4 text-sm text-gray-900">{reporte.zonaTrabajo}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{reporte.jefeFrente}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button className="text-blue-600 hover:text-blue-900 mr-3" onClick={() => navigate(`/reportes/ver/${reporte._id}`)}>
-                        👁️ Ver
-                      </button>
-                      <button className="text-green-600 hover:text-green-900 mr-3" onClick={() => window.open(`/reportes/ver/${reporte._id}`, '_blank')}>
-                        📄 PDF
-                      </button>
-                      <button className="text-yellow-600 hover:text-yellow-900 mr-3" onClick={() => navigate(`/reportes/editar/${reporte._id}`)}>
-                        ✏️ Editar
-                      </button>
-                      <button className="text-red-600 hover:text-red-900" onClick={() => eliminar(reporte._id!)}>
-                        🗑️ Eliminar
+                      {/*Boton para eliminar reporte */}
+                      <button className="text-red-600 hover:text-red-900 mr-3" onClick={() => handleEliminarClick(reporte)}>
+                        �️ Eliminar
                       </button>
                     </td>
                   </tr>
@@ -142,6 +146,37 @@ const ListaReportes: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Modal de Confirmación */}
+      {mostrarConfirmacion && reporteEliminar && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-2xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">⚠️ Confirmar Eliminación</h3>
+            <p className="text-gray-600 mb-6">
+              ¿Estás seguro de que deseas eliminar el reporte <strong>{reporteEliminar.zonaTrabajo}</strong>?
+              <br />
+              <span className="text-red-600 font-semibold">Esta acción es PERMANENTE y no se puede deshacer.</span>
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setMostrarConfirmacion(false);
+                  setReporteEliminar(null);
+                }}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-semibold"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirmarEliminar}
+                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

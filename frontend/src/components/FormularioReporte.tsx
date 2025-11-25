@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { ReporteActividades, ControlAcarreo, ControlAgua, ControlMaquinaria, Seccion2Dato } from '../types/reporte';
-import { reporteService } from '../services/api';
+import { reporteService, vehiculoService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
+import { Vehiculo } from '../types/gestion';  // ✨ NUEVO
 
 const FormularioReporte: React.FC = () => {
   const { proyecto, user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState('');
+  const [vehiculosDisponibles, setVehiculosDisponibles] = useState<Vehiculo[]>([]);
 
   // Estado inicial sin proyecto/user
   const [formData, setFormData] = useState<Omit<ReporteActividades, '_id' | 'fechaCreacion'>>({
@@ -41,7 +43,17 @@ const FormularioReporte: React.FC = () => {
       { noEconomico: '', viaje: 0, capacidad: '', volumen: '', origen: '', destino: '' }
     ],
     controlMaquinaria: [
-      { tipo: '', modelo: '', numeroEconomico: '', horasOperacion: 0, operador: '', actividad: '' }
+      {
+        vehiculoId: '',
+        nombre: '',
+        tipo: '',
+        numeroEconomico: '',
+        horometroInicial: 0,
+        horometroFinal: 0,
+        horasOperacion: 0,
+        operador: '',
+        actividad: ''
+      }
     ],
     observaciones: '',
     creadoPor: user?.nombre || '' // Usar nombre del usuario si está disponible
@@ -56,6 +68,19 @@ const FormularioReporte: React.FC = () => {
         proyectoId: proyecto._id || ''
       }));
     }
+  }, [proyecto]);
+
+  // Cargar vehículos del proyecto actual
+  useEffect(() => {
+    const cargarVehiculos = async () => {
+      if (proyecto?._id) {
+        const response = await vehiculoService.obtenerVehiculosPorProyecto(proyecto._id);
+        if (response.success && response.data) {
+          setVehiculosDisponibles(response.data);
+        }
+      }
+    };
+    cargarVehiculos();
   }, [proyecto]);
 
   // Actualizar usuarioId cuando cambia el usuario
@@ -167,7 +192,17 @@ const FormularioReporte: React.FC = () => {
       ...formData,
       controlMaquinaria: [
         ...formData.controlMaquinaria,
-        { tipo: '', modelo: '', numeroEconomico: '', horasOperacion: 0, operador: '', actividad: '' }
+        {
+          vehiculoId: '',
+          nombre: '',
+          tipo: '',
+          numeroEconomico: '',
+          horometroInicial: 0,
+          horometroFinal: 0,
+          horasOperacion: 0,
+          operador: '',
+          actividad: ''
+        }
       ]
     });
   };
@@ -183,6 +218,35 @@ const FormularioReporte: React.FC = () => {
       const nuevaMaquinaria = formData.controlMaquinaria.filter((_, i) => i !== index);
       setFormData({ ...formData, controlMaquinaria: nuevaMaquinaria });
     }
+  };
+  // Función para manejar la selección de vehículo
+  const seleccionarVehiculo = (index: number, vehiculoId: string) => {
+    const vehiculo = vehiculosDisponibles.find(v => v._id === vehiculoId);
+    if (vehiculo) {
+      const nuevaMaquinaria = [...formData.controlMaquinaria];
+      nuevaMaquinaria[index] = {
+        ...nuevaMaquinaria[index],
+        vehiculoId: vehiculo._id,
+        nombre: vehiculo.nombre,
+        tipo: vehiculo.tipo,
+        numeroEconomico: vehiculo.noEconomico,
+        horometroInicial: vehiculo.horometroInicial,
+        horometroFinal: vehiculo.horometroFinal || vehiculo.horometroInicial,
+        horasOperacion: 0 // Se calculará al cambiar horometroFinal
+      };
+      setFormData({ ...formData, controlMaquinaria: nuevaMaquinaria });
+    }
+  };
+  // Función para calcular horas de operación
+  const calcularHorasOperacion = (index: number, horometroFinal: number) => {
+    const nuevaMaquinaria = [...formData.controlMaquinaria];
+    const horometroInicial = nuevaMaquinaria[index].horometroInicial;
+    nuevaMaquinaria[index] = {
+      ...nuevaMaquinaria[index],
+      horometroFinal,
+      horasOperacion: horometroFinal - horometroInicial
+    };
+    setFormData({ ...formData, controlMaquinaria: nuevaMaquinaria });
   };
 
   // Función existente para sección 2
@@ -532,114 +596,132 @@ const FormularioReporte: React.FC = () => {
         {/* Las secciones de Mediciones, Sección 2, Control de Acarreos y Control de Agua se mantienen igual */}
         {/* ... (código anterior de estas secciones) ... */}
 
-        {/* NUEVA SECCIÓN: CONTROL DE MAQUINARIA */}
+        {/* SECCIÓN 7: CONTROL DE MAQUINARIA */}
         <div className="border-2 border-indigo-400 rounded-lg p-6 bg-indigo-50">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-bold text-indigo-800 border-b pb-2">CONTROL DE MAQUINARIA</h3>
+          <h3 className="text-xl font-bold mb-4 text-indigo-800 border-b pb-2">CONTROL DE MAQUINARIA</h3>
+          <div className="space-y-4">
+            {formData.controlMaquinaria.map((maquinaria, index) => (
+              <div key={index} className="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="font-bold text-blue-800">Equipo #{index + 1}</h4>
+                  {formData.controlMaquinaria.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => eliminarControlMaquinaria(index)}
+                      className="text-red-600 hover:text-red-800 font-bold"
+                    >
+                      ✖ Eliminar
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Selector de Vehículo */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-bold text-gray-700">VEHÍCULO *</label>
+                    <select
+                      required
+                      value={maquinaria.vehiculoId || ''}
+                      onChange={(e) => seleccionarVehiculo(index, e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                    >
+                      <option value="">Seleccione un vehículo...</option>
+                      {vehiculosDisponibles.map(vehiculo => (
+                        <option key={vehiculo._id} value={vehiculo._id}>
+                          {vehiculo.nombre} - {vehiculo.noEconomico} ({vehiculo.tipo})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {/* Campos Auto-completados (solo lectura) */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700">TIPO</label>
+                    <input
+                      type="text"
+                      value={maquinaria.tipo}
+                      readOnly
+                      className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2 border"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700">NOMBRE</label>
+                    <input
+                      type="text"
+                      value={maquinaria.nombre}
+                      readOnly
+                      className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2 border"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700">NO. ECONÓMICO</label>
+                    <input
+                      type="text"
+                      value={maquinaria.numeroEconomico}
+                      readOnly
+                      className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2 border"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700">HORÓMETRO INICIAL</label>
+                    <input
+                      type="number"
+                      value={maquinaria.horometroInicial}
+                      readOnly
+                      className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2 border"
+                    />
+                  </div>
+                  {/* Horómetro Final - Editable */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700">HORÓMETRO FINAL *</label>
+                    <input
+                      type="number"
+                      required
+                      min={maquinaria.horometroInicial}
+                      value={maquinaria.horometroFinal}
+                      onChange={(e) => calcularHorasOperacion(index, Number(e.target.value))}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                    />
+                  </div>
+                  {/* Horas de Operación - Calculado automáticamente */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700">HORAS DE OPERACIÓN</label>
+                    <input
+                      type="number"
+                      value={maquinaria.horasOperacion}
+                      readOnly
+                      className="mt-1 block w-full rounded-md border-gray-300 bg-green-100 shadow-sm p-2 border font-bold text-green-700"
+                    />
+                  </div>
+                  {/* Campos Editables */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700">OPERADOR *</label>
+                    <input
+                      type="text"
+                      required
+                      value={maquinaria.operador}
+                      onChange={(e) => actualizarControlMaquinaria(index, 'operador', e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-bold text-gray-700">ACTIVIDAD *</label>
+                    <textarea
+                      required
+                      value={maquinaria.actividad}
+                      onChange={(e) => actualizarControlMaquinaria(index, 'actividad', e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
             <button
               type="button"
               onClick={agregarControlMaquinaria}
-              className="bg-indigo-600 text-white px-4 py-2 rounded text-sm hover:bg-indigo-700 font-semibold"
+              className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 font-bold"
             >
-              + Agregar Equipo
+              ➕ Agregar Equipo
             </button>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="min-w-full bg-white rounded-lg overflow-hidden border border-indigo-300">
-              <thead className="bg-indigo-100">
-                <tr>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-indigo-800 uppercase border border-indigo-300">TIPO DE MAQUINARIA</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-indigo-800 uppercase border border-indigo-300">MODELO</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-indigo-800 uppercase border border-indigo-300">No. ECONÓMICO</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-indigo-800 uppercase border border-indigo-300">HORAS OPERACIÓN</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-indigo-800 uppercase border border-indigo-300">OPERADOR</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-indigo-800 uppercase border border-indigo-300">ACTIVIDAD</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-indigo-800 uppercase border border-indigo-300">ACCIONES</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {formData.controlMaquinaria.map((maquinaria, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-4 py-2 border border-indigo-200">
-                      <select
-                        value={maquinaria.tipo}
-                        onChange={(e) => actualizarControlMaquinaria(index, 'tipo', e.target.value)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
-                      >
-                        <option value="">Seleccionar tipo</option>
-                        <option value="excavadora">Excavadora</option>
-                        <option value="cargador">Cargador Frontal</option>
-                        <option value="volquete">Volquete</option>
-                        <option value="compactador">Compactador</option>
-                        <option value="perforadora">Perforadora</option>
-                        <option value="bulldozer">Bulldozer</option>
-                        <option value="mototrailla">Mototrailla</option>
-                        <option value="camion_cisterna">Camión Cisterna</option>
-                        <option value="otro">Otro</option>
-                      </select>
-                    </td>
-                    <td className="px-4 py-2 border border-indigo-200">
-                      <input
-                        type="text"
-                        value={maquinaria.modelo}
-                        onChange={(e) => actualizarControlMaquinaria(index, 'modelo', e.target.value)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
-                        placeholder="Modelo"
-                      />
-                    </td>
-                    <td className="px-4 py-2 border border-indigo-200">
-                      <input
-                        type="text"
-                        value={maquinaria.numeroEconomico}
-                        onChange={(e) => actualizarControlMaquinaria(index, 'numeroEconomico', e.target.value)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
-                        placeholder="No. Económico"
-                      />
-                    </td>
-                    <td className="px-4 py-2 border border-indigo-200">
-                      <input
-                        type="number"
-                        value={maquinaria.horasOperacion}
-                        onChange={(e) => actualizarControlMaquinaria(index, 'horasOperacion', parseFloat(e.target.value) || 0)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
-                        placeholder="0"
-                        step="0.5"
-                        min="0"
-                      />
-                    </td>
-                    <td className="px-4 py-2 border border-indigo-200">
-                      <input
-                        type="text"
-                        value={maquinaria.operador}
-                        onChange={(e) => actualizarControlMaquinaria(index, 'operador', e.target.value)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
-                        placeholder="Nombre del operador"
-                      />
-                    </td>
-                    <td className="px-4 py-2 border border-indigo-200">
-                      <input
-                        type="text"
-                        value={maquinaria.actividad}
-                        onChange={(e) => actualizarControlMaquinaria(index, 'actividad', e.target.value)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
-                        placeholder="Actividad realizada"
-                      />
-                    </td>
-                    <td className="px-4 py-2 border border-indigo-200">
-                      <button
-                        type="button"
-                        onClick={() => eliminarControlMaquinaria(index)}
-                        className="text-indigo-600 hover:text-indigo-800 text-sm font-semibold bg-indigo-100 px-2 py-1 rounded"
-                        disabled={formData.controlMaquinaria.length === 1}
-                      >
-                        {formData.controlMaquinaria.length === 1 ? '—' : 'Eliminar'}
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
         </div>
 

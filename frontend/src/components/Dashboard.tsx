@@ -3,9 +3,11 @@ import { useAuth } from '../contexts/AuthContext';
 import FormularioReporte from './FormularioReporte';
 import ListaReportes from './ListaReportes';
 import GestionUsuarios from './GestionUsuarios';
+import GestionProyectos from './GestionProyectos';
+import GestionVehiculos from './GestionVehiculos';
 
 const Dashboard: React.FC = () => {
-  const [vistaActual, setVistaActual] = useState<'formulario' | 'lista' | 'usuarios'>('formulario');
+  const [vistaActual, setVistaActual] = useState<'formulario' | 'lista' | 'usuarios' | 'proyectos' | 'vehiculos'>('formulario');
   const { user, proyecto, logout } = useAuth();
 
   const handleLogout = () => {
@@ -58,10 +60,10 @@ const Dashboard: React.FC = () => {
       {/* Navegación */}
       <nav className="bg-white shadow-lg">
         <div className="container mx-auto px-6">
-          <div className="flex space-x-8">
+          <div className="flex space-x-8 overflow-x-auto">
             <button
               onClick={() => setVistaActual('formulario')}
-              className={`py-4 px-6 font-semibold text-lg transition-all duration-300 ${vistaActual === 'formulario'
+              className={`py-4 px-6 font-semibold text-lg transition-all duration-300 whitespace-nowrap ${vistaActual === 'formulario'
                 ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
                 : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
                 }`}
@@ -70,7 +72,7 @@ const Dashboard: React.FC = () => {
             </button>
             <button
               onClick={() => setVistaActual('lista')}
-              className={`py-4 px-6 font-semibold text-lg transition-all duration-300 ${vistaActual === 'lista'
+              className={`py-4 px-6 font-semibold text-lg transition-all duration-300 whitespace-nowrap ${vistaActual === 'lista'
                 ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
                 : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
                 }`}
@@ -78,15 +80,35 @@ const Dashboard: React.FC = () => {
               📋 Ver Reportes
             </button>
             {user?.rol === 'admin' && (
-              <button
-                onClick={() => setVistaActual('usuarios')}
-                className={`py-4 px-6 font-semibold text-lg transition-all duration-300 ${vistaActual === 'usuarios'
-                  ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
-                  : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
-                  }`}
-              >
-                👥 Gestión de Usuarios
-              </button>
+              <>
+                <button
+                  onClick={() => setVistaActual('usuarios')}
+                  className={`py-4 px-6 font-semibold text-lg transition-all duration-300 whitespace-nowrap ${vistaActual === 'usuarios'
+                    ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
+                    : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
+                    }`}
+                >
+                  👥 Usuarios
+                </button>
+                <button
+                  onClick={() => setVistaActual('proyectos')}
+                  className={`py-4 px-6 font-semibold text-lg transition-all duration-300 whitespace-nowrap ${vistaActual === 'proyectos'
+                    ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
+                    : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
+                    }`}
+                >
+                  🏗️ Proyectos
+                </button>
+                <button
+                  onClick={() => setVistaActual('vehiculos')}
+                  className={`py-4 px-6 font-semibold text-lg transition-all duration-300 whitespace-nowrap ${vistaActual === 'vehiculos'
+                    ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
+                    : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
+                    }`}
+                >
+                  🚙 Vehículos
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -96,7 +118,13 @@ const Dashboard: React.FC = () => {
       <main className="container mx-auto p-4">
         {vistaActual === 'formulario' && <FormularioReporte />}
         {vistaActual === 'lista' && <ListaReportes />}
-        {vistaActual === 'usuarios' && user?.rol === 'admin' && <GestionUsuarios />}
+        {user?.rol === 'admin' && (
+          <>
+            {vistaActual === 'usuarios' && <GestionUsuarios />}
+            {vistaActual === 'proyectos' && <GestionProyectos />}
+            {vistaActual === 'vehiculos' && <GestionVehiculos />}
+          </>
+        )}
       </main>
 
       {/* Footer */}

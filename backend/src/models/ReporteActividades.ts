@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { IReporteActividades, IControlAcarreo, IControlAgua, IMediciones, ISeccion2 } from '../types/reporte.js';
+import { IReporteActividades, IControlAcarreo, IControlAgua, IControlMaterial, IControlMaquinaria } from '../types/reporte.js';
 
 const controlAcarreoSchema = new Schema<IControlAcarreo>({
   material: String,
@@ -21,21 +21,21 @@ const controlAguaSchema = new Schema<IControlAgua>({
   destino: String
 });
 
-const medicionesSchema = new Schema<IMediciones>({
-  lupoBSeccion1_1: String,
-  lupoBSeccion2: String,
-  lupoBSeccion3: String,
-  emparinado: String
+const controlMaterialSchema = new Schema<IControlMaterial>({
+  material: String,
+  unidad: String,
+  cantidad: String,
+  zona: String,
+  elevacion: String
 });
 
-const seccion2DatoSchema = new Schema({
-  daj: String,
-  valores: [String]
-});
-
-const seccion2Schema = new Schema<ISeccion2>({
-  plantaIncorporacion: String,
-  datos: [seccion2DatoSchema]
+const controlMaquinariaSchema = new Schema<IControlMaquinaria>({
+  tipo: String,
+  modelo: String,
+  numeroEconomico: String,
+  horasOperacion: Number,
+  operador: String,
+  actividad: String
 });
 
 const reporteActividadesSchema = new Schema<IReporteActividades>({
@@ -45,6 +45,7 @@ const reporteActividadesSchema = new Schema<IReporteActividades>({
   },
   ubicacion: {
     type: String,
+    required: true
   },
   turno: String,
   inicioActividades: String,
@@ -52,9 +53,8 @@ const reporteActividadesSchema = new Schema<IReporteActividades>({
   zonaTrabajo: String,
   jefeFrente: String,
   sobrestante: String,
-  mediciones: medicionesSchema,
-  seccion2: seccion2Schema,
   controlAcarreos: [controlAcarreoSchema],
+  controlMaterial: [controlMaterialSchema],
   controlAgua: [controlAguaSchema],
   observaciones: String,
   creadoPor: String,

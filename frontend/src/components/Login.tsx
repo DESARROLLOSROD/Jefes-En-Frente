@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { authService } from '../services/auth';
+
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  
+
   const { login } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,7 +28,7 @@ const Login: React.FC = () => {
   };
 
   return (
-      
+
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-orange-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
@@ -102,9 +102,9 @@ const Login: React.FC = () => {
         </form>
       </div>
     </div>
-    
+
   );
-  
+
 };
 
 export default Login;

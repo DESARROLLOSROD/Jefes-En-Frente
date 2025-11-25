@@ -5,6 +5,8 @@ import dotenv from 'dotenv';
 import { reporteRouter } from './routes/reportes.js';
 import { authRouter } from './routes/auth.js';
 import { usuariosRouter } from './routes/usuarios.js';
+import { proyectosRouter } from './routes/proyectos.js';
+import { vehiculosRouter } from './routes/vehiculos.js';
 
 dotenv.config();
 
@@ -39,6 +41,8 @@ mongoose.connect(MONGODB_URI)
 app.use('/api/auth', authRouter);
 app.use('/api/reportes', reporteRouter);
 app.use('/api/usuarios', usuariosRouter);
+app.use('/api/proyectos', proyectosRouter);
+app.use('/api/vehiculos', vehiculosRouter);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
