@@ -254,7 +254,7 @@ const GestionVehiculos: React.FC = () => {
                                         required
                                         min="0"
                                         value={formData.horometroInicial}
-                                        readOnly={editando}
+                                        onChange={e => setFormData({ ...formData, horometroInicial: Number(e.target.value) })}
                                         className={`w-full px-3 py-2 border border-gray-300 rounded-lg ${editando ? 'bg-gray-100 cursor-not-allowed' : 'focus:ring-2 focus:ring-orange-500'}`}
                                         placeholder="0"
                                     />
@@ -267,6 +267,7 @@ const GestionVehiculos: React.FC = () => {
                                         required
                                         min="0"
                                         value={formData.horometroFinal}
+                                        readOnly={editando}
                                         onChange={e => setFormData({ ...formData, horometroFinal: Number(e.target.value) })}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                                         placeholder="0"

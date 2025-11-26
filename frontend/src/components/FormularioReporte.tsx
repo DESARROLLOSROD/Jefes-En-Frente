@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ReporteActividades, ControlAcarreo, ControlAgua, ControlMaquinaria, Seccion2Dato } from '../types/reporte';
+import { ReporteActividades, ControlAcarreo, ControlAgua, ControlMaquinaria, ControlMaterial } from '../types/reporte';
 import { reporteService, vehiculoService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { Vehiculo } from '../types/gestion';  // ✨ NUEVO
+import { Vehiculo } from '../types/gestion';
 
 const FormularioReporte: React.FC = () => {
   const { proyecto, user } = useAuth();
@@ -39,6 +39,9 @@ const FormularioReporte: React.FC = () => {
     controlAcarreo: [
       { material: '', noViaje: 0, capacidad: '', volSuelto: '', capaNo: '', elevacionAriza: '', capaOrigen: '', destino: '' }
     ],
+    controlMaterial: [
+      { material: '', unidad: '', cantidad: '', zona: '', elevacion: '' }
+    ],
     controlAgua: [
       { noEconomico: '', viaje: 0, capacidad: '', volumen: '', origen: '', destino: '' }
     ],
@@ -56,7 +59,7 @@ const FormularioReporte: React.FC = () => {
       }
     ],
     observaciones: '',
-    creadoPor: user?.nombre || '' // Usar nombre del usuario si está disponible
+    creadoPor: user?.nombre || ''
   });
 
   // Actualizar ubicación y proyectoId cuando cambia el proyecto
@@ -111,12 +114,6 @@ const FormularioReporte: React.FC = () => {
           terminoActividades: formData.turno === 'primer' ? '19:00' : '07:00',
           observaciones: '',
           creadoPor: '',
-          mediciones: {
-            lupoBSeccion1_1: '',
-            lupoBSeccion2: '',
-            lupoBSeccion3: '',
-            emparinado: ''
-          }
         });
       } else {
         setMensaje('❌ Error al crear reporte: ' + resultado.error);
@@ -138,7 +135,7 @@ const FormularioReporte: React.FC = () => {
     });
   };
 
-  // Funciones para control de acarreos (existentes)
+  // Funciones para control de acarreos
   const agregarControlAcarreo = () => {
     setFormData({
       ...formData,
@@ -162,7 +159,31 @@ const FormularioReporte: React.FC = () => {
     }
   };
 
-  // Funciones para control de agua (existentes)
+  // Functions for Control Material
+  const agregarControlMaterial = () => {
+    setFormData({
+      ...formData,
+      controlMaterial: [
+        ...formData.controlMaterial,
+        { material: '', unidad: '', cantidad: '', zona: '', elevacion: '' }
+      ]
+    });
+  };
+
+  const actualizarControlMaterial = (index: number, campo: keyof ControlMaterial, valor: string) => {
+    const nuevosMateriales = [...formData.controlMaterial];
+    nuevosMateriales[index] = { ...nuevosMateriales[index], [campo]: valor };
+    setFormData({ ...formData, controlMaterial: nuevosMateriales });
+  };
+
+  const eliminarControlMaterial = (index: number) => {
+    if (formData.controlMaterial.length > 1) {
+      const nuevosMateriales = formData.controlMaterial.filter((_, i) => i !== index);
+      setFormData({ ...formData, controlMaterial: nuevosMateriales });
+    }
+  };
+
+  // Funciones para control de agua
   const agregarControlAgua = () => {
     setFormData({
       ...formData,
@@ -186,7 +207,7 @@ const FormularioReporte: React.FC = () => {
     }
   };
 
-  // NUEVAS: Funciones para control de maquinaria
+  // Funciones para control de maquinaria
   const agregarControlMaquinaria = () => {
     setFormData({
       ...formData,
@@ -219,6 +240,7 @@ const FormularioReporte: React.FC = () => {
       setFormData({ ...formData, controlMaquinaria: nuevaMaquinaria });
     }
   };
+
   // Función para manejar la selección de vehículo
   const seleccionarVehiculo = (index: number, vehiculoId: string) => {
     const vehiculo = vehiculosDisponibles.find(v => v._id === vehiculoId);
@@ -237,6 +259,7 @@ const FormularioReporte: React.FC = () => {
       setFormData({ ...formData, controlMaquinaria: nuevaMaquinaria });
     }
   };
+
   // Función para calcular horas de operación
   const calcularHorasOperacion = (index: number, horometroFinal: number) => {
     const nuevaMaquinaria = [...formData.controlMaquinaria];
@@ -247,19 +270,6 @@ const FormularioReporte: React.FC = () => {
       horasOperacion: horometroFinal - horometroInicial
     };
     setFormData({ ...formData, controlMaquinaria: nuevaMaquinaria });
-  };
-
-  // Función existente para sección 2
-  const actualizarSeccion2Valor = (datoIndex: number, valorIndex: number, valor: string) => {
-    const nuevosDatos = [...formData.seccion2.datos];
-    nuevosDatos[datoIndex].valores[valorIndex] = valor;
-    setFormData({
-      ...formData,
-      seccion2: {
-        ...formData.seccion2,
-        datos: nuevosDatos
-      }
-    });
   };
 
   return (
@@ -279,7 +289,7 @@ const FormularioReporte: React.FC = () => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* SECCIÓN 1: INFORMACIÓN GENERAL - ACTUALIZADA */}
+        {/* SECCIÓN 1: INFORMACIÓN GENERAL */}
         <div className="border-2 border-orange-400 rounded-lg p-6 bg-orange-50">
           <h3 className="text-xl font-bold mb-4 text-orange-800 border-b pb-2">INFORMACIÓN GENERAL</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -325,7 +335,7 @@ const FormularioReporte: React.FC = () => {
           </div>
         </div>
 
-        {/* SECCIÓN 2: ZONA Y PERSONAL - ACTUALIZADA */}
+        {/* SECCIÓN 2: ZONA Y PERSONAL */}
         <div className="border-2 border-blue-400 rounded-lg p-6 bg-blue-50">
           <h3 className="text-xl font-bold mb-4 text-blue-800 border-b pb-2">ZONA DE TRABAJO Y PERSONAL</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -372,8 +382,7 @@ const FormularioReporte: React.FC = () => {
           </div>
         </div>
 
-
-        {/* SECCIÓN 4: CONTROL DE ACARREOS - ESTA ES LA QUE FALTABA */}
+        {/* SECCIÓN 4: CONTROL DE ACARREOS */}
         <div className="border-2 border-red-400 rounded-lg p-6 bg-red-50">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-bold text-red-800 border-b pb-2">CONTROL DE ACARREOS</h3>
@@ -493,7 +502,41 @@ const FormularioReporte: React.FC = () => {
           </div>
         </div>
 
-        {/* SECCIÓN 5: CONTROL DE AGUA - MANTENER IGUAL */}
+        {/* SECCIÓN 5: CONTROL DE MATERIAL */}
+        <div className="border-2 border-green-400 rounded-lg p-6 bg-green-50">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold text-green-800 border-b pb-2">CONTROL DE MATERIAL</h3>
+            <button type="button" onClick={agregarControlMaterial} className="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700 font-semibold">+ Agregar Fila</button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white rounded-lg overflow-hidden border border-green-300">
+              <thead className="bg-green-100">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-green-800 uppercase border border-green-300">MATERIAL</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-green-800 uppercase border border-green-300">UNIDAD</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-green-800 uppercase border border-green-300">CANTIDAD</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-green-800 uppercase border border-green-300">ZONA</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-green-800 uppercase border border-green-300">ELEVACIÓN</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-green-800 uppercase border border-green-300">ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {formData.controlMaterial.map((mat, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.material} onChange={(e) => actualizarControlMaterial(index, 'material', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1" placeholder="Material" /></td>
+                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.unidad} onChange={(e) => actualizarControlMaterial(index, 'unidad', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1" placeholder="Unidad" /></td>
+                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.cantidad} onChange={(e) => actualizarControlMaterial(index, 'cantidad', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1" placeholder="Cantidad" /></td>
+                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.zona} onChange={(e) => actualizarControlMaterial(index, 'zona', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1" placeholder="Zona" /></td>
+                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.elevacion} onChange={(e) => actualizarControlMaterial(index, 'elevacion', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1" placeholder="Elevación" /></td>
+                    <td className="px-4 py-2 border border-green-200"><button type="button" onClick={() => eliminarControlMaterial(index)} className="text-green-600 hover:text-green-800 text-sm font-semibold bg-green-100 px-2 py-1 rounded" disabled={formData.controlMaterial.length === 1}>{formData.controlMaterial.length === 1 ? '—' : 'Eliminar'}</button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* SECCIÓN 6: CONTROL DE AGUA */}
         <div className="border-2 border-cyan-400 rounded-lg p-6 bg-cyan-50">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-bold text-cyan-800 border-b pb-2">CONTROL DE AGUA</h3>
@@ -592,9 +635,6 @@ const FormularioReporte: React.FC = () => {
             </table>
           </div>
         </div>
-
-        {/* Las secciones de Mediciones, Sección 2, Control de Acarreos y Control de Agua se mantienen igual */}
-        {/* ... (código anterior de estas secciones) ... */}
 
         {/* SECCIÓN 7: CONTROL DE MAQUINARIA */}
         <div className="border-2 border-indigo-400 rounded-lg p-6 bg-indigo-50">
@@ -725,7 +765,7 @@ const FormularioReporte: React.FC = () => {
           </div>
         </div>
 
-        {/* SECCIÓN 8: OBSERVACIONES - ESTA ES LA QUE FALTABA */}
+        {/* SECCIÓN 8: OBSERVACIONES */}
         <div className="border-2 border-yellow-400 rounded-lg p-6 bg-yellow-50">
           <h3 className="text-xl font-bold mb-4 text-yellow-800 border-b pb-2">OBSERVACIONES</h3>
           <textarea
@@ -762,7 +802,6 @@ const FormularioReporte: React.FC = () => {
             💡 Este campo es obligatorio para identificar quién generó el reporte.
           </p>
         </div>
-
 
         {/* BOTÓN DE ENVÍO */}
         <div className="flex justify-center pt-6">

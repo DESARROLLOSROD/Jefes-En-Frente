@@ -45,6 +45,18 @@ export interface ControlMaquinaria {
   actividad: string;
 }
 
+export interface Seccion2Dato {
+  daj: string;
+  valores: string[];
+}
+
+export interface Mediciones {
+  lupoBSeccion1_1: string;
+  lupoBSeccion2: string;
+  lupoBSeccion3: string;
+  emparinado: string;
+}
+
 export interface ReporteActividades {
   _id?: string;
   // NUEVO: Campos de autenticación
@@ -59,6 +71,11 @@ export interface ReporteActividades {
   seccionTrabajo: string;
   jefeFrente: string;
   sobrestante: string;
+  mediciones: Mediciones;
+  seccion2: {
+    plantaIncorporacion: string;
+    datos: Seccion2Dato[];
+  };
   controlAcarreo: ControlAcarreo[];
   controlMaterial: ControlMaterial[];
   controlAgua: ControlAgua[];
