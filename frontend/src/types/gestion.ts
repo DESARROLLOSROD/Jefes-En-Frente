@@ -13,6 +13,7 @@ export interface Vehiculo {
     tipo: 'Camioneta' | 'Camión' | 'Maquinaria' | 'Otro';
     horometroInicial: number;
     horometroFinal?: number;
+    horasOperacion: number;
     noEconomico: string;
     proyectos: string[] | Proyecto[]; // ✨ NUEVO
     activo: boolean;

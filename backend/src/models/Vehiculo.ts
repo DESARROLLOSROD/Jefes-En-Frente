@@ -5,6 +5,7 @@ export interface IVehiculo extends Document {
     tipo: string;
     horometroInicial: number;
     horometroFinal?: number;
+    horasOperacion: number;
     noEconomico: string;
     proyectos: Schema.Types.ObjectId[];
     activo: boolean;
@@ -30,6 +31,11 @@ const vehiculoSchema = new Schema<IVehiculo>({
     },
     horometroFinal: {
         type: Number,
+        min: 0
+    },
+    horasOperacion: {
+        type: Number,
+        default: 0,
         min: 0
     },
     noEconomico: {

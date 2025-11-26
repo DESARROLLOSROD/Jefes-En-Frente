@@ -17,6 +17,7 @@ const GestionVehiculos: React.FC = () => {
         tipo: 'Camioneta' as 'Camioneta' | 'Camión' | 'Maquinaria' | 'Otro',
         horometroInicial: 0,
         horometroFinal: 0,
+        horasOperacion: 0,
         noEconomico: '',
         proyectos: [] as string[],
     });
@@ -80,6 +81,7 @@ const GestionVehiculos: React.FC = () => {
                 tipo: vehiculo.tipo,
                 horometroInicial: vehiculo.horometroInicial,
                 horometroFinal: vehiculo.horometroFinal || 0,
+                horasOperacion: vehiculo.horasOperacion || 0,
                 noEconomico: vehiculo.noEconomico,
                 proyectos: Array.isArray(vehiculo.proyectos) ? vehiculo.proyectos.map(p => typeof p === 'string' ? p : p._id) : [],
             });
@@ -91,6 +93,7 @@ const GestionVehiculos: React.FC = () => {
                 tipo: 'Camioneta',
                 horometroInicial: 0,
                 horometroFinal: 0,
+                horasOperacion: 0,
                 noEconomico: '',
                 proyectos: [],
             });
@@ -158,6 +161,8 @@ const GestionVehiculos: React.FC = () => {
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Económico</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Horómetro Inicial</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Horómetro Final</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Horas Operación</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Proyectos</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
                                 </tr>
                             </thead>
@@ -175,6 +180,23 @@ const GestionVehiculos: React.FC = () => {
                                         <td className="px-6 py-4 text-sm text-gray-900">
                                             {vehiculo.horometroFinal ? vehiculo.horometroFinal.toLocaleString() : '-'}
                                         </td>
+                                        <td className="px-6 py-4 text-sm text-gray-900">
+                                            {vehiculo.horasOperacion ? vehiculo.horasOperacion.toLocaleString() : '0'}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-900">
+                                            {Array.isArray(vehiculo.proyectos) && vehiculo.proyectos.length > 0 ? (
+                                                <div className="flex flex-wrap gap-1">
+                                                    {vehiculo.proyectos.map((p: any, index) => (
+                                                        <span key={index} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                                            {typeof p === 'object' && p.nombre ? p.nombre : 'Proyecto'}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <span className="text-gray-400 italic">Sin asignar</span>
+                                            )}
+                                        </td>
+
                                         <td className="px-6 py-4 text-sm font-medium space-x-2">
                                             <button
                                                 onClick={() => abrirModal(vehiculo)}
@@ -270,6 +292,18 @@ const GestionVehiculos: React.FC = () => {
                                         value={formData.horometroFinal}
                                         readOnly={editando}
                                         onChange={e => setFormData({ ...formData, horometroFinal: Number(e.target.value) })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                                        placeholder="0"
+                                    />
+                                </div>
+                                {/* Horas de Operación */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Horas de Operación</label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={formData.horasOperacion}
+                                        onChange={e => setFormData({ ...formData, horasOperacion: Number(e.target.value) })}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                                         placeholder="0"
                                     />

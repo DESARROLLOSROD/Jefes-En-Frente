@@ -31,7 +31,8 @@ router.post('/', async (req: AuthRequest, res) => {
               maquinaria.vehiculoId,
               {
                 horometroInicial: maquinaria.horometroFinal,
-                horometroFinal: maquinaria.horometroFinal
+                horometroFinal: maquinaria.horometroFinal,
+                $inc: { horasOperacion: maquinaria.horasOperacion || 0 }
               }
             );
             console.log(`🔄 Horómetro actualizado para vehículo ${maquinaria.vehiculoId}: ${maquinaria.horometroFinal}`);
