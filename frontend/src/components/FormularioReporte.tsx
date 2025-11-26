@@ -23,19 +23,6 @@ const FormularioReporte: React.FC = () => {
     seccionTrabajo: '',
     jefeFrente: '',
     sobrestante: '',
-    mediciones: {
-      lupoBSeccion1_1: '',
-      lupoBSeccion2: '',
-      lupoBSeccion3: '',
-      emparinado: ''
-    },
-    seccion2: {
-      plantaIncorporacion: 'Planta Incorporación de la Sección 3.1',
-      datos: [
-        { daj: 'daj=4.80 ton', valores: ['', '', '', ''] },
-        { daj: 'daj=380 ton', valores: ['', '', '', ''] }
-      ]
-    },
     controlAcarreo: [
       { material: '', noViaje: 0, capacidad: '', volSuelto: '', capaNo: '', elevacionAriza: '', capaOrigen: '', destino: '' }
     ],
