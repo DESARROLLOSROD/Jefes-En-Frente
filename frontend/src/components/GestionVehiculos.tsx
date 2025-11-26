@@ -214,7 +214,7 @@ const GestionVehiculos: React.FC = () => {
                                         required
                                         value={formData.nombre}
                                         onChange={e => setFormData({ ...formData, nombre: e.target.value })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 uppercase"
                                         placeholder="Ej: Excavadora CAT 320"
                                     />
                                 </div>
@@ -241,7 +241,8 @@ const GestionVehiculos: React.FC = () => {
                                         required
                                         value={formData.noEconomico}
                                         onChange={e => setFormData({ ...formData, noEconomico: e.target.value.toUpperCase() })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 uppercase"
+                                        placeholder="No. Económico"
                                     />
                                 </div>
                                 {/* Horómetro Inicial */}

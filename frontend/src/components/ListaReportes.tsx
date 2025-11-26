@@ -3,12 +3,16 @@ import { useAuth } from '../contexts/AuthContext';
 import { ReporteActividades } from '../types/reporte';
 import { reporteService } from '../services/api';
 
-const ListaReportes: React.FC = () => {
+interface ListaReportesProps {
+  onEditar: (reporte: ReporteActividades) => void;
+}
+
+const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
   const [reportes, setReportes] = useState<ReporteActividades[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
-  const { proyecto, user } = useAuth();
+  const { proyecto } = useAuth();
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const [reporteEliminar, setReporteEliminar] = useState<ReporteActividades | null>(null);
 
@@ -134,9 +138,15 @@ const ListaReportes: React.FC = () => {
                     <td className="px-6 py-4 text-sm text-gray-900">{reporte.zonaTrabajo}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{reporte.jefeFrente}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      {/*Boton para eliminar reporte */}
+                      {/* Botones de acción */}
+                      <button
+                        className="text-blue-600 hover:text-blue-900 mr-3 font-semibold"
+                        onClick={() => onEditar(reporte)}
+                      >
+                        ✏️ Editar
+                      </button>
                       <button className="text-red-600 hover:text-red-900 mr-3" onClick={() => handleEliminarClick(reporte)}>
-                        �️ Eliminar
+                        🗑️ Eliminar
                       </button>
                     </td>
                   </tr>

@@ -137,7 +137,7 @@ const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({ usuario, onClose,
                             type="text"
                             value={formData.nombre}
                             onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.nombre ? 'border-red-500' : 'border-gray-300'
+                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.nombre ? 'border-red-500' : 'border-gray-300 uppercase'
                                 }`}
                             placeholder="Ej: Juan Pérez"
                         />
@@ -190,7 +190,7 @@ const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({ usuario, onClose,
                         <select
                             value={formData.rol}
                             onChange={(e) => setFormData({ ...formData, rol: e.target.value as any })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase"
                         >
                             <option value="operador">Operador</option>
                             <option value="supervisor">Supervisor</option>

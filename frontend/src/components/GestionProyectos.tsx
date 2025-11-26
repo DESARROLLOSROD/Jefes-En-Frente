@@ -141,38 +141,41 @@ const GestionProyectos: React.FC = () => {
                         </h3>
                         <form onSubmit={handleSubmit}>
                             <div className="mb-4">
-                                <label className="block text-gray-700 text-sm font-bold mb-2">
-                                    Nombre
+                                <label className="block text-gray-700 text-sm font-bold mb-2 uppercase">
+                                    Nombre *
                                 </label>
                                 <input
                                     type="text"
                                     value={formData.nombre}
                                     onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                                    className="w-full border rounded px-3 py-2"
+                                    className="w-full border rounded px-3 py-2 uppercase"
+                                    placeholder="Nombre del proyecto"
                                     required
                                 />
                             </div>
                             <div className="mb-4">
-                                <label className="block text-gray-700 text-sm font-bold mb-2">
-                                    Ubicación
+                                <label className="block text-gray-700 text-sm font-bold mb-2 uppercase">
+                                    Ubicación *
                                 </label>
                                 <input
                                     type="text"
                                     value={formData.ubicacion}
                                     onChange={(e) => setFormData({ ...formData, ubicacion: e.target.value })}
-                                    className="w-full border rounded px-3 py-2"
+                                    className="w-full border rounded px-3 py-2 uppercase"
+                                    placeholder="Ubicación del proyecto"
                                     required
                                 />
                             </div>
                             <div className="mb-6">
-                                <label className="block text-gray-700 text-sm font-bold mb-2">
-                                    Descripción
+                                <label className="block text-gray-700 text-sm font-bold mb-2 uppercase">
+                                    Descripción *
                                 </label>
                                 <textarea
                                     value={formData.descripcion}
                                     onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-                                    className="w-full border rounded px-3 py-2"
+                                    className="w-full border rounded px-3 py-2 uppercase"
                                     rows={3}
+                                    placeholder="Descripción del proyecto"
                                     required
                                 />
                             </div>

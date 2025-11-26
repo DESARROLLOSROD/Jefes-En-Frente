@@ -4,7 +4,12 @@ import { reporteService, vehiculoService } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { Vehiculo } from '../types/gestion';
 
-const FormularioReporte: React.FC = () => {
+interface FormularioReporteProps {
+  reporteInicial?: ReporteActividades | null;
+  onFinalizar?: () => void;
+}
+
+const FormularioReporte: React.FC<FormularioReporteProps> = ({ reporteInicial, onFinalizar }) => {
   const { proyecto, user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState('');
@@ -49,16 +54,45 @@ const FormularioReporte: React.FC = () => {
     creadoPor: user?.nombre || ''
   });
 
-  // Actualizar ubicación y proyectoId cuando cambia el proyecto
+  // Cargar datos si estamos editando
   useEffect(() => {
-    if (proyecto) {
+    if (reporteInicial) {
+      // Asegurarnos de que los arrays tengan al menos un elemento vacío si vienen vacíos del backend
+      const datosCargados = {
+        ...reporteInicial,
+        controlAcarreo: reporteInicial.controlAcarreo?.length > 0 ? reporteInicial.controlAcarreo : [{ material: '', noViaje: 0, capacidad: '', volSuelto: '', capaNo: '', elevacionAriza: '', capaOrigen: '', destino: '' }],
+        controlMaterial: reporteInicial.controlMaterial?.length > 0 ? reporteInicial.controlMaterial : [{ material: '', unidad: '', cantidad: '', zona: '', elevacion: '' }],
+        controlAgua: reporteInicial.controlAgua?.length > 0 ? reporteInicial.controlAgua : [{ noEconomico: '', viaje: 0, capacidad: '', volumen: '', origen: '', destino: '' }],
+        controlMaquinaria: reporteInicial.controlMaquinaria?.length > 0 ? reporteInicial.controlMaquinaria : [{
+          vehiculoId: '',
+          nombre: '',
+          tipo: '',
+          numeroEconomico: '',
+          horometroInicial: 0,
+          horometroFinal: 0,
+          horasOperacion: 0,
+          operador: '',
+          actividad: ''
+        }]
+      };
+
+      // Remove _id and fechaCreacion to match the state type (Omit<ReporteActividades, ...>)
+      // We keep the ID separately if needed for update, or just use reporteInicial._id
+      const { _id, fechaCreacion, ...restoDatos } = datosCargados;
+      setFormData(restoDatos);
+    }
+  }, [reporteInicial]);
+
+  // Actualizar ubicación y proyectoId cuando cambia el proyecto (solo si no estamos editando o si queremos forzarlo)
+  useEffect(() => {
+    if (proyecto && !reporteInicial) {
       setFormData(prev => ({
         ...prev,
         ubicacion: proyecto.ubicacion,
         proyectoId: proyecto._id || ''
       }));
     }
-  }, [proyecto]);
+  }, [proyecto, reporteInicial]);
 
   // Cargar vehículos del proyecto actual
   useEffect(() => {
@@ -73,16 +107,16 @@ const FormularioReporte: React.FC = () => {
     cargarVehiculos();
   }, [proyecto]);
 
-  // Actualizar usuarioId cuando cambia el usuario
+  // Actualizar usuarioId cuando cambia el usuario (solo si no estamos editando)
   useEffect(() => {
-    if (user) {
+    if (user && !reporteInicial) {
       setFormData(prev => ({
         ...prev,
         usuarioId: user._id || '',
         creadoPor: user.nombre
       }));
     }
-  }, [user]);
+  }, [user, reporteInicial]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,20 +124,38 @@ const FormularioReporte: React.FC = () => {
     setMensaje('');
 
     try {
-      const resultado = await reporteService.crearReporte(formData);
-      if (resultado.success) {
-        setMensaje('✅ Reporte creado exitosamente!');
-        // Limpiar formulario pero mantener estructura
-        setFormData({
-          ...formData,
-          fecha: new Date().toISOString().split('T')[0],
-          inicioActividades: formData.turno === 'primer' ? '07:00' : '19:00',
-          terminoActividades: formData.turno === 'primer' ? '19:00' : '07:00',
-          observaciones: '',
-          creadoPor: '',
-        });
+      let resultado;
+      if (reporteInicial && reporteInicial._id) {
+        // Actualizar reporte existente
+        resultado = await reporteService.actualizarReporte(reporteInicial._id, formData);
       } else {
-        setMensaje('❌ Error al crear reporte: ' + resultado.error);
+        // Crear nuevo reporte
+        resultado = await reporteService.crearReporte(formData);
+      }
+
+      if (resultado.success) {
+        setMensaje(reporteInicial ? '✅ Reporte actualizado exitosamente!' : '✅ Reporte creado exitosamente!');
+
+        if (!reporteInicial) {
+          // Limpiar formulario solo si es creación
+          setFormData({
+            ...formData,
+            fecha: new Date().toISOString().split('T')[0],
+            inicioActividades: formData.turno === 'primer' ? '07:00' : '19:00',
+            terminoActividades: formData.turno === 'primer' ? '19:00' : '07:00',
+            observaciones: '',
+            creadoPor: user?.nombre || '',
+          });
+        }
+
+        // Notificar al padre que terminamos
+        if (onFinalizar) {
+          setTimeout(() => {
+            onFinalizar();
+          }, 1500); // Esperar un poco para mostrar el mensaje de éxito
+        }
+      } else {
+        setMensaje('❌ Error: ' + resultado.error);
       }
     } catch (error) {
       setMensaje('❌ Error de conexión con el servidor');
@@ -262,7 +314,9 @@ const FormularioReporte: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-md">
       <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">REPORTE DE ACTIVIDADES</h1>
+        <h1 className="text-3xl font-bold text-gray-800">
+          {reporteInicial ? 'EDITAR REPORTE DE ACTIVIDADES' : 'REPORTE DE ACTIVIDADES'}
+        </h1>
         <p className="text-lg text-gray-600 mt-2">GENERAL CONTRACTOR</p>
         <p className="text-gray-700">UBICACIÓN : {proyecto?.nombre} </p>
       </div>
@@ -327,42 +381,47 @@ const FormularioReporte: React.FC = () => {
           <h3 className="text-xl font-bold mb-4 text-blue-800 border-b pb-2">ZONA DE TRABAJO Y PERSONAL</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-bold text-gray-700">ZONA DE TRABAJO</label>
+              <label className="block text-sm font-bold text-gray-700">ZONA DE TRABAJO * </label>
               <input
+                required
                 type="text"
                 value={formData.zonaTrabajo}
                 onChange={(e) => setFormData({ ...formData, zonaTrabajo: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border uppercase"
                 placeholder="Zona principal de trabajo"
               />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700">SECCIÓN DE TRABAJO</label>
+              <label className="block text-sm font-bold text-gray-700">SECCIÓN DE TRABAJO *</label>
               <input
+                required
                 type="text"
                 value={formData.seccionTrabajo}
                 onChange={(e) => setFormData({ ...formData, seccionTrabajo: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border uppercase"
                 placeholder="Sección específica (Ej: Sección 3.1)"
               />
             </div>
             <div>
-              <label className="block text-sm font-bold text-gray-700">JEFE DE FRENTE</label>
+              <label className="block text-sm font-bold text-gray-700">JEFE DE FRENTE *</label>
               <input
+                required
                 type="text"
                 value={formData.jefeFrente}
                 onChange={(e) => setFormData({ ...formData, jefeFrente: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border uppercase"
                 placeholder="Puma Bauda"
               />
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-700">SOBRESTANTE</label>
               <input
+
                 type="text"
                 value={formData.sobrestante}
                 onChange={(e) => setFormData({ ...formData, sobrestante: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border uppercase  "
                 placeholder="Librarino de lopes"
               />
             </div>
@@ -405,7 +464,7 @@ const FormularioReporte: React.FC = () => {
                         type="text"
                         value={acarreo.material}
                         onChange={(e) => actualizarControlAcarreo(index, 'material', e.target.value)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
                         placeholder="Material"
                       />
                     </td>
@@ -414,7 +473,7 @@ const FormularioReporte: React.FC = () => {
                         type="number"
                         value={acarreo.noViaje}
                         onChange={(e) => actualizarControlAcarreo(index, 'noViaje', parseInt(e.target.value) || 0)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
                         placeholder="0"
                       />
                     </td>
@@ -423,7 +482,7 @@ const FormularioReporte: React.FC = () => {
                         type="text"
                         value={acarreo.capacidad}
                         onChange={(e) => actualizarControlAcarreo(index, 'capacidad', e.target.value)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
                         placeholder="Capacidad"
                       />
                     </td>
@@ -432,7 +491,7 @@ const FormularioReporte: React.FC = () => {
                         type="text"
                         value={acarreo.volSuelto}
                         onChange={(e) => actualizarControlAcarreo(index, 'volSuelto', e.target.value)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
                         placeholder="Vol. Suelto"
                       />
                     </td>
@@ -441,7 +500,7 @@ const FormularioReporte: React.FC = () => {
                         type="text"
                         value={acarreo.capaNo}
                         onChange={(e) => actualizarControlAcarreo(index, 'capaNo', e.target.value)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
                         placeholder="Capa No."
                       />
                     </td>
@@ -450,7 +509,7 @@ const FormularioReporte: React.FC = () => {
                         type="text"
                         value={acarreo.elevacionAriza}
                         onChange={(e) => actualizarControlAcarreo(index, 'elevacionAriza', e.target.value)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
                         placeholder="Elevación"
                       />
                     </td>
@@ -459,7 +518,7 @@ const FormularioReporte: React.FC = () => {
                         type="text"
                         value={acarreo.capaOrigen}
                         onChange={(e) => actualizarControlAcarreo(index, 'capaOrigen', e.target.value)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
                         placeholder="Origen"
                       />
                     </td>
@@ -468,7 +527,7 @@ const FormularioReporte: React.FC = () => {
                         type="text"
                         value={acarreo.destino}
                         onChange={(e) => actualizarControlAcarreo(index, 'destino', e.target.value)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase "
                         placeholder="Destino"
                       />
                     </td>
@@ -510,11 +569,11 @@ const FormularioReporte: React.FC = () => {
               <tbody className="divide-y divide-gray-200">
                 {formData.controlMaterial.map((mat, index) => (
                   <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.material} onChange={(e) => actualizarControlMaterial(index, 'material', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1" placeholder="Material" /></td>
-                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.unidad} onChange={(e) => actualizarControlMaterial(index, 'unidad', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1" placeholder="Unidad" /></td>
-                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.cantidad} onChange={(e) => actualizarControlMaterial(index, 'cantidad', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1" placeholder="Cantidad" /></td>
-                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.zona} onChange={(e) => actualizarControlMaterial(index, 'zona', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1" placeholder="Zona" /></td>
-                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.elevacion} onChange={(e) => actualizarControlMaterial(index, 'elevacion', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1" placeholder="Elevación" /></td>
+                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.material} onChange={(e) => actualizarControlMaterial(index, 'material', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase" placeholder="Material" /></td>
+                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.unidad} onChange={(e) => actualizarControlMaterial(index, 'unidad', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase" placeholder="Unidad" /></td>
+                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.cantidad} onChange={(e) => actualizarControlMaterial(index, 'cantidad', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase" placeholder="Cantidad" /></td>
+                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.zona} onChange={(e) => actualizarControlMaterial(index, 'zona', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase" placeholder="Zona" /></td>
+                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.elevacion} onChange={(e) => actualizarControlMaterial(index, 'elevacion', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase" placeholder="Elevación" /></td>
                     <td className="px-4 py-2 border border-green-200"><button type="button" onClick={() => eliminarControlMaterial(index)} className="text-green-600 hover:text-green-800 text-sm font-semibold bg-green-100 px-2 py-1 rounded" disabled={formData.controlMaterial.length === 1}>{formData.controlMaterial.length === 1 ? '—' : 'Eliminar'}</button></td>
                   </tr>
                 ))}
@@ -557,7 +616,7 @@ const FormularioReporte: React.FC = () => {
                         type="text"
                         value={agua.noEconomico}
                         onChange={(e) => actualizarControlAgua(index, 'noEconomico', e.target.value)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
                         placeholder="No. Económico"
                       />
                     </td>
@@ -566,7 +625,7 @@ const FormularioReporte: React.FC = () => {
                         type="number"
                         value={agua.viaje}
                         onChange={(e) => actualizarControlAgua(index, 'viaje', parseInt(e.target.value) || 0)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
                         placeholder="0"
                       />
                     </td>
@@ -575,7 +634,7 @@ const FormularioReporte: React.FC = () => {
                         type="text"
                         value={agua.capacidad}
                         onChange={(e) => actualizarControlAgua(index, 'capacidad', e.target.value)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
                         placeholder="Capacidad"
                       />
                     </td>
@@ -584,7 +643,7 @@ const FormularioReporte: React.FC = () => {
                         type="text"
                         value={agua.volumen}
                         onChange={(e) => actualizarControlAgua(index, 'volumen', e.target.value)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
                         placeholder="Volumen"
                       />
                     </td>
@@ -593,7 +652,7 @@ const FormularioReporte: React.FC = () => {
                         type="text"
                         value={agua.origen}
                         onChange={(e) => actualizarControlAgua(index, 'origen', e.target.value)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
                         placeholder="Origen"
                       />
                     </td>
@@ -602,7 +661,7 @@ const FormularioReporte: React.FC = () => {
                         type="text"
                         value={agua.destino}
                         onChange={(e) => actualizarControlAgua(index, 'destino', e.target.value)}
-                        className="w-full border-none bg-transparent focus:ring-0 p-1"
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
                         placeholder="Destino"
                       />
                     </td>
@@ -726,7 +785,8 @@ const FormularioReporte: React.FC = () => {
                       required
                       value={maquinaria.operador}
                       onChange={(e) => actualizarControlMaquinaria(index, 'operador', e.target.value)}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border uppercase"
+                      placeholder="Operador"
                     />
                   </div>
                   <div className="md:col-span-2">
@@ -735,7 +795,8 @@ const FormularioReporte: React.FC = () => {
                       required
                       value={maquinaria.actividad}
                       onChange={(e) => actualizarControlMaquinaria(index, 'actividad', e.target.value)}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border uppercase"
+                      placeholder="Actividad"
                       rows={2}
                     />
                   </div>
@@ -759,7 +820,7 @@ const FormularioReporte: React.FC = () => {
             value={formData.observaciones}
             onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
             rows={4}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 p-3 border"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 p-3 border uppercase"
             placeholder="Ej: Intemperismo: No lo conoce por tiempo para tener el actividades de 7.00 cca a los 9.30 cm."
           />
           <div className="mt-2 text-sm text-gray-600">
@@ -781,7 +842,7 @@ const FormularioReporte: React.FC = () => {
             type="text"
             value={formData.creadoPor}
             onChange={(e) => setFormData({ ...formData, creadoPor: e.target.value })}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 p-2 border"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 p-2 border uppercase"
             placeholder="Nombre de quien registra el reporte"
             required
           />
@@ -797,7 +858,7 @@ const FormularioReporte: React.FC = () => {
             disabled={loading}
             className="bg-orange-600 text-white px-12 py-4 rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 text-lg font-bold text-xl"
           >
-            {loading ? '⏳ GUARDANDO REPORTE...' : '💾 GUARDAR REPORTE'}
+            {loading ? '⏳ GUARDANDO...' : (reporteInicial ? '💾 ACTUALIZAR REPORTE' : '💾 GUARDAR REPORTE')}
           </button>
         </div>
       </form>

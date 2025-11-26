@@ -5,9 +5,11 @@ import ListaReportes from './ListaReportes';
 import GestionUsuarios from './GestionUsuarios';
 import GestionProyectos from './GestionProyectos';
 import GestionVehiculos from './GestionVehiculos';
+import { ReporteActividades } from '../types/reporte';
 
 const Dashboard: React.FC = () => {
   const [vistaActual, setVistaActual] = useState<'formulario' | 'lista' | 'usuarios' | 'proyectos' | 'vehiculos'>('formulario');
+  const [reporteEditar, setReporteEditar] = useState<ReporteActividades | null>(null);
   const { user, proyecto, logout } = useAuth();
 
   const handleLogout = () => {
@@ -62,7 +64,10 @@ const Dashboard: React.FC = () => {
         <div className="container mx-auto px-6">
           <div className="flex space-x-8 overflow-x-auto">
             <button
-              onClick={() => setVistaActual('formulario')}
+              onClick={() => {
+                setVistaActual('formulario');
+                setReporteEditar(null); // Reset edit state when clicking "Nuevo Reporte"
+              }}
               className={`py-4 px-6 font-semibold text-lg transition-all duration-300 whitespace-nowrap ${vistaActual === 'formulario'
                 ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
                 : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
@@ -116,8 +121,23 @@ const Dashboard: React.FC = () => {
 
       {/* Contenido Principal */}
       <main className="container mx-auto p-4">
-        {vistaActual === 'formulario' && <FormularioReporte />}
-        {vistaActual === 'lista' && <ListaReportes />}
+        {vistaActual === 'formulario' && (
+          <FormularioReporte
+            reporteInicial={reporteEditar}
+            onFinalizar={() => {
+              setReporteEditar(null);
+              setVistaActual('lista');
+            }}
+          />
+        )}
+        {vistaActual === 'lista' && (
+          <ListaReportes
+            onEditar={(reporte) => {
+              setReporteEditar(reporte);
+              setVistaActual('formulario');
+            }}
+          />
+        )}
         {user?.rol === 'admin' && (
           <>
             {vistaActual === 'usuarios' && <GestionUsuarios />}
