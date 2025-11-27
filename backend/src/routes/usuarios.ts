@@ -94,7 +94,7 @@ router.post('/', verificarAdminOSupervisor, async (req: AuthRequest, res) => {
             nombre,
             email,
             password,
-            rol: rol || 'operador',
+            rol: rol || 'jefe en frente',
             proyectos: proyectos || [],
             activo: activo !== undefined ? activo : true
         });

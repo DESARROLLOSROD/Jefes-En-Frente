@@ -82,8 +82,8 @@ const Dashboard: React.FC = () => {
 
             <div className="flex items-center space-x-4">
               <div className="text-right">
-                <p className="font-semibold">{user?.nombre}</p>
-                <p className="text-blue-200 text-sm capitalize">{user?.rol}</p>
+                <p className="font-semibold uppercase">{user?.nombre}</p>
+                <p className="text-blue-200 text-sm uppercase">{user?.rol}</p>
               </div>
 
               <div className="flex space-x-2">
@@ -249,7 +249,7 @@ const Dashboard: React.FC = () => {
       {/* Footer */}
       <footer className="bg-gray-900 text-white p-4 mt-8">
         <div className="container mx-auto text-center">
-          <p>© 2024 Jefes en Frente - Sistema de Gestión Minera</p>
+          <p>© 2025 Jefes en Frente - Sistema de Gestión Minera</p>
           <p className="text-gray-400 text-sm mt-1">
             Proyecto: {proyecto?.nombre} | Usuario: {user?.nombre}
           </p>

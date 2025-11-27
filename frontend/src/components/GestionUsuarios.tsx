@@ -4,7 +4,7 @@ import { usuarioService } from '../services/usuario.service';
 import FormularioUsuario from './FormularioUsuario';
 
 interface GestionUsuariosProps {
-    userRol?: 'admin' | 'supervisor' | 'operador';
+    userRol?: 'admin' | 'supervisor' | 'jefe en frente';
 }
 
 const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) => {
@@ -126,7 +126,7 @@ const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) 
         switch (rol) {
             case 'admin': return 'bg-purple-100 text-purple-800';
             case 'supervisor': return 'bg-blue-100 text-blue-800';
-            case 'operador': return 'bg-green-100 text-green-800';
+            case 'jefe en frente': return 'bg-green-100 text-green-800';
             default: return 'bg-gray-100 text-gray-800';
         }
     };
@@ -135,7 +135,7 @@ const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) 
         switch (rol) {
             case 'admin': return 'Administrador';
             case 'supervisor': return 'Supervisor';
-            case 'operador': return 'JEFE EN FRENTE';
+            case 'jefe en frente': return 'JEFE EN FRENTE';
             default: return rol;
         }
     };
@@ -189,7 +189,7 @@ const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) 
                         <option value="todos">Todos</option>
                         <option value="admin">Administrador</option>
                         <option value="supervisor">Supervisor</option>
-                        <option value="operador">JEFE EN FRENTE</option>
+                        <option value="jefe en frente">JEFE EN FRENTE</option>
                     </select>
                 </div>
 
@@ -223,12 +223,12 @@ const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) 
                     <table className="w-full">
                         <thead className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
                             <tr>
-                                <th className="px-6 py-3 text-left font-semibold">Nombre</th>
-                                <th className="px-6 py-3 text-left font-semibold">Email</th>
-                                <th className="px-6 py-3 text-left font-semibold">Rol</th>
-                                <th className="px-6 py-3 text-left font-semibold">Proyectos</th>
-                                <th className="px-6 py-3 text-left font-semibold">Estado</th>
-                                <th className="px-6 py-3 text-center font-semibold">Acciones</th>
+                                <th className="px-6 py-3 text-left font-semibold uppercase">Nombre</th>
+                                <th className="px-6 py-3 text-left font-semibold uppercase">Email</th>
+                                <th className="px-6 py-3 text-left font-semibold uppercase">Rol</th>
+                                <th className="px-6 py-3 text-left font-semibold uppercase">Proyectos</th>
+                                <th className="px-6 py-3 text-left font-semibold uppercase">Estado</th>
+                                <th className="px-6 py-3 text-center font-semibold uppercase">Acciones</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
@@ -239,16 +239,16 @@ const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) 
                                         }`}
                                 >
                                     <td className="px-6 py-4">
-                                        <div className="font-semibold text-gray-800">{usuario.nombre}</div>
+                                        <div className="font-semibold text-gray-800 uppercase">{usuario.nombre}</div>
                                     </td>
-                                    <td className="px-6 py-4 text-gray-600">{usuario.email}</td>
+                                    <td className="px-6 py-4 text-gray-600 uppercase">{usuario.email}</td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getRolBadgeColor(usuario.rol)}`}>
+                                        <span className={`px-3 py-1 rounded-full text-sm font-semibold uppercase ${getRolBadgeColor(usuario.rol)}`}>
                                             {getRolLabel(usuario.rol)}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <div className="text-sm text-gray-600">
+                                        <div className="text-sm text-gray-600 uppercase">
                                             {usuario.proyectos.length === 0 ? (
                                                 <span className="text-gray-400">Sin proyectos</span>
                                             ) : (
@@ -257,7 +257,7 @@ const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) 
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <span className={`px-3 py-1 rounded-full text-sm font-semibold ${usuario.activo
+                                        <span className={`px-3 py-1 rounded-full text-sm font-semibold uppercase ${usuario.activo
                                             ? 'bg-green-100 text-green-800'
                                             : 'bg-red-100 text-red-800'
                                             }`}>

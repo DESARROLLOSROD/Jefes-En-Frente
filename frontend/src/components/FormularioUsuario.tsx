@@ -14,7 +14,7 @@ const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({ usuario, onClose,
         nombre: '',
         email: '',
         password: '',
-        rol: 'operador' as 'admin' | 'supervisor' | 'operador',
+        rol: 'jefe en frente' as 'admin' | 'supervisor' | 'jefe en frente',
         proyectos: [] as string[],
         activo: true
     });
@@ -192,7 +192,7 @@ const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({ usuario, onClose,
                             onChange={(e) => setFormData({ ...formData, rol: e.target.value as any })}
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase"
                         >
-                            <option value="operador">JEFE EN FRENTE</option>
+                            <option value="jefe en frente">JEFE EN FRENTE</option>
                             <option value="supervisor">Supervisor</option>
                             <option value="admin">Administrador</option>
                         </select>

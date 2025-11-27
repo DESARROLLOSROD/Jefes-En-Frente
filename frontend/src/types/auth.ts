@@ -11,7 +11,7 @@ export interface User {
   _id?: string;
   nombre: string;
   email: string;
-  rol: 'admin' | 'supervisor' | 'operador';
+  rol: 'admin' | 'supervisor' | 'jefe en frente';
   proyectos: Proyecto[];
   activo: boolean;
   fechaCreacion?: string;

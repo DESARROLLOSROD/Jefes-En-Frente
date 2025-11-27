@@ -5,7 +5,7 @@ export interface IUsuario extends Document {
   nombre: string;
   email: string;
   password: string;
-  rol: 'admin' | 'supervisor' | 'operador';
+  rol: 'admin' | 'supervisor' | 'jefe en frente';
   proyectos: Schema.Types.ObjectId[];
   activo: boolean;
   compararPassword(password: string): Promise<boolean>;
@@ -16,21 +16,21 @@ const usuarioSchema = new Schema<IUsuario>({
   nombre: { type: String, required: true, trim: true },
   email: { type: String, required: true, unique: true, lowercase: true, trim: true },
   password: { type: String, required: true, minlength: 6 },
-  rol: { type: String, enum: ['admin', 'supervisor', 'operador'], default: 'operador' },
+  rol: { type: String, enum: ['admin', 'supervisor', 'jefe en frente'], default: 'jefe en frente' },
   proyectos: [{ type: Schema.Types.ObjectId, ref: 'Proyecto' }],
   activo: { type: Boolean, default: true },
   fechaCreacion: { type: Date, default: Date.now }
 });
 
 // Hash password antes de guardar
-usuarioSchema.pre('save', async function(next) {
+usuarioSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
 // Método para comparar passwords
-usuarioSchema.methods.compararPassword = async function(password: string): Promise<boolean> {
+usuarioSchema.methods.compararPassword = async function (password: string): Promise<boolean> {
   return await bcrypt.compare(password, this.password);
 };
 
