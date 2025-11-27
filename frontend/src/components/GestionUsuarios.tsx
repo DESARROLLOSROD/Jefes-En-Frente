@@ -3,7 +3,11 @@ import { Usuario, CrearUsuarioDTO, ActualizarUsuarioDTO } from '../types/usuario
 import { usuarioService } from '../services/usuario.service';
 import FormularioUsuario from './FormularioUsuario';
 
-const GestionUsuarios: React.FC = () => {
+interface GestionUsuariosProps {
+    userRol?: 'admin' | 'supervisor' | 'operador';
+}
+
+const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) => {
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
     const [usuariosFiltrados, setUsuariosFiltrados] = useState<Usuario[]>([]);
     const [loading, setLoading] = useState(true);
@@ -131,7 +135,7 @@ const GestionUsuarios: React.FC = () => {
         switch (rol) {
             case 'admin': return 'Administrador';
             case 'supervisor': return 'Supervisor';
-            case 'operador': return 'Operador';
+            case 'operador': return 'JEFE EN FRENTE';
             default: return rol;
         }
     };
@@ -185,7 +189,7 @@ const GestionUsuarios: React.FC = () => {
                         <option value="todos">Todos</option>
                         <option value="admin">Administrador</option>
                         <option value="supervisor">Supervisor</option>
-                        <option value="operador">Operador</option>
+                        <option value="operador">JEFE EN FRENTE</option>
                     </select>
                 </div>
 
@@ -262,20 +266,27 @@ const GestionUsuarios: React.FC = () => {
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="flex justify-center space-x-2">
-                                            <button
-                                                onClick={() => handleEditarUsuario(usuario)}
-                                                className="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm font-semibold"
-                                                title="Editar usuario"
-                                            >
-                                                ✏️ Editar
-                                            </button>
-                                            <button
-                                                onClick={() => handleEliminarClick(usuario)}
-                                                className="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm font-semibold"
-                                                title="Eliminar usuario"
-                                            >
-                                                🗑️ Eliminar
-                                            </button>
+                                            {userRol === 'admin' && (
+                                                <>
+                                                    <button
+                                                        onClick={() => handleEditarUsuario(usuario)}
+                                                        className="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm font-semibold"
+                                                        title="Editar usuario"
+                                                    >
+                                                        ✏️ Editar
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleEliminarClick(usuario)}
+                                                        className="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm font-semibold"
+                                                        title="Eliminar usuario"
+                                                    >
+                                                        🗑️ Eliminar
+                                                    </button>
+                                                </>
+                                            )}
+                                            {userRol === 'supervisor' && (
+                                                <span className="text-gray-400 text-sm italic">Solo lectura</span>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>

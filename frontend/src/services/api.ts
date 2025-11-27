@@ -47,9 +47,10 @@ export const reporteService = {
     }
   },
 
-  async obtenerReportes(proyectoId: string): Promise<ApiResponse<ReporteActividades[]>> {
+  async obtenerReportes(proyectoId?: string): Promise<ApiResponse<ReporteActividades[]>> {
     try {
-      const response = await api.get<ApiResponse<ReporteActividades[]>>(`/reportes?proyectoId=${proyectoId}`);
+      const url = proyectoId ? `/reportes?proyectoId=${proyectoId}` : '/reportes';
+      const response = await api.get<ApiResponse<ReporteActividades[]>>(url);
       return response.data;
     } catch (error: any) {
       return {

@@ -7,7 +7,7 @@ const SeleccionarProyecto: React.FC = () => {
   const [proyectos, setProyectos] = useState<Proyecto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  
+
   const { user, seleccionarProyecto, proyecto } = useAuth();
 
   useEffect(() => {
@@ -44,6 +44,11 @@ const SeleccionarProyecto: React.FC = () => {
     );
   }
 
+  // Filtrar proyectos según el rol del usuario
+  const proyectosFiltrados = user?.rol === 'admin'
+    ? proyectos
+    : proyectos.filter(p => user?.proyectos.some(up => up._id === p._id));
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl w-full space-y-8">
@@ -53,7 +58,9 @@ const SeleccionarProyecto: React.FC = () => {
             Seleccionar Proyecto
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Hola, {user?.nombre}. Selecciona el proyecto en el que trabajarás hoy.
+            Hola, {user?.nombre}. {user?.rol === 'admin'
+              ? 'Selecciona el proyecto en el que trabajarás hoy.'
+              : 'Selecciona uno de tus proyectos asignados.'}
           </p>
         </div>
 
@@ -63,36 +70,42 @@ const SeleccionarProyecto: React.FC = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-          {proyectos.map((proyectoItem) => (
-            <div
-              key={proyectoItem._id}
-              className={`bg-white rounded-lg shadow-md p-6 border-2 cursor-pointer transition-all hover:shadow-lg ${
-                proyecto?._id === proyectoItem._id
-                  ? 'border-orange-500 bg-orange-50'
-                  : 'border-gray-200 hover:border-orange-300'
-              }`}
-              onClick={() => handleSeleccionarProyecto(proyectoItem)}
-            >
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {proyectoItem.nombre}
-              </h3>
-              <p className="text-sm text-gray-600 mb-2">
-                📍 {proyectoItem.ubicacion}
-              </p>
-              <p className="text-xs text-gray-500">
-                {proyectoItem.descripcion}
-              </p>
-              {proyecto?._id === proyectoItem._id && (
-                <div className="mt-3">
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                    ✅ Seleccionado
-                  </span>
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
+        {proyectosFiltrados.length === 0 ? (
+          <div className="text-center py-12 bg-white rounded-lg shadow-md">
+            <p className="text-gray-600 text-lg">No tienes proyectos asignados</p>
+            <p className="text-gray-500 text-sm mt-2">Contacta al administrador para que te asigne proyectos</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+            {proyectosFiltrados.map((proyectoItem) => (
+              <div
+                key={proyectoItem._id}
+                className={`bg-white rounded-lg shadow-md p-6 border-2 cursor-pointer transition-all hover:shadow-lg ${proyecto?._id === proyectoItem._id
+                    ? 'border-orange-500 bg-orange-50'
+                    : 'border-gray-200 hover:border-orange-300'
+                  }`}
+                onClick={() => handleSeleccionarProyecto(proyectoItem)}
+              >
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {proyectoItem.nombre}
+                </h3>
+                <p className="text-sm text-gray-600 mb-2">
+                  📍 {proyectoItem.ubicacion}
+                </p>
+                <p className="text-xs text-gray-500">
+                  {proyectoItem.descripcion}
+                </p>
+                {proyecto?._id === proyectoItem._id && (
+                  <div className="mt-3">
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                      ✅ Seleccionado
+                    </span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="text-center mt-8">
           <p className="text-sm text-gray-500">

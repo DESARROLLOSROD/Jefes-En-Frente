@@ -47,6 +47,7 @@ const reporteActividadesSchema = new Schema({
     inicioActividades: String,
     terminoActividades: String,
     zonaTrabajo: String,
+    seccionTrabajo: String,
     jefeFrente: String,
     sobrestante: String,
     controlAcarreo: [controlAcarreoSchema],

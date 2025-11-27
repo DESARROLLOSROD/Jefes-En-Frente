@@ -2,7 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { vehiculoService, proyectoService } from '../services/api';
 import { Vehiculo, Proyecto } from '../types/gestion';
 
-const GestionVehiculos: React.FC = () => {
+interface GestionVehiculosProps {
+    userRol?: 'admin' | 'supervisor' | 'operador';
+}
+
+const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }) => {
     const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
     const [proyectos, setProyectos] = useState<Proyecto[]>([]);
     const [loading, setLoading] = useState(true);
@@ -198,18 +202,25 @@ const GestionVehiculos: React.FC = () => {
                                         </td>
 
                                         <td className="px-6 py-4 text-sm font-medium space-x-2">
-                                            <button
-                                                onClick={() => abrirModal(vehiculo)}
-                                                className="text-blue-600 hover:text-blue-900"
-                                            >
-                                                ✏️ Editar
-                                            </button>
-                                            <button
-                                                onClick={() => handleEliminar(vehiculo._id)}
-                                                className="text-red-600 hover:text-red-900"
-                                            >
-                                                🗑️ Eliminar
-                                            </button>
+                                            {userRol === 'admin' && (
+                                                <>
+                                                    <button
+                                                        onClick={() => abrirModal(vehiculo)}
+                                                        className="text-blue-600 hover:text-blue-900"
+                                                    >
+                                                        ✏️ Editar
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleEliminar(vehiculo._id)}
+                                                        className="text-red-600 hover:text-red-900"
+                                                    >
+                                                        🗑️ Eliminar
+                                                    </button>
+                                                </>
+                                            )}
+                                            {userRol === 'supervisor' && (
+                                                <span className="text-gray-400 text-sm italic">Solo lectura</span>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}

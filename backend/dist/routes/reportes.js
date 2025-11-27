@@ -54,17 +54,12 @@ router.post('/', async (req, res) => {
 router.get('/', async (req, res) => {
     try {
         const { proyectoId } = req.query;
-        console.log('📋 Obteniendo reportes para proyecto:', proyectoId);
-        if (!proyectoId) {
-            const response = {
-                success: false,
-                error: 'proyectoId es requerido'
-            };
-            return res.status(400).json(response);
+        console.log('📋 Obteniendo reportes para proyecto:', proyectoId || 'TODOS');
+        const query = {};
+        if (proyectoId) {
+            query.proyectoId = proyectoId;
         }
-        const reportes = await ReporteActividades.find({
-            proyectoId: proyectoId
-        }).sort({ fecha: -1, fechaCreacion: -1 });
+        const reportes = await ReporteActividades.find(query).sort({ fecha: -1, fechaCreacion: -1 });
         console.log(`✅ ${reportes.length} reportes encontrados`);
         const response = {
             success: true,

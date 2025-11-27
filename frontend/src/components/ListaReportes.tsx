@@ -13,7 +13,7 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [alertMessage, setAlertMessage] = useState('');
-  const { proyecto } = useAuth();
+  const { proyecto, user } = useAuth();
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const [reporteEliminar, setReporteEliminar] = useState<ReporteActividades | null>(null);
 
@@ -23,7 +23,7 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
   }, [proyecto]);
 
 
-  const formatFecha = (iso) => {
+  const formatFecha = (iso: string) => {
     const f = iso.slice(0, 10); // 2025-11-27
     const [yyyy, mm, dd] = f.split("-");
     return `${dd}/${mm}/${yyyy}`;
@@ -165,15 +165,22 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
                       >
                         📄 PDF
                       </button>
-                      <button
-                        className="text-blue-600 hover:text-blue-900 mr-3 font-semibold"
-                        onClick={() => onEditar(reporte)}
-                      >
-                        ✏️ Editar
-                      </button>
-                      <button className="text-red-600 hover:text-red-900 mr-3" onClick={() => handleEliminarClick(reporte)}>
-                        🗑️ Eliminar
-                      </button>
+                      {(user?.rol === 'admin' || user?.rol === 'supervisor') && (
+                        <>
+                          <button
+                            className="text-blue-600 hover:text-blue-900 mr-3 font-semibold"
+                            onClick={() => onEditar(reporte)}
+                          >
+                            ✏️ Editar
+                          </button>
+                          <button
+                            className="text-red-600 hover:text-red-900 mr-3"
+                            onClick={() => handleEliminarClick(reporte)}
+                          >
+                            🗑️ Eliminar
+                          </button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))}

@@ -38,6 +38,44 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuth();
   }, []);
 
+  // Inactivity timeout - 15 minutes (900,000 milliseconds)
+  useEffect(() => {
+    if (!user) return;
+
+    const INACTIVITY_TIMEOUT = 15 * 60 * 1000; // 15 minutes
+    let inactivityTimer: NodeJS.Timeout;
+
+    const resetTimer = () => {
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+      }
+      inactivityTimer = setTimeout(() => {
+        // Auto logout after 15 minutes of inactivity
+        logout();
+      }, INACTIVITY_TIMEOUT);
+    };
+
+    // Track user activity
+    const activityEvents = ['mousemove', 'keydown', 'click', 'scroll'];
+
+    activityEvents.forEach(event => {
+      window.addEventListener(event, resetTimer);
+    });
+
+    // Start the timer
+    resetTimer();
+
+    // Cleanup
+    return () => {
+      if (inactivityTimer) {
+        clearTimeout(inactivityTimer);
+      }
+      activityEvents.forEach(event => {
+        window.removeEventListener(event, resetTimer);
+      });
+    };
+  }, [user]);
+
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const resultado = await authService.login(email, password);
