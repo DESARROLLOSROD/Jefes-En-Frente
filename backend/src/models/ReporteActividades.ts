@@ -35,7 +35,9 @@ const controlMaquinariaSchema = new Schema<IControlMaquinaria>({
   numeroEconomico: String,
   horasOperacion: Number,
   operador: String,
-  actividad: String
+  actividad: String,
+  vehiculoId: { type: Schema.Types.ObjectId, ref: 'Vehiculo' },
+  horometroFinal: Number
 });
 
 const reporteActividadesSchema = new Schema<IReporteActividades>({
@@ -51,11 +53,13 @@ const reporteActividadesSchema = new Schema<IReporteActividades>({
   inicioActividades: String,
   terminoActividades: String,
   zonaTrabajo: String,
+  seccionTrabajo: String,
   jefeFrente: String,
   sobrestante: String,
-  controlAcarreos: [controlAcarreoSchema],
+  controlAcarreo: [controlAcarreoSchema],
   controlMaterial: [controlMaterialSchema],
   controlAgua: [controlAguaSchema],
+  controlMaquinaria: [controlMaquinariaSchema],
   observaciones: String,
   creadoPor: String,
   proyectoId: {

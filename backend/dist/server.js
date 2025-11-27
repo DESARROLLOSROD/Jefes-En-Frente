@@ -4,10 +4,18 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { reporteRouter } from './routes/reportes.js';
 import { authRouter } from './routes/auth.js';
+import { usuariosRouter } from './routes/usuarios.js';
+import { proyectosRouter } from './routes/proyectos.js';
+import { vehiculosRouter } from './routes/vehiculos.js';
 dotenv.config();
 const app = express();
-// Middlewares
-app.use(cors());
+// CORS más permisivo para desarrollo
+app.use(cors({
+    origin: 'http://localhost:3000', // URL exacta del frontend
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 // Conexión a MongoDB Atlas
 const MONGODB_URI = process.env.MONGODB_URI;
@@ -24,6 +32,9 @@ mongoose.connect(MONGODB_URI)
 // Rutas
 app.use('/api/auth', authRouter);
 app.use('/api/reportes', reporteRouter);
+app.use('/api/usuarios', usuariosRouter);
+app.use('/api/proyectos', proyectosRouter);
+app.use('/api/vehiculos', vehiculosRouter);
 // Ruta de prueba
 app.get('/', (req, res) => {
     res.json({

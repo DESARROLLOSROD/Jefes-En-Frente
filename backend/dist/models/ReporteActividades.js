@@ -17,19 +17,22 @@ const controlAguaSchema = new Schema({
     origen: String,
     destino: String
 });
-const medicionesSchema = new Schema({
-    lupoBSeccion1_1: String,
-    lupoBSeccion2: String,
-    lupoBSeccion3: String,
-    emparinado: String
+const controlMaterialSchema = new Schema({
+    material: String,
+    unidad: String,
+    cantidad: String,
+    zona: String,
+    elevacion: String
 });
-const seccion2DatoSchema = new Schema({
-    daj: String,
-    valores: [String]
-});
-const seccion2Schema = new Schema({
-    plantaIncorporacion: String,
-    datos: [seccion2DatoSchema]
+const controlMaquinariaSchema = new Schema({
+    tipo: String,
+    modelo: String,
+    numeroEconomico: String,
+    horasOperacion: Number,
+    operador: String,
+    actividad: String,
+    vehiculoId: { type: Schema.Types.ObjectId, ref: 'Vehiculo' },
+    horometroFinal: Number
 });
 const reporteActividadesSchema = new Schema({
     fecha: {
@@ -38,7 +41,7 @@ const reporteActividadesSchema = new Schema({
     },
     ubicacion: {
         type: String,
-        default: "SAN SEBASTIAN DEL OESTE, JALISCO, MEXICO"
+        required: true
     },
     turno: String,
     inicioActividades: String,
@@ -46,12 +49,21 @@ const reporteActividadesSchema = new Schema({
     zonaTrabajo: String,
     jefeFrente: String,
     sobrestante: String,
-    mediciones: medicionesSchema,
-    seccion2: seccion2Schema,
-    controlAcarreos: [controlAcarreoSchema],
+    controlAcarreo: [controlAcarreoSchema],
+    controlMaterial: [controlMaterialSchema],
     controlAgua: [controlAguaSchema],
+    controlMaquinaria: [controlMaquinariaSchema],
     observaciones: String,
     creadoPor: String,
+    proyectoId: {
+        type: String,
+        required: true,
+        index: true
+    },
+    usuarioId: {
+        type: String,
+        required: true
+    },
     fechaCreacion: {
         type: Date,
         default: Date.now

@@ -123,6 +123,15 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ reporteInicial, o
     setLoading(true);
     setMensaje('');
 
+    // Validación de horómetros
+    for (const maq of formData.controlMaquinaria) {
+      if (maq.vehiculoId && maq.horometroFinal < maq.horometroInicial) {
+        setMensaje(`❌ Error: El horómetro final no puede ser menor al inicial para el vehículo ${maq.nombre}`);
+        setLoading(false);
+        return;
+      }
+    }
+
     try {
       let resultado;
       if (reporteInicial && reporteInicial._id) {
@@ -137,10 +146,16 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ reporteInicial, o
         setMensaje(reporteInicial ? '✅ Reporte actualizado exitosamente!' : '✅ Reporte creado exitosamente!');
 
         if (!reporteInicial) {
+          //FECHA LOCAL
+          const hoy = new Date();
+          const fechaLocal =
+            hoy.getFullYear() + "-" +
+            String(hoy.getMonth() + 1).padStart(2, '0') + "-" +
+            String(hoy.getDate()).padStart(2, '0');
           // Limpiar formulario solo si es creación
           setFormData({
             ...formData,
-            fecha: new Date().toISOString().split('T')[0],
+            fecha: fechaLocal,
             inicioActividades: formData.turno === 'primer' ? '07:00' : '19:00',
             terminoActividades: formData.turno === 'primer' ? '19:00' : '07:00',
             observaciones: '',
@@ -852,13 +867,23 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ reporteInicial, o
         </div>
 
         {/* BOTÓN DE ENVÍO */}
-        <div className="flex justify-center pt-6">
+        <div className="flex justify-end space-x-4">
+          {onFinalizar && (
+            <button
+              type="button"
+              onClick={onFinalizar}
+              className="px-6 py-3 bg-gray-500 text-white font-bold rounded-lg hover:bg-gray-600 transition-colors"
+              disabled={loading}
+            >
+              CANCELAR
+            </button>
+          )}
           <button
             type="submit"
             disabled={loading}
-            className="bg-orange-600 text-white px-12 py-4 rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2 disabled:opacity-50 text-lg font-bold text-xl"
+            className={`px-6 py-3 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition-colors ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            {loading ? '⏳ GUARDANDO...' : (reporteInicial ? '💾 ACTUALIZAR REPORTE' : '💾 GUARDAR REPORTE')}
+            {loading ? 'GUARDANDO...' : (reporteInicial ? 'ACTUALIZAR REPORTE' : 'GUARDAR REPORTE')}
           </button>
         </div>
       </form>

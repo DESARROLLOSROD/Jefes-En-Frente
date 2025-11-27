@@ -123,13 +123,10 @@ router.get('/:id', async (req: AuthRequest, res) => {
 // Actualizar reporte
 router.put('/:id', async (req: AuthRequest, res) => {
   try {
-    const reporte = await ReporteActividades.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    // 1. Obtener el reporte ANTES de la actualización
+    const reporteAnterior = await ReporteActividades.findById(req.params.id);
 
-    if (!reporte) {
+    if (!reporteAnterior) {
       const response: ApiResponse<null> = {
         success: false,
         error: 'Reporte no encontrado'
@@ -137,9 +134,54 @@ router.put('/:id', async (req: AuthRequest, res) => {
       return res.status(404).json(response);
     }
 
-    const response: ApiResponse<typeof reporte> = {
+    // 2. Revertir las horas de los vehículos del reporte anterior
+    if (reporteAnterior.controlMaquinaria && Array.isArray(reporteAnterior.controlMaquinaria)) {
+      for (const maquinaria of reporteAnterior.controlMaquinaria) {
+        if (maquinaria.vehiculoId && maquinaria.horasOperacion) {
+          try {
+            await Vehiculo.findByIdAndUpdate(
+              maquinaria.vehiculoId,
+              { $inc: { horasOperacion: -maquinaria.horasOperacion } }
+            );
+            console.log(`↩️ Horas revertidas para vehículo ${maquinaria.vehiculoId}: -${maquinaria.horasOperacion}`);
+          } catch (error) {
+            console.error(`⚠️ Error revirtiendo horas del vehículo ${maquinaria.vehiculoId}:`, error);
+          }
+        }
+      }
+    }
+
+    // 3. Actualizar el reporte con los nuevos datos
+    const reporteActualizado = await ReporteActividades.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    // 4. Aplicar las nuevas horas de los vehículos
+    if (reporteActualizado && reporteActualizado.controlMaquinaria && Array.isArray(reporteActualizado.controlMaquinaria)) {
+      for (const maquinaria of reporteActualizado.controlMaquinaria) {
+        if (maquinaria.vehiculoId && maquinaria.horasOperacion) {
+          try {
+            await Vehiculo.findByIdAndUpdate(
+              maquinaria.vehiculoId,
+              {
+                horometroInicial: maquinaria.horometroFinal, // Actualizamos también los horómetros
+                horometroFinal: maquinaria.horometroFinal,
+                $inc: { horasOperacion: maquinaria.horasOperacion }
+              }
+            );
+            console.log(`🔄 Horas aplicadas para vehículo ${maquinaria.vehiculoId}: +${maquinaria.horasOperacion}`);
+          } catch (error) {
+            console.error(`⚠️ Error aplicando horas del vehículo ${maquinaria.vehiculoId}:`, error);
+          }
+        }
+      }
+    }
+
+    const response: ApiResponse<typeof reporteActualizado> = {
       success: true,
-      data: reporte
+      data: reporteActualizado
     };
     res.json(response);
   } catch (error) {

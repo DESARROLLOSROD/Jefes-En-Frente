@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { ReporteActividades } from '../types/reporte';
 import { reporteService } from '../services/api';
+import { generarPDFReporte } from '../utils/pdfGenerator';
 
 interface ListaReportesProps {
   onEditar: (reporte: ReporteActividades) => void;
@@ -20,6 +21,13 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
   useEffect(() => {
     cargarReportes();
   }, [proyecto]);
+
+
+  const formatFecha = (iso) => {
+    const f = iso.slice(0, 10); // 2025-11-27
+    const [yyyy, mm, dd] = f.split("-");
+    return `${dd}/${mm}/${yyyy}`;
+  };
 
   const cargarReportes = async () => {
     if (!proyecto?._id) {
@@ -46,6 +54,7 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
     setReporteEliminar(reporte);
     setMostrarConfirmacion(true);
   };
+
   const mostrarMensaje = (texto: string) => {
     setAlertMessage(texto);
     setTimeout(() => setAlertMessage(''), 5000);
@@ -63,6 +72,16 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
       cargarReportes();
     } else {
       mostrarMensaje(response.error || 'Error al eliminar reporte');
+    }
+  };
+
+  const handleDescargarPDF = (reporte: ReporteActividades) => {
+    try {
+      generarPDFReporte(reporte, proyecto?.nombre || 'Proyecto');
+      mostrarMensaje('PDF generado correctamente');
+    } catch (error) {
+      mostrarMensaje('Error al generar PDF');
+      console.error('Error generando PDF:', error);
     }
   };
 
@@ -127,18 +146,25 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {reportes.map(reporte => (
                   <tr key={reporte._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {new Date(reporte.fecha).toLocaleDateString('es-MX')}
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 uppercase">
+                      {formatFecha(reporte.fecha)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 uppercase">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${reporte.turno === 'primer' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
                         {reporte.turno === 'primer' ? '🕖 Primer Turno' : '🕗 Segundo Turno'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">{reporte.zonaTrabajo}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{reporte.jefeFrente}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900 uppercase">{reporte.zonaTrabajo}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 uppercase">{reporte.jefeFrente}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       {/* Botones de acción */}
+                      <button
+                        className="text-green-600 hover:text-green-900 mr-3 font-semibold"
+                        onClick={() => handleDescargarPDF(reporte)}
+                        title="Descargar PDF"
+                      >
+                        📄 PDF
+                      </button>
                       <button
                         className="text-blue-600 hover:text-blue-900 mr-3 font-semibold"
                         onClick={() => onEditar(reporte)}

@@ -34,9 +34,9 @@ export interface IControlMaquinaria {
   horasOperacion: number;
   operador: string;
   actividad: string;
+  vehiculoId?: string;
+  horometroFinal?: number;
 }
-
-
 
 export interface IReporteActividades extends Document {
   fecha: Date;
@@ -45,9 +45,10 @@ export interface IReporteActividades extends Document {
   inicioActividades: string;
   terminoActividades: string;
   zonaTrabajo: string;
+  seccionTrabajo: string;
   jefeFrente: string;
   sobrestante: string;
-  controlAcarreos: Types.Array<IControlAcarreo>;
+  controlAcarreo: Types.Array<IControlAcarreo>;
   controlMaterial: Types.Array<IControlMaterial>;
   controlAgua: Types.Array<IControlAgua>;
   controlMaquinaria: Types.Array<IControlMaquinaria>;
