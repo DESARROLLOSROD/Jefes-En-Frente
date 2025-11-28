@@ -1,228 +1,252 @@
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import { ReporteActividades } from '../types/reporte';
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import logo from "../logo.png"; // AJUSTA la ruta
+import { ReporteActividades } from "../types/reporte";
 
-export const generarPDFReporte = (reporte: ReporteActividades, nombreProyecto: string) => {
+export const generarPDFReporte = (
+    reporte: ReporteActividades,
+    nombreProyecto: string
+) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-    let yPosition = 20;
+    const pageHeight = doc.internal.pageSize.getHeight();
 
-    // Header
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('REPORTE DE ACTIVIDADES DIARIAS', pageWidth / 2, yPosition, { align: 'center' });
+    const ORANGE = "rgb(255, 140, 0)";
+    const DARK = "rgb(26,26,26)";
+    const GRAY = "rgb(80,80,80)";
 
-    yPosition += 10;
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-    doc.text(nombreProyecto.toUpperCase(), pageWidth / 2, yPosition, { align: 'center' });
+    let yPosition = 55;
 
-    yPosition += 15;
+    // ------------------------------------------------
+    // HEADER CORPORATIVO
+    // ------------------------------------------------
+    doc.addImage(logo, "PNG", 13, 8, 32, 32);
 
-    // Report Information
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'bold');
-
-    const fecha = new Date(reporte.fecha).toLocaleDateString('UTC', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.setTextColor(DARK);
+    doc.text("REPORTE DE ACTIVIDADES DIARIAS", pageWidth / 1.80, 21, {
+        align: "center",
     });
 
-    doc.text(`Fecha: `, 15, yPosition);
-    doc.setFont('helvetica', 'normal');
-    doc.text(fecha, 35, yPosition);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.setTextColor(GRAY);
+    doc.text(nombreProyecto.toUpperCase(), pageWidth / 2, 30, {
+        align: "center",
+    });
 
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Turno: `, 120, yPosition);
-    doc.setFont('helvetica', 'normal');
-    doc.text(reporte.turno === 'primer' ? 'PRIMER TURNO' : 'SEGUNDO TURNO', 140, yPosition);
+    // Línea corporativa
+    doc.setDrawColor(ORANGE);
+    doc.setLineWidth(1.5);
+    doc.line(10, 42, pageWidth - 10, 42);
 
-    yPosition += 7;
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Ubicación: `, 15, yPosition);
-    doc.setFont('helvetica', 'normal');
-    doc.text(reporte.ubicacion ? reporte.ubicacion.toUpperCase() : '', 40, yPosition);
+    // ------------------------------------------------
+    // FOOTER CORPORATIVO (número de página)
+    // ------------------------------------------------
+    const addFooter = () => {
+        const pageNumber = doc.internal.getNumberOfPages();
 
-    yPosition += 7;
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Zona de Trabajo: `, 15, yPosition);
-    doc.setFont('helvetica', 'normal');
-    doc.text(reporte.zonaTrabajo ? reporte.zonaTrabajo.toUpperCase() : '', 50, yPosition);
+        doc.setFontSize(9);
+        doc.setTextColor(GRAY);
+        doc.text(
+            `Página ${pageNumber}`,
+            pageWidth / 2,
+            pageHeight - 10,
+            { align: "center" }
+        );
+    };
 
-    yPosition += 7;
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Sección de Trabajo: `, 15, yPosition);
-    doc.setFont('helvetica', 'normal');
-    doc.text(reporte.seccionTrabajo ? reporte.seccionTrabajo.toUpperCase() : '', 50, yPosition);
+    addFooter();
 
-    yPosition += 7;
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Jefe de Frente: `, 15, yPosition);
-    doc.setFont('helvetica', 'normal');
-    doc.text(reporte.jefeFrente ? reporte.jefeFrente.toUpperCase() : '', 50, yPosition);
+    // ------------------------------------------------
+    // INFORMACIÓN GENERAL
+    // ------------------------------------------------
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(DARK);
 
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Sobrestante: `, 120, yPosition);
-    doc.setFont('helvetica', 'normal');
-    doc.text(reporte.sobrestante ? reporte.sobrestante.toUpperCase() : '', 150, yPosition);
+    const fecha = new Date(reporte.fecha).toLocaleDateString("es-MX", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+    });
 
-    yPosition += 7;
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Horario: `, 15, yPosition);
-    doc.setFont('helvetica', 'normal');
-    doc.text(`${reporte.inicioActividades || ''} - ${reporte.terminoActividades || ''}`, 35, yPosition);
+    doc.text("Fecha:", 15, yPosition);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(GRAY);
+    doc.text(fecha, 45, yPosition);
 
-    yPosition += 12;
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(DARK);
+    doc.text("Turno:", 120, yPosition);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(GRAY);
+    doc.text(
+        reporte.turno === "primer" ? "PRIMER TURNO" : "SEGUNDO TURNO",
+        150,
+        yPosition
+    );
 
-    // Control de Acarreos
-    if (reporte.controlAcarreo && reporte.controlAcarreo.length > 0) {
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.text('CONTROL DE ACARREOS', 15, yPosition);
-        yPosition += 5;
+    yPosition += 8;
 
-        autoTable(doc, {
-            startY: yPosition,
-            head: [['Material', 'No. Viaje', 'Capacidad', 'Vol. Suelto', 'Capa No.', 'Elev. Ariza', 'Origen', 'Destino']],
-            body: reporte.controlAcarreo.map(item => [
-                item.material.toUpperCase(),
-                item.noViaje,
-                item.capacidad,
-                item.volSuelto,
-                item.capaNo,
-                item.elevacionAriza,
-                item.capaOrigen.toUpperCase(),
-                item.destino.toUpperCase()
-            ]),
-            theme: 'grid',
-            headStyles: { fillColor: [255, 140, 0], textColor: 255, fontStyle: 'bold' },
-            styles: { fontSize: 8, cellPadding: 2 },
-            margin: { left: 15, right: 15 }
-        });
+    const infoItems = [
+        ["Ubicación:", reporte.ubicacion],
+        ["Zona de Trabajo:", reporte.zonaTrabajo],
+        ["Sección de Trabajo:", reporte.seccionTrabajo],
+        ["Jefe de Frente:", reporte.jefeFrente],
+        ["Sobrestante:", reporte.sobrestante],
+    ];
 
-        yPosition = (doc as any).lastAutoTable.finalY + 10;
-    }
+    infoItems.forEach(([label, value]) => {
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(DARK);
+        doc.text(label, 15, yPosition);
 
-    // Control de Material
-    if (reporte.controlMaterial && reporte.controlMaterial.length > 0) {
-        if (yPosition > 250) {
-            doc.addPage();
-            yPosition = 20;
-        }
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(GRAY);
+        doc.text(value?.toString().toUpperCase() || "-", 60, yPosition);
 
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.text('CONTROL DE MATERIAL', 15, yPosition);
-        yPosition += 5;
-
-        autoTable(doc, {
-            startY: yPosition,
-            head: [['Material', 'Unidad', 'Cantidad', 'Zona', 'Elevación']],
-            body: reporte.controlMaterial.map(item => [
-                item.material.toUpperCase(),
-                item.unidad.toUpperCase(),
-                item.cantidad,
-                item.zona.toUpperCase(),
-                item.elevacion
-            ]),
-            theme: 'grid',
-            headStyles: { fillColor: [255, 140, 0], textColor: 255, fontStyle: 'bold' },
-            styles: { fontSize: 9, cellPadding: 3 },
-            margin: { left: 15, right: 15 }
-        });
-
-        yPosition = (doc as any).lastAutoTable.finalY + 10;
-    }
-
-    // Control de Agua
-    if (reporte.controlAgua && reporte.controlAgua.length > 0) {
-        if (yPosition > 250) {
-            doc.addPage();
-            yPosition = 20;
-        }
-
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.text('CONTROL DE AGUA', 15, yPosition);
-        yPosition += 5;
-
-        autoTable(doc, {
-            startY: yPosition,
-            head: [['No. Económico', 'Viaje', 'Capacidad', 'Volumen', 'Origen', 'Destino']],
-            body: reporte.controlAgua.map(item => [
-                item.noEconomico.toUpperCase(),
-                item.viaje,
-                item.capacidad,
-                item.volumen,
-                item.origen.toUpperCase(),
-                item.destino.toUpperCase()
-            ]),
-            theme: 'grid',
-            headStyles: { fillColor: [255, 140, 0], textColor: 255, fontStyle: 'bold' },
-            styles: { fontSize: 9, cellPadding: 3 },
-            margin: { left: 15, right: 15 }
-        });
-
-        yPosition = (doc as any).lastAutoTable.finalY + 10;
-    }
-
-    // Control de Maquinaria
-    if (reporte.controlMaquinaria && reporte.controlMaquinaria.length > 0) {
-        if (yPosition > 250) {
-            doc.addPage();
-            yPosition = 20;
-        }
-
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.text('CONTROL DE MAQUINARIA', 15, yPosition);
-        yPosition += 5;
-
-        autoTable(doc, {
-            startY: yPosition,
-            head: [['Tipo', 'No. Económico', 'Horómetro Inicial', 'Horómetro Final', 'Horas', 'Operador', 'Actividad']],
-            body: reporte.controlMaquinaria.map(item => [
-                item.tipo.toUpperCase(),
-                item.numeroEconomico.toUpperCase(),
-                item.horometroInicial || '-',
-                item.horometroFinal || '-',
-                item.horasOperacion || 0,
-                item.operador.toUpperCase(),
-                item.actividad.toUpperCase()
-            ]),
-            theme: 'grid',
-            headStyles: { fillColor: [255, 140, 0], textColor: 255, fontStyle: 'bold' },
-            styles: { fontSize: 8, cellPadding: 2 },
-            margin: { left: 15, right: 15 }
-        });
-
-        yPosition = (doc as any).lastAutoTable.finalY + 10;
-    }
-
-    // Observaciones
-    if (reporte.observaciones) {
-        if (yPosition > 250) {
-            doc.addPage();
-            yPosition = 20;
-        }
-
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.text('OBSERVACIONES', 15, yPosition);
         yPosition += 7;
+    });
 
+    yPosition += 5;
+
+    // ------------------------------------------------
+    // FUNCIÓN PARA GENERAR TABLAS CORPORATIVAS
+    // ------------------------------------------------
+    const renderTable = (title: string, head: string[][], body: any[][]) => {
+        if (yPosition > 240) {
+            doc.addPage();
+            addFooter();
+            yPosition = 20;
+        }
+
+        doc.setFontSize(13);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(DARK);
+        doc.text(title, 15, yPosition);
+
+        yPosition += 5;
+
+        autoTable(doc, {
+            startY: yPosition,
+            head,
+            body,
+            theme: "grid",
+            headStyles: {
+                fillColor: ORANGE,
+                textColor: [255, 255, 255],
+                fontStyle: "bold",
+            },
+            alternateRowStyles: { fillColor: [245, 245, 245] },
+            styles: {
+                fontSize: 9,
+                textColor: DARK,
+                cellPadding: 3,
+            },
+            margin: { left: 15, right: 15 },
+        });
+
+        yPosition = (doc as any).lastAutoTable.finalY + 15;
+    };
+
+    // ------------------------------------------------
+    // TABLAS
+    // ------------------------------------------------
+    if (reporte.controlAcarreo?.length)
+        renderTable(
+            "CONTROL DE ACARREOS",
+            [["Material", "No. Viaje", "Capacidad", "Vol. Suelto", "Capa", "Ariza", "Origen", "Destino"]],
+            reporte.controlAcarreo.map((i) => [
+                i.material,
+                i.noViaje,
+                i.capacidad,
+                i.volSuelto,
+                i.capaNo,
+                i.elevacionAriza,
+                i.capaOrigen,
+                i.destino,
+            ])
+        );
+
+    if (reporte.controlMaterial?.length)
+        renderTable(
+            "CONTROL DE MATERIAL",
+            [["Material", "Unidad", "Cantidad", "Zona", "Elevación"]],
+            reporte.controlMaterial.map((i) => [
+                i.material,
+                i.unidad,
+                i.cantidad,
+                i.zona,
+                i.elevacion,
+            ])
+        );
+
+    if (reporte.controlAgua?.length)
+        renderTable(
+            "CONTROL DE AGUA",
+            [["No. Económico", "Viaje", "Capacidad", "Volumen", "Origen", "Destino"]],
+            reporte.controlAgua.map((i) => [
+                i.noEconomico,
+                i.viaje,
+                i.capacidad,
+                i.volumen,
+                i.origen,
+                i.destino,
+            ])
+        );
+
+    if (reporte.controlMaquinaria?.length)
+        renderTable(
+            "CONTROL DE MAQUINARIA",
+            [["Tipo", "No. Económico", "Horómetro Inicial", "Horómetro Final", "Horas", "Operador", "Actividad"]],
+            reporte.controlMaquinaria.map((i) => [
+                i.tipo,
+                i.numeroEconomico,
+                i.horometroInicial,
+                i.horometroFinal,
+                i.horasOperacion,
+                i.operador,
+                i.actividad,
+            ])
+        );
+
+    // ------------------------------------------------
+    // OBSERVACIONES
+    // ------------------------------------------------
+    if (reporte.observaciones) {
+        if (yPosition > 240) {
+            doc.addPage();
+            addFooter();
+            yPosition = 20;
+        }
+
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(DARK);
+        doc.setFontSize(13);
+        doc.text("OBSERVACIONES", 15, yPosition);
+
+        yPosition += 8;
+
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(GRAY);
         doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        const splitObservaciones = doc.splitTextToSize(reporte.observaciones.toUpperCase(), pageWidth - 30);
-        doc.text(splitObservaciones, 15, yPosition);
+
+        const textLines = doc.splitTextToSize(
+            reporte.observaciones,
+            pageWidth - 30
+        );
+
+        doc.text(textLines, 15, yPosition);
     }
 
-    // Generate filename
-    const fechaArchivo = new Date(reporte.fecha).toISOString().split('T')[0];
-    const zona = reporte.zonaTrabajo.replace(/\s+/g, '_').substring(0, 20);
+    // ------------------------------------------------
+    // GUARDAR ARCHIVO
+    // ------------------------------------------------
+    const fechaArchivo = new Date(reporte.fecha).toISOString().split("T")[0];
+    const zona = reporte.zonaTrabajo.replace(/\s+/g, "_").substring(0, 20);
     const filename = `Reporte_${fechaArchivo}_${zona}.pdf`;
 
-    // Download
     doc.save(filename);
 };
