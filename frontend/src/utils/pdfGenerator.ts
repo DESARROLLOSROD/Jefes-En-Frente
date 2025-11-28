@@ -11,7 +11,7 @@ export const generarPDFReporte = (
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-    const ORANGE = "rgb(255, 140, 0)";
+    const ORANGE = "rgb(44, 48, 231)";
     const DARK = "rgb(26,26,26)";
     const GRAY = "rgb(80,80,80)";
 
@@ -144,6 +144,7 @@ export const generarPDFReporte = (
                 fontSize: 9,
                 textColor: DARK,
                 cellPadding: 3,
+
             },
             margin: { left: 15, right: 15 },
         });
