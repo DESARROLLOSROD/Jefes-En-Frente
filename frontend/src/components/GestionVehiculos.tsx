@@ -239,7 +239,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
 
             {/* Modal */}
             {modalAbierto && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="fixed inset-10 top-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg shadow-2xl p-6 max-w-md w-full mx-4">
                         <h3 className="text-xl font-bold text-gray-800 mb-4">
                             {editando ? '✏️ Editar Vehículo' : '➕ Nuevo Vehículo'}
@@ -295,6 +295,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                         required
                                         min="0"
                                         value={formData.horometroInicial}
+                                        readOnly={editando}
                                         onChange={e => setFormData({ ...formData, horometroInicial: Number(e.target.value) })}
                                         className={`w-full px-3 py-2 border border-gray-300 rounded-lg ${editando ? 'bg-gray-100 cursor-not-allowed' : 'focus:ring-2 focus:ring-orange-500'}`}
                                         placeholder="0"
@@ -308,7 +309,6 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                         required
                                         min="0"
                                         value={formData.horometroFinal}
-                                        readOnly={editando}
                                         onChange={e => setFormData({ ...formData, horometroFinal: Number(e.target.value) })}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                                         placeholder="0"
@@ -321,8 +321,8 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                         type="number"
                                         min="0"
                                         value={formData.horasOperacion}
-                                        onChange={e => setFormData({ ...formData, horasOperacion: Number(e.target.value) })}
-                                        className={`w-full px-3 py-2 border border-gray-300 rounded-lg ${editando ? 'bg-gray-100 cursor-not-allowed' : 'focus:ring-2 focus:ring-orange-500'}`}
+                                        readOnly
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed"
                                         placeholder="0"
                                     />
                                 </div>

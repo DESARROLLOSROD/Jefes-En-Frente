@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Proyecto } from '../types/auth';
 import { authService } from '../services/auth';
+import LogoROD from '../Logo_ROD.png';
 
 const SeleccionarProyecto: React.FC = () => {
   const [proyectos, setProyectos] = useState<Proyecto[]>([]);
@@ -50,14 +51,20 @@ const SeleccionarProyecto: React.FC = () => {
     : proyectos.filter(p => user?.proyectos.some(up => up._id === p._id));
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-green-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl w-full space-y-8">
+    <div
+      className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-cover bg-center relative"
+      style={{ backgroundImage: `url(${LogoROD})` }}
+    >
+      {/* Overlay */}
+      <div className="absolute inset-0 bg-black bg-opacity-60"></div>
+
+      <div className="max-w-4xl w-full space-y-8 relative z-10">
         <div className="text-center">
-          <h1 className="text-4xl font-bold mb-2">🏗️</h1>
-          <h2 className="text-3xl font-extrabold text-gray-900">
+          <h1 className="text-4xl font-bold mb-2 text-orange-600">🏗️</h1>
+          <h2 className="text-3xl font-extrabold text-white">
             Seleccionar Proyecto
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-gray-200">
             Hola, {user?.nombre}. {user?.rol === 'admin'
               ? 'Selecciona el proyecto en el que trabajarás hoy.'
               : 'Selecciona uno de tus proyectos asignados.'}
@@ -81,8 +88,8 @@ const SeleccionarProyecto: React.FC = () => {
               <div
                 key={proyectoItem._id}
                 className={`bg-white rounded-lg shadow-md p-6 border-2 cursor-pointer transition-all hover:shadow-lg ${proyecto?._id === proyectoItem._id
-                    ? 'border-orange-500 bg-orange-50'
-                    : 'border-gray-200 hover:border-orange-300'
+                  ? 'border-orange-500 bg-orange-50'
+                  : 'border-gray-200 hover:border-orange-300'
                   }`}
                 onClick={() => handleSeleccionarProyecto(proyectoItem)}
               >
@@ -108,7 +115,7 @@ const SeleccionarProyecto: React.FC = () => {
         )}
 
         <div className="text-center mt-8">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-300">
             Una vez seleccionado el proyecto, podrás comenzar a crear reportes.
           </p>
         </div>

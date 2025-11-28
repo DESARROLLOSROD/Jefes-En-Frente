@@ -9,6 +9,7 @@ import { ReporteActividades } from '../types/reporte';
 import { reporteService, proyectoService } from '../services/api';
 import { generarPDFGeneral } from '../utils/pdfGeneralGenerator';
 import { Proyecto } from '../types/gestion';
+import LogoROD from '../Logo_ROD.png';
 
 const Dashboard: React.FC = () => {
   const [vistaActual, setVistaActual] = useState<'formulario' | 'lista' | 'usuarios' | 'proyectos' | 'vehiculos'>('formulario');
@@ -68,9 +69,16 @@ const Dashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-50">
+    <div className="min-h-screen relative">
+      {/* Background Fixed */}
+      <div
+        className="fixed inset-0 z-[-20] bg-cover bg-center"
+        style={{ backgroundImage: `url(${LogoROD})` }}
+      ></div>
+      <div className="fixed inset-0 z-[-10] bg-black bg-opacity-60"></div>
+
       {/* Header */}
-      <header className="bg-blue-900 text-white p-4 shadow-xl">
+      <header className="bg-blue-900 text-white p-4 shadow-xl relative z-10">
         <div className="container mx-auto">
           <div className="flex justify-between items-center">
             <div>
@@ -118,7 +126,7 @@ const Dashboard: React.FC = () => {
       </header>
 
       {/* Navegación */}
-      <nav className="bg-white shadow-lg">
+      <nav className="bg-white shadow-lg relative z-10">
         <div className="container mx-auto px-6">
           <div className="flex space-x-8 overflow-x-auto">
             <button
@@ -180,7 +188,7 @@ const Dashboard: React.FC = () => {
       </nav>
 
       {/* Contenido Principal */}
-      <main className="container mx-auto p-4">
+      <main className="container mx-auto p-4 pb-32 relative z-10">
         {vistaActual === 'formulario' && (
           <FormularioReporte
             reporteInicial={reporteEditar}
@@ -247,9 +255,9 @@ const Dashboard: React.FC = () => {
       )}
 
       {/* Footer */}
-      <footer className="bg-gray-900 text-white p-4 mt-8">
+      <footer className="fixed bottom-0 left-0 right-0 bg-gray-900 text-white p-4 z-40">
         <div className="container mx-auto text-center">
-          <p>© 2025 Jefes en Frente - Sistema de Gestión Minera</p>
+          <p>© 2025 DESARROLLOS ROD</p>
           <p className="text-gray-400 text-sm mt-1">
             Proyecto: {proyecto?.nombre} | Usuario: {user?.nombre}
           </p>

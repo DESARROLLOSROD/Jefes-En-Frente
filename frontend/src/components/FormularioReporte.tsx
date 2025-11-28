@@ -327,13 +327,13 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ reporteInicial, o
   };
 
   return (
-    <div className="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-md">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">
+    <div className="max-w-7xl mx-auto bg-white/50 p-6 rounded-lg shadow-md">
+      <div className="text-center  mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">
           {reporteInicial ? 'EDITAR REPORTE DE ACTIVIDADES' : 'REPORTE DE ACTIVIDADES'}
         </h1>
-        <p className="text-lg text-gray-600 mt-2">GENERAL CONTRACTOR</p>
-        <p className="text-gray-700">UBICACIÓN : {proyecto?.nombre} </p>
+        <p className="text-lg text-gray-900 mt-2">GENERAL CONTRACTOR</p>
+        <p className="text-gray-900">UBICACIÓN : {proyecto?.nombre} </p>
       </div>
 
       {mensaje && (
@@ -823,32 +823,25 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ reporteInicial, o
             <button
               type="button"
               onClick={agregarControlMaquinaria}
-              className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 font-bold"
+              className="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 font-bold"
             >
-              ➕ Agregar Equipo
+              + Agregar Maquinaria
             </button>
           </div>
         </div>
 
         {/* SECCIÓN 8: OBSERVACIONES */}
-        <div className="border-2 border-yellow-400 rounded-lg p-6 bg-yellow-50">
-          <h3 className="text-xl font-bold mb-4 text-yellow-800 border-b pb-2">OBSERVACIONES</h3>
-          <textarea
-            value={formData.observaciones}
-            onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
-            rows={4}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring-yellow-500 p-3 border uppercase"
-            placeholder="Ej: Intemperismo: No lo conoce por tiempo para tener el actividades de 7.00 cca a los 9.30 cm."
-          />
-          <div className="mt-2 text-sm text-gray-600">
-            <p>📝 <strong>Ejemplos de observaciones comunes:</strong></p>
-            <ul className="list-disc list-inside ml-4 mt-1 space-y-1">
-              <li>Condiciones climáticas durante el turno</li>
-              <li>Incidentes o imprevistos en la operación</li>
-              <li>Estado del equipo y maquinaria</li>
-              <li>Observaciones de seguridad</li>
-              <li>Comentarios sobre el personal</li>
-            </ul>
+        <div className="border-2 border-gray-400 rounded-lg p-6 bg-gray-50">
+          <h3 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2">OBSERVACIONES</h3>
+          <div>
+            <label className="block text-sm font-bold text-gray-700">OBSERVACIONES GENERALES</label>
+            <textarea
+              value={formData.observaciones}
+              onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 p-2 border uppercase"
+              rows={4}
+              placeholder="Escriba aquí cualquier observación relevante..."
+            />
           </div>
         </div>
 
@@ -868,24 +861,23 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ reporteInicial, o
           </p>
         </div>
 
-        {/* BOTÓN DE ENVÍO */}
-        <div className="flex justify-end space-x-4">
+        <div className="flex justify-end space-x-4 pt-4">
           {onFinalizar && (
             <button
               type="button"
               onClick={onFinalizar}
-              className="px-6 py-3 bg-gray-500 text-white font-bold rounded-lg hover:bg-gray-600 transition-colors"
-              disabled={loading}
+              className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 font-bold"
             >
-              CANCELAR
+              Cancelar
             </button>
           )}
           <button
             type="submit"
             disabled={loading}
-            className={`px-6 py-3 bg-orange-600 text-white font-bold rounded-lg hover:bg-orange-700 transition-colors ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            className={`px-8 py-2 rounded-lg text-white font-bold ${loading ? 'bg-orange-300 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700'
+              }`}
           >
-            {loading ? 'GUARDANDO...' : (reporteInicial ? 'ACTUALIZAR REPORTE' : 'GUARDAR REPORTE')}
+            {loading ? 'Guardando...' : (reporteInicial ? 'Actualizar Reporte' : 'Guardar Reporte')}
           </button>
         </div>
       </form>

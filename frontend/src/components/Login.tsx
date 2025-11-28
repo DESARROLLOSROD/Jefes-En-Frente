@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-
+import LogoROD from '../Logo_ROD.png';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -28,17 +28,22 @@ const Login: React.FC = () => {
   };
 
   return (
+    <div
+      className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-cover bg-center relative"
+      style={{ backgroundImage: `url(${LogoROD})` }}
+    >
+      {/* Overlay para mejorar legibilidad */}
+      <div className="absolute inset-0 bg-black bg-opacity-60"></div>
 
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-orange-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+      <div className="max-w-md w-full space-y-8 relative z-10 bg-white p-8 rounded-xl shadow-2xl">
         <div>
           <div className="text-center">
-            <h1 className="text-4xl font-bold mb-2">🏗️</h1>
-            <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
+            <h1 className="text-4xl font-bold mb-2 text-orange-600">🏗️</h1>
+            <h2 className="mt-2 text-3xl font-extrabold text-gray-900 uppercase tracking-wide">
               Jefes en Frente
             </h2>
-            <p className="mt-2 text-sm text-gray-600">
-              Sistema de Reportes Mineros
+            <p className="mt-2 text-sm text-gray-600 font-medium">
+              SISTEMA INTEGRAL DE REPORTES MINEROS
             </p>
           </div>
         </div>
@@ -54,8 +59,8 @@ const Login: React.FC = () => {
                 type="email"
                 autoComplete="email"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
-                placeholder="Email"
+                className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
+                placeholder="Correo Electrónico"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
@@ -70,7 +75,7 @@ const Login: React.FC = () => {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
+                className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
                 placeholder="Contraseña"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -79,8 +84,9 @@ const Login: React.FC = () => {
           </div>
 
           {error && (
-            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              {error}
+            <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 text-sm" role="alert">
+              <p className="font-bold">Error</p>
+              <p>{error}</p>
             </div>
           )}
 
@@ -88,23 +94,21 @@ const Login: React.FC = () => {
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
+              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 transition-colors uppercase tracking-wider shadow-lg"
             >
               {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </button>
           </div>
 
-          <div className="text-center">
-            <p className="text-sm text-gray-600">
-              Demo: admin@jefesenfrente.com / password123
+          <div className="text-center mt-4">
+            <p className="text-xs text-gray-400">
+              © 2025 DESARROLLOS ROD
             </p>
           </div>
         </form>
       </div>
     </div>
-
   );
-
 };
 
 export default Login;
