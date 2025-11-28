@@ -486,6 +486,7 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ reporteInicial, o
                     <td className="px-4 py-2 border border-red-200">
                       <input
                         type="number"
+                        min={0}
                         value={acarreo.noViaje}
                         onChange={(e) => actualizarControlAcarreo(index, 'noViaje', parseInt(e.target.value) || 0)}
                         className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
@@ -638,6 +639,7 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ reporteInicial, o
                     <td className="px-4 py-2 border border-cyan-200">
                       <input
                         type="number"
+                        min={0}
                         value={agua.viaje}
                         onChange={(e) => actualizarControlAgua(index, 'viaje', parseInt(e.target.value) || 0)}
                         className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"

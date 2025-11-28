@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { vehiculoService, proyectoService } from '../services/api';
 import { Vehiculo, Proyecto } from '../types/gestion';
+import { generarPDFVehiculos } from '../utils/pdfVehiculosGenerator';
 
 interface GestionVehiculosProps {
     userRol?: 'admin' | 'supervisor' | 'operador';
@@ -147,6 +148,12 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                         className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold"
                     >
                         ➕ Nuevo Vehículo
+                    </button>
+                    <button
+                        onClick={() => generarPDFVehiculos(vehiculos)}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold ml-2"
+                    >
+                        📄 Reporte PDF
                     </button>
                 </div>
 

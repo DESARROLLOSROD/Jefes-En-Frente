@@ -52,7 +52,7 @@ export const generarPDFGeneral = (reportes: ReporteActividades[], proyectos: Pro
         doc.setFontSize(16);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(255, 140, 0); // Naranja
-        doc.text(`PROYECTO: ${nombreProyecto}`, 15, yPosition);
+        doc.text(`PROYECTO: ${nombreProyecto.toUpperCase()}`, 15, yPosition);
         doc.setTextColor(0, 0, 0); // Reset color
         yPosition += 10;
 
@@ -61,10 +61,10 @@ export const generarPDFGeneral = (reportes: ReporteActividades[], proyectos: Pro
             const fecha = new Date(reporte.fecha).toLocaleDateString('es-MX', { timeZone: 'UTC' });
             return [
                 fecha,
-                reporte.turno === 'primer' ? '1er' : '2do',
-                reporte.zonaTrabajo,
-                reporte.seccionTrabajo || '-',
-                reporte.jefeFrente,
+                reporte.turno === 'primer' ? '1ER' : '2DO',
+                reporte.zonaTrabajo.toUpperCase(),
+                reporte.seccionTrabajo ? reporte.seccionTrabajo.toUpperCase() : '-',
+                reporte.jefeFrente.toUpperCase(),
                 reporte.controlMaquinaria?.length || 0,
                 reporte.controlAcarreo?.length || 0
             ];

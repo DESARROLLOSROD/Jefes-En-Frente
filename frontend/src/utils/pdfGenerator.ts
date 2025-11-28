@@ -15,7 +15,7 @@ export const generarPDFReporte = (reporte: ReporteActividades, nombreProyecto: s
     yPosition += 10;
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
-    doc.text(nombreProyecto, pageWidth / 2, yPosition, { align: 'center' });
+    doc.text(nombreProyecto.toUpperCase(), pageWidth / 2, yPosition, { align: 'center' });
 
     yPosition += 15;
 
@@ -36,36 +36,36 @@ export const generarPDFReporte = (reporte: ReporteActividades, nombreProyecto: s
     doc.setFont('helvetica', 'bold');
     doc.text(`Turno: `, 120, yPosition);
     doc.setFont('helvetica', 'normal');
-    doc.text(reporte.turno === 'primer' ? 'Primer Turno' : 'Segundo Turno', 140, yPosition);
+    doc.text(reporte.turno === 'primer' ? 'PRIMER TURNO' : 'SEGUNDO TURNO', 140, yPosition);
 
     yPosition += 7;
     doc.setFont('helvetica', 'bold');
     doc.text(`Ubicación: `, 15, yPosition);
     doc.setFont('helvetica', 'normal');
-    doc.text(reporte.ubicacion || '', 40, yPosition);
+    doc.text(reporte.ubicacion ? reporte.ubicacion.toUpperCase() : '', 40, yPosition);
 
     yPosition += 7;
     doc.setFont('helvetica', 'bold');
     doc.text(`Zona de Trabajo: `, 15, yPosition);
     doc.setFont('helvetica', 'normal');
-    doc.text(reporte.zonaTrabajo || '', 50, yPosition);
+    doc.text(reporte.zonaTrabajo ? reporte.zonaTrabajo.toUpperCase() : '', 50, yPosition);
 
     yPosition += 7;
     doc.setFont('helvetica', 'bold');
     doc.text(`Sección de Trabajo: `, 15, yPosition);
     doc.setFont('helvetica', 'normal');
-    doc.text(reporte.seccionTrabajo || '', 50, yPosition);
+    doc.text(reporte.seccionTrabajo ? reporte.seccionTrabajo.toUpperCase() : '', 50, yPosition);
 
     yPosition += 7;
     doc.setFont('helvetica', 'bold');
     doc.text(`Jefe de Frente: `, 15, yPosition);
     doc.setFont('helvetica', 'normal');
-    doc.text(reporte.jefeFrente || '', 50, yPosition);
+    doc.text(reporte.jefeFrente ? reporte.jefeFrente.toUpperCase() : '', 50, yPosition);
 
     doc.setFont('helvetica', 'bold');
     doc.text(`Sobrestante: `, 120, yPosition);
     doc.setFont('helvetica', 'normal');
-    doc.text(reporte.sobrestante || '', 150, yPosition);
+    doc.text(reporte.sobrestante ? reporte.sobrestante.toUpperCase() : '', 150, yPosition);
 
     yPosition += 7;
     doc.setFont('helvetica', 'bold');
@@ -86,14 +86,14 @@ export const generarPDFReporte = (reporte: ReporteActividades, nombreProyecto: s
             startY: yPosition,
             head: [['Material', 'No. Viaje', 'Capacidad', 'Vol. Suelto', 'Capa No.', 'Elev. Ariza', 'Origen', 'Destino']],
             body: reporte.controlAcarreo.map(item => [
-                item.material,
+                item.material.toUpperCase(),
                 item.noViaje,
                 item.capacidad,
                 item.volSuelto,
                 item.capaNo,
                 item.elevacionAriza,
-                item.capaOrigen,
-                item.destino
+                item.capaOrigen.toUpperCase(),
+                item.destino.toUpperCase()
             ]),
             theme: 'grid',
             headStyles: { fillColor: [255, 140, 0], textColor: 255, fontStyle: 'bold' },
@@ -120,10 +120,10 @@ export const generarPDFReporte = (reporte: ReporteActividades, nombreProyecto: s
             startY: yPosition,
             head: [['Material', 'Unidad', 'Cantidad', 'Zona', 'Elevación']],
             body: reporte.controlMaterial.map(item => [
-                item.material,
-                item.unidad,
+                item.material.toUpperCase(),
+                item.unidad.toUpperCase(),
                 item.cantidad,
-                item.zona,
+                item.zona.toUpperCase(),
                 item.elevacion
             ]),
             theme: 'grid',
@@ -151,12 +151,12 @@ export const generarPDFReporte = (reporte: ReporteActividades, nombreProyecto: s
             startY: yPosition,
             head: [['No. Económico', 'Viaje', 'Capacidad', 'Volumen', 'Origen', 'Destino']],
             body: reporte.controlAgua.map(item => [
-                item.noEconomico,
+                item.noEconomico.toUpperCase(),
                 item.viaje,
                 item.capacidad,
                 item.volumen,
-                item.origen,
-                item.destino
+                item.origen.toUpperCase(),
+                item.destino.toUpperCase()
             ]),
             theme: 'grid',
             headStyles: { fillColor: [255, 140, 0], textColor: 255, fontStyle: 'bold' },
@@ -183,13 +183,13 @@ export const generarPDFReporte = (reporte: ReporteActividades, nombreProyecto: s
             startY: yPosition,
             head: [['Tipo', 'No. Económico', 'Horómetro Inicial', 'Horómetro Final', 'Horas', 'Operador', 'Actividad']],
             body: reporte.controlMaquinaria.map(item => [
-                item.tipo,
-                item.numeroEconomico,
+                item.tipo.toUpperCase(),
+                item.numeroEconomico.toUpperCase(),
                 item.horometroInicial || '-',
                 item.horometroFinal || '-',
                 item.horasOperacion || 0,
-                item.operador,
-                item.actividad
+                item.operador.toUpperCase(),
+                item.actividad.toUpperCase()
             ]),
             theme: 'grid',
             headStyles: { fillColor: [255, 140, 0], textColor: 255, fontStyle: 'bold' },
@@ -214,7 +214,7 @@ export const generarPDFReporte = (reporte: ReporteActividades, nombreProyecto: s
 
         doc.setFontSize(10);
         doc.setFont('helvetica', 'normal');
-        const splitObservaciones = doc.splitTextToSize(reporte.observaciones, pageWidth - 30);
+        const splitObservaciones = doc.splitTextToSize(reporte.observaciones.toUpperCase(), pageWidth - 30);
         doc.text(splitObservaciones, 15, yPosition);
     }
 
