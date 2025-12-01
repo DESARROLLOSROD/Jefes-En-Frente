@@ -38,7 +38,7 @@ const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) 
         if (response.success && response.data) {
             setUsuarios(response.data);
         } else {
-            mostrarMensaje('error', response.error || 'Error al cargar usuarios');
+            mostrarMensaje('error', response.error || 'ERROR AL CARGAR USUARIOS');
         }
         setLoading(false);
     };
@@ -94,11 +94,11 @@ const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) 
         }
 
         if (response.success) {
-            mostrarMensaje('success', id ? 'Usuario actualizado correctamente' : 'Usuario creado correctamente');
+            mostrarMensaje('success', id ? 'USUARIO ACTUALIZADO CORRECTAMENTE' : 'USUARIO CREADO CORRECTAMENTE');
             setMostrarFormulario(false);
             cargarUsuarios();
         } else {
-            mostrarMensaje('error', response.error || 'Error al guardar usuario');
+            mostrarMensaje('error', response.error || 'ERROR AL GUARDAR USUARIO');
         }
     };
 
@@ -113,12 +113,12 @@ const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) 
         const response = await usuarioService.eliminarUsuario(usuarioEliminar._id!);
 
         if (response.success) {
-            mostrarMensaje('success', 'Usuario eliminado correctamente');
+            mostrarMensaje('success', 'USUARIO ELIMINADO CORRECTAMENTE');
             setMostrarConfirmacion(false);
             setUsuarioEliminar(null);
             cargarUsuarios();
         } else {
-            mostrarMensaje('error', response.error || 'Error al eliminar usuario');
+            mostrarMensaje('error', response.error || 'ERROR AL ELIMINAR USUARIO');
         }
     };
 
@@ -133,8 +133,8 @@ const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) 
 
     const getRolLabel = (rol: string) => {
         switch (rol) {
-            case 'admin': return 'Administrador';
-            case 'supervisor': return 'Supervisor';
+            case 'admin': return 'ADMINISTRADOR';
+            case 'supervisor': return 'SUPERVISOR';
             case 'jefe en frente': return 'JEFE EN FRENTE';
             default: return rol;
         }
@@ -145,14 +145,14 @@ const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) 
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h2 className="text-3xl font-bold text-gray-800">👥 Gestión de Usuarios</h2>
-                    <p className="text-gray-600 mt-1">Administra los usuarios del sistema</p>
+                    <h2 className="text-3xl font-bold text-gray-800">👥 GESTIÓN DE USUARIOS</h2>
+                    <p className="text-gray-600 mt-1">ADMINISTRA LOS USUARIOS DEL SISTEMA</p>
                 </div>
                 <button
                     onClick={handleNuevoUsuario}
                     className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-md hover:shadow-lg font-semibold"
                 >
-                    ➕ Nuevo Usuario
+                    ➕ NUEVO USUARIO
                 </button>
             </div>
 
@@ -168,42 +168,42 @@ const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 {/* Búsqueda */}
                 <div>
-                    <label className="block text-gray-700 font-semibold mb-2">🔍 Buscar</label>
+                    <label className="block text-gray-700 font-semibold mb-2">🔍 BUSCAR</label>
                     <input
                         type="text"
                         value={busqueda}
                         onChange={(e) => setBusqueda(e.target.value)}
-                        placeholder="Nombre o email..."
+                        placeholder="NOMBRE O EMAIL..."
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     />
                 </div>
 
                 {/* Filtro por Rol */}
                 <div>
-                    <label className="block text-gray-700 font-semibold mb-2">👔 Rol</label>
+                    <label className="block text-gray-700 font-semibold mb-2">👔 ROL</label>
                     <select
                         value={filtroRol}
                         onChange={(e) => setFiltroRol(e.target.value)}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                        <option value="todos">Todos</option>
-                        <option value="admin">Administrador</option>
-                        <option value="supervisor">Supervisor</option>
+                        <option value="todos">TODOS</option>
+                        <option value="admin">ADMINISTRADOR</option>
+                        <option value="supervisor">SUPERVISOR</option>
                         <option value="jefe en frente">JEFE EN FRENTE</option>
                     </select>
                 </div>
 
                 {/* Filtro por Estado */}
                 <div>
-                    <label className="block text-gray-700 font-semibold mb-2">📊 Estado</label>
+                    <label className="block text-gray-700 font-semibold mb-2">📊 ESTADO</label>
                     <select
                         value={filtroEstado}
                         onChange={(e) => setFiltroEstado(e.target.value)}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     >
-                        <option value="todos">Todos</option>
-                        <option value="activos">Activos</option>
-                        <option value="inactivos">Inactivos</option>
+                        <option value="todos">TODOS</option>
+                        <option value="activos">ACTIVOS</option>
+                        <option value="inactivos">INACTIVOS</option>
                     </select>
                 </div>
             </div>
@@ -212,23 +212,23 @@ const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) 
             {loading ? (
                 <div className="text-center py-12">
                     <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                    <p className="text-gray-600 mt-4">Cargando usuarios...</p>
+                    <p className="text-gray-600 mt-4">CARGANDO USUARIOS...</p>
                 </div>
             ) : usuariosFiltrados.length === 0 ? (
                 <div className="text-center py-12 bg-gray-50 rounded-lg">
-                    <p className="text-gray-600 text-lg">No se encontraron usuarios</p>
+                    <p className="text-gray-600 text-lg">NO SE ENCONTRARON USUARIOS</p>
                 </div>
             ) : (
                 <div className="overflow-x-auto">
                     <table className="w-full">
                         <thead className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
                             <tr>
-                                <th className="px-6 py-3 text-left font-semibold uppercase">Nombre</th>
-                                <th className="px-6 py-3 text-left font-semibold uppercase">Email</th>
-                                <th className="px-6 py-3 text-left font-semibold uppercase">Rol</th>
-                                <th className="px-6 py-3 text-left font-semibold uppercase">Proyectos</th>
-                                <th className="px-6 py-3 text-left font-semibold uppercase">Estado</th>
-                                <th className="px-6 py-3 text-center font-semibold uppercase">Acciones</th>
+                                <th className="px-6 py-3 text-left font-semibold uppercase">NOMBRE</th>
+                                <th className="px-6 py-3 text-left font-semibold uppercase">EMAIL</th>
+                                <th className="px-6 py-3 text-left font-semibold uppercase">ROL</th>
+                                <th className="px-6 py-3 text-left font-semibold uppercase">PROYECTOS</th>
+                                <th className="px-6 py-3 text-left font-semibold uppercase">ESTADO</th>
+                                <th className="px-6 py-3 text-center font-semibold uppercase">ACCIONES</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
@@ -250,9 +250,9 @@ const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) 
                                     <td className="px-6 py-4">
                                         <div className="text-sm text-gray-600 uppercase">
                                             {usuario.proyectos.length === 0 ? (
-                                                <span className="text-gray-400">Sin proyectos</span>
+                                                <span className="text-gray-400">SIN PROYECTOS</span>
                                             ) : (
-                                                <span>{usuario.proyectos.length} proyecto(s)</span>
+                                                <span>{usuario.proyectos.length} PROYECTO(S)</span>
                                             )}
                                         </div>
                                     </td>
@@ -261,7 +261,7 @@ const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) 
                                             ? 'bg-green-100 text-green-800'
                                             : 'bg-red-100 text-red-800'
                                             }`}>
-                                            {usuario.activo ? '✓ Activo' : '✗ Inactivo'}
+                                            {usuario.activo ? '✓ ACTIVO' : '✗ INACTIVO'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
@@ -271,21 +271,21 @@ const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) 
                                                     <button
                                                         onClick={() => handleEditarUsuario(usuario)}
                                                         className="bg-blue-500 text-white px-3 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm font-semibold"
-                                                        title="Editar usuario"
+                                                        title="EDITAR USUARIO"
                                                     >
-                                                        ✏️ Editar
+                                                        ✏️ EDITAR
                                                     </button>
                                                     <button
                                                         onClick={() => handleEliminarClick(usuario)}
                                                         className="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition-colors text-sm font-semibold"
-                                                        title="Eliminar usuario"
+                                                        title="ELIMINAR USUARIO"
                                                     >
-                                                        🗑️ Eliminar
+                                                        🗑️ ELIMINAR
                                                     </button>
                                                 </>
                                             )}
                                             {userRol === 'supervisor' && (
-                                                <span className="text-gray-400 text-sm italic">Solo lectura</span>
+                                                <span className="text-gray-400 text-sm italic">SOLO LECTURA</span>
                                             )}
                                         </div>
                                     </td>
@@ -309,11 +309,11 @@ const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) 
             {mostrarConfirmacion && usuarioEliminar && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg shadow-2xl p-6 max-w-md w-full mx-4">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">⚠️ Confirmar Eliminación</h3>
+                        <h3 className="text-xl font-bold text-gray-800 mb-4">⚠️ CONFIRMAR ELIMINACIÓN</h3>
                         <p className="text-gray-600 mb-6">
-                            ¿Estás seguro de que deseas eliminar al usuario <strong>{usuarioEliminar.nombre}</strong>?
+                            ¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR AL USUARIO <strong>{usuarioEliminar.nombre}</strong>?
                             <br />
-                            <span className="text-red-600 font-semibold">Esta acción es PERMANENTE y no se puede deshacer.</span>
+                            <span className="text-red-600 font-semibold">ESTA ACCIÓN ES PERMANENTE Y NO SE PUEDE DESHACER.</span>
                         </p>
                         <div className="flex justify-end space-x-3">
                             <button
@@ -323,13 +323,13 @@ const GestionUsuarios: React.FC<GestionUsuariosProps> = ({ userRol = 'admin' }) 
                                 }}
                                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-semibold"
                             >
-                                Cancelar
+                                CANCELAR
                             </button>
                             <button
                                 onClick={handleConfirmarEliminar}
                                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold"
                             >
-                                Eliminar
+                                ELIMINAR
                             </button>
                         </div>
                     </div>

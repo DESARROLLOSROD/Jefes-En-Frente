@@ -48,19 +48,19 @@ const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({ usuario, onClose,
         const newErrors: { [key: string]: string } = {};
 
         if (!formData.nombre.trim()) {
-            newErrors.nombre = 'El nombre es requerido';
+            newErrors.nombre = 'EL NOMBRE ES REQUERIDO';
         }
 
         if (!formData.email.trim()) {
-            newErrors.email = 'El email es requerido';
+            newErrors.email = 'EL EMAIL ES REQUERIDO';
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-            newErrors.email = 'Email inválido';
+            newErrors.email = 'EMAIL INVÁLIDO';
         }
 
         if (!usuario && !formData.password) {
-            newErrors.password = 'La contraseña es requerida';
+            newErrors.password = 'LA CONTRASEÑA ES REQUERIDA';
         } else if (formData.password && formData.password.length < 6) {
-            newErrors.password = 'La contraseña debe tener al menos 6 caracteres';
+            newErrors.password = 'LA CONTRASEÑA DEBE TENER AL MENOS 6 CARACTERES';
         }
 
         setErrors(newErrors);
@@ -122,7 +122,7 @@ const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({ usuario, onClose,
                 {/* Header */}
                 <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-t-lg">
                     <h2 className="text-2xl font-bold">
-                        {usuario ? '✏️ Editar Usuario' : '➕ Nuevo Usuario'}
+                        {usuario ? '✏️ EDITAR USUARIO' : '➕ NUEVO USUARIO'}
                     </h2>
                 </div>
 
@@ -131,15 +131,15 @@ const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({ usuario, onClose,
                     {/* Nombre */}
                     <div>
                         <label className="block text-gray-700 font-semibold mb-2">
-                            Nombre Completo *
+                            NOMBRE COMPLETO *
                         </label>
                         <input
                             type="text"
                             value={formData.nombre}
-                            onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.nombre ? 'border-red-500' : 'border-gray-300 uppercase'
+                            onChange={(e) => setFormData({ ...formData, nombre: e.target.value.toUpperCase() })}
+                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase ${errors.nombre ? 'border-red-500' : 'border-gray-300'
                                 }`}
-                            placeholder="Ej: Juan Pérez"
+                            placeholder="EJ: JUAN PÉREZ"
                         />
                         {errors.nombre && (
                             <p className="text-red-500 text-sm mt-1">{errors.nombre}</p>
@@ -149,7 +149,7 @@ const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({ usuario, onClose,
                     {/* Email */}
                     <div>
                         <label className="block text-gray-700 font-semibold mb-2">
-                            Email *
+                            EMAIL *
                         </label>
                         <input
                             type="email"
@@ -157,7 +157,7 @@ const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({ usuario, onClose,
                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.email ? 'border-red-500' : 'border-gray-300'
                                 }`}
-                            placeholder="usuario@ejemplo.com"
+                            placeholder="USUARIO@EJEMPLO.COM"
                         />
                         {errors.email && (
                             <p className="text-red-500 text-sm mt-1">{errors.email}</p>
@@ -167,7 +167,7 @@ const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({ usuario, onClose,
                     {/* Password */}
                     <div>
                         <label className="block text-gray-700 font-semibold mb-2">
-                            Contraseña {usuario ? '(dejar vacío para mantener actual)' : '*'}
+                            CONTRASEÑA {usuario ? '(DEJAR VACÍO PARA MANTENER ACTUAL)' : '*'}
                         </label>
                         <input
                             type="password"
@@ -175,7 +175,7 @@ const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({ usuario, onClose,
                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.password ? 'border-red-500' : 'border-gray-300'
                                 }`}
-                            placeholder={usuario ? 'Nueva contraseña (opcional)' : 'Mínimo 6 caracteres'}
+                            placeholder={usuario ? 'NUEVA CONTRASEÑA (OPCIONAL)' : 'MÍNIMO 6 CARACTERES'}
                         />
                         {errors.password && (
                             <p className="text-red-500 text-sm mt-1">{errors.password}</p>
@@ -185,7 +185,7 @@ const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({ usuario, onClose,
                     {/* Rol */}
                     <div>
                         <label className="block text-gray-700 font-semibold mb-2">
-                            Rol *
+                            ROL *
                         </label>
                         <select
                             value={formData.rol}
@@ -193,19 +193,19 @@ const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({ usuario, onClose,
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase"
                         >
                             <option value="jefe en frente">JEFE EN FRENTE</option>
-                            <option value="supervisor">Supervisor</option>
-                            <option value="admin">Administrador</option>
+                            <option value="supervisor">SUPERVISOR</option>
+                            <option value="admin">ADMINISTRADOR</option>
                         </select>
                     </div>
 
                     {/* Proyectos */}
                     <div>
                         <label className="block text-gray-700 font-semibold mb-2">
-                            Proyectos Asignados
+                            PROYECTOS ASIGNADOS
                         </label>
                         <div className="border border-gray-300 rounded-lg p-4 max-h-40 overflow-y-auto space-y-2">
                             {proyectosDisponibles.length === 0 ? (
-                                <p className="text-gray-500 text-sm">No hay proyectos disponibles</p>
+                                <p className="text-gray-500 text-sm">NO HAY PROYECTOS DISPONIBLES</p>
                             ) : (
                                 proyectosDisponibles.map((proyecto) => (
                                     <label key={proyecto._id} className="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
@@ -234,7 +234,7 @@ const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({ usuario, onClose,
                             className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
                         />
                         <label htmlFor="activo" className="text-gray-700 font-semibold cursor-pointer">
-                            Usuario Activo
+                            USUARIO ACTIVO
                         </label>
                     </div>
 
@@ -246,14 +246,14 @@ const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({ usuario, onClose,
                             className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-semibold"
                             disabled={loading}
                         >
-                            Cancelar
+                            CANCELAR
                         </button>
                         <button
                             type="submit"
                             className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                             disabled={loading}
                         >
-                            {loading ? 'Guardando...' : usuario ? 'Actualizar' : 'Crear'}
+                            {loading ? 'GUARDANDO...' : usuario ? 'ACTUALIZAR' : 'CREAR'}
                         </button>
                     </div>
                 </form>

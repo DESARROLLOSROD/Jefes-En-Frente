@@ -42,7 +42,7 @@ const SeccionControlAgua: React.FC<SeccionControlAguaProps> = ({
       const nuevasAguas = aguas.filter((_, i) => i !== index);
       onAguasChange(nuevasAguas);
     } else {
-      alert('Debe haber al menos un registro');
+      alert('DEBE HABER AL MENOS UN REGISTRO');
     }
   };
 
@@ -55,13 +55,13 @@ const SeccionControlAgua: React.FC<SeccionControlAguaProps> = ({
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xl font-bold text-gray-800">Control de Agua</h3>
+        <h3 className="text-xl font-bold text-gray-800">CONTROL DE AGUA</h3>
         <button
           type="button"
           onClick={handleAgregarNuevo}
           className="bg-cyan-600 text-white px-4 py-2 rounded-lg hover:bg-cyan-700 transition-colors font-semibold shadow-md flex items-center"
         >
-          <span className="mr-2">+</span> Agregar Agua
+          <span className="mr-2">+</span> AGREGAR AGUA
         </button>
       </div>
 
@@ -69,13 +69,13 @@ const SeccionControlAgua: React.FC<SeccionControlAguaProps> = ({
         <table className="min-w-full bg-white border border-gray-200 rounded-lg">
           <thead className="bg-cyan-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">No. Económico</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Viajes</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Capacidad</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Volumen</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Origen</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Destino</th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Acciones</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">NO. ECONÓMICO</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">VIAJES</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">CAPACIDAD</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">VOLUMEN</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">ORIGEN</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">DESTINO</th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">ACCIONES</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -83,9 +83,9 @@ const SeccionControlAgua: React.FC<SeccionControlAguaProps> = ({
               <tr key={index} className="hover:bg-gray-50">
                 <td className="px-4 py-3 text-sm text-gray-900">{agua.noEconomico || '-'}</td>
                 <td className="px-4 py-3 text-sm text-gray-900">{agua.viaje || 0}</td>
-                <td className="px-4 py-3 text-sm text-gray-900">{agua.capacidad || '-'} m³</td>
+                <td className="px-4 py-3 text-sm text-gray-900">{agua.capacidad || '-'} M³</td>
                 <td className="px-4 py-3 text-sm font-bold text-cyan-600">
-                  {agua.volumen || '0.00'} m³
+                  {agua.volumen || '0.00'} M³
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-900">{agua.origen || '-'}</td>
                 <td className="px-4 py-3 text-sm text-gray-900">{agua.destino || '-'}</td>
@@ -95,7 +95,7 @@ const SeccionControlAgua: React.FC<SeccionControlAguaProps> = ({
                     onClick={() => handleEditar(index)}
                     className="text-cyan-600 hover:text-cyan-800 mr-3 font-semibold"
                   >
-                    Editar
+                    EDITAR
                   </button>
                   <button
                     type="button"
@@ -103,7 +103,7 @@ const SeccionControlAgua: React.FC<SeccionControlAguaProps> = ({
                     className="text-red-600 hover:text-red-800 font-semibold"
                     disabled={aguas.length === 1}
                   >
-                    Eliminar
+                    ELIMINAR
                   </button>
                 </td>
               </tr>
@@ -112,10 +112,10 @@ const SeccionControlAgua: React.FC<SeccionControlAguaProps> = ({
           <tfoot className="bg-gray-100">
             <tr>
               <td colSpan={3} className="px-4 py-3 text-sm font-bold text-gray-900 text-right">
-                Total Volumen:
+                TOTAL VOLUMEN:
               </td>
               <td className="px-4 py-3 text-sm font-bold text-cyan-700">
-                {calcularTotalVolumen()} m³
+                {calcularTotalVolumen()} M³
               </td>
               <td colSpan={3}></td>
             </tr>
@@ -131,7 +131,7 @@ const SeccionControlAgua: React.FC<SeccionControlAguaProps> = ({
         }}
         onSave={handleGuardar}
         aguaInicial={aguaEditando?.data || null}
-        title={aguaEditando !== null ? 'Editar Control de Agua' : 'Agregar Control de Agua'}
+        title={aguaEditando !== null ? 'EDITAR CONTROL DE AGUA' : 'AGREGAR CONTROL DE AGUA'}
       />
     </div>
   );

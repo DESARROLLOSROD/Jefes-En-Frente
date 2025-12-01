@@ -39,7 +39,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
             setVehiculos(response.data);
             setError('');
         } else {
-            setError(response.error || 'Error al cargar vehículos');
+            setError(response.error || 'ERROR AL CARGAR VEHÍCULOS');
         }
         setLoading(false);
     };
@@ -57,22 +57,22 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
             ? await vehiculoService.actualizarVehiculo(vehiculoActual._id, formData)
             : await vehiculoService.crearVehiculo(formData);
         if (response.success) {
-            mostrarMensaje(editando ? 'Vehículo actualizado correctamente' : 'Vehículo creado correctamente');
+            mostrarMensaje(editando ? 'VEHÍCULO ACTUALIZADO CORRECTAMENTE' : 'VEHÍCULO CREADO CORRECTAMENTE');
             cerrarModal();
             cargarVehiculos();
         } else {
-            mostrarMensaje(response.error || 'Error al guardar vehículo');
+            mostrarMensaje(response.error || 'ERROR AL GUARDAR VEHÍCULO');
         }
     };
 
     const handleEliminar = async (id: string) => {
-        if (window.confirm('¿Estás seguro de eliminar este vehículo?')) {
+        if (window.confirm('¿ESTÁS SEGURO DE ELIMINAR ESTE VEHÍCULO?')) {
             const response = await vehiculoService.eliminarVehiculo(id);
             if (response.success) {
-                mostrarMensaje('Vehículo eliminado correctamente');
+                mostrarMensaje('VEHÍCULO ELIMINADO CORRECTAMENTE');
                 cargarVehiculos();
             } else {
-                mostrarMensaje(response.error || 'Error al eliminar vehículo');
+                mostrarMensaje(response.error || 'ERROR AL ELIMINAR VEHÍCULO');
             }
         }
     };
@@ -121,7 +121,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
         return (
             <div className="text-center py-8">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
-                <p className="mt-2 text-gray-600">Cargando vehículos...</p>
+                <p className="mt-2 text-gray-600">CARGANDO VEHÍCULOS...</p>
             </div>
         );
     }
@@ -136,45 +136,45 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
 
             {error && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                    <strong>Error:</strong> {error}
+                    <strong>ERROR:</strong> {error}
                 </div>
             )}
 
             <div className="bg-white p-6 rounded-lg shadow-md">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="text-2xl font-bold text-gray-800">🚙 Gestión de Vehículos</h2>
+                    <h2 className="text-2xl font-bold text-gray-800">🚙 GESTIÓN DE VEHÍCULOS</h2>
                     <button
                         onClick={() => abrirModal()}
                         className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-semibold"
                     >
-                        ➕ Nuevo Vehículo
+                        ➕ NUEVO VEHÍCULO
                     </button>
                     <button
                         onClick={() => generarPDFVehiculos(vehiculos)}
                         className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold ml-2"
                     >
-                        📄 Reporte PDF
+                        📄 REPORTE PDF
                     </button>
                 </div>
 
                 {vehiculos.length === 0 ? (
                     <div className="text-center py-12">
                         <div className="text-6xl mb-4">🚗</div>
-                        <p className="text-gray-600 text-lg">No hay vehículos registrados</p>
+                        <p className="text-gray-600 text-lg">NO HAY VEHÍCULOS REGISTRADOS</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="min-w-full bg-white">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tipo</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Económico</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Horómetro Inicial</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Horómetro Final</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Horas Operación</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Proyectos</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">NOMBRE</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">TIPO</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">NO. ECONÓMICO</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">HORÓMETRO INICIAL</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">HORÓMETRO FINAL</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">HORAS OPERACIÓN</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">PROYECTOS</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ACCIONES</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
@@ -199,12 +199,12 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                                 <div className="flex flex-wrap gap-1">
                                                     {vehiculo.proyectos.map((p: any, index) => (
                                                         <span key={index} className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                                                            {typeof p === 'object' && p.nombre ? p.nombre : 'Proyecto'}
+                                                            {typeof p === 'object' && p.nombre ? p.nombre : 'PROYECTO'}
                                                         </span>
                                                     ))}
                                                 </div>
                                             ) : (
-                                                <span className="text-gray-400 italic">Sin asignar</span>
+                                                <span className="text-gray-400 italic">SIN ASIGNAR</span>
                                             )}
                                         </td>
 
@@ -215,18 +215,18 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                                         onClick={() => abrirModal(vehiculo)}
                                                         className="text-blue-600 hover:text-blue-900"
                                                     >
-                                                        ✏️ Editar
+                                                        ✏️ EDITAR
                                                     </button>
                                                     <button
                                                         onClick={() => handleEliminar(vehiculo._id)}
                                                         className="text-red-600 hover:text-red-900"
                                                     >
-                                                        🗑️ Eliminar
+                                                        🗑️ ELIMINAR
                                                     </button>
                                                 </>
                                             )}
                                             {userRol === 'supervisor' && (
-                                                <span className="text-gray-400 text-sm italic">Solo lectura</span>
+                                                <span className="text-gray-400 text-sm italic">SOLO LECTURA</span>
                                             )}
                                         </td>
                                     </tr>
@@ -242,53 +242,53 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-lg shadow-2xl p-6 max-w-md w-full mx-4">
                         <h3 className="text-xl font-bold text-gray-800 mb-4">
-                            {editando ? '✏️ Editar Vehículo' : '➕ Nuevo Vehículo'}
+                            {editando ? '✏️ EDITAR VEHÍCULO' : '➕ NUEVO VEHÍCULO'}
                         </h3>
                         <form onSubmit={handleSubmit}>
                             <div className="space-y-4">
                                 {/* Nombre */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">NOMBRE *</label>
                                     <input
                                         type="text"
                                         required
                                         value={formData.nombre}
-                                        onChange={e => setFormData({ ...formData, nombre: e.target.value })}
+                                        onChange={e => setFormData({ ...formData, nombre: e.target.value.toUpperCase() })}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 uppercase"
-                                        placeholder="Ej: Excavadora CAT 320"
+                                        placeholder="EJ: EXCAVADORA CAT 320"
                                     />
                                 </div>
                                 {/* Tipo */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tipo *</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">TIPO *</label>
                                     <select
                                         required
                                         value={formData.tipo}
                                         onChange={e => setFormData({ ...formData, tipo: e.target.value as any })}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                                     >
-                                        <option value="Camioneta">Camioneta</option>
-                                        <option value="Camión">Camión</option>
-                                        <option value="Maquinaria">Maquinaria</option>
-                                        <option value="Otro">Otro</option>
+                                        <option value="Camioneta">CAMIONETA</option>
+                                        <option value="Camión">CAMIÓN</option>
+                                        <option value="Maquinaria">MAQUINARIA</option>
+                                        <option value="Otro">OTRO</option>
                                     </select>
                                 </div>
                                 {/* No. Económico */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">No. Económico *</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">NO. ECONÓMICO *</label>
                                     <input
                                         type="text"
                                         required
                                         value={formData.noEconomico}
                                         onChange={e => setFormData({ ...formData, noEconomico: e.target.value.toUpperCase() })}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 uppercase"
-                                        placeholder="No. Económico"
+                                        placeholder="NO. ECONÓMICO"
                                     />
                                 </div>
                                 {/* Horómetro Inicial */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Horómetro Inicial *{editando && <span className="text-xs text-gray-500"> (Se actualiza automáticamente desde reportes)</span>}
+                                        HORÓMETRO INICIAL *{editando && <span className="text-xs text-gray-500"> (SE ACTUALIZA AUTOMÁTICAMENTE DESDE REPORTES)</span>}
                                     </label>
                                     <input
                                         type="number"
@@ -303,7 +303,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                 </div>
                                 {/* Horómetro Final */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Horómetro Final *</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">HORÓMETRO FINAL *</label>
                                     <input
                                         type="number"
                                         required
@@ -316,7 +316,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                 </div>
                                 {/* Horas de Operación */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Horas de Operación</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">HORAS DE OPERACIÓN</label>
                                     <input
                                         type="number"
                                         min="0"
@@ -328,7 +328,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                 </div>
                                 {/* Proyectos Asignados */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Proyectos Asignados</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">PROYECTOS ASIGNADOS</label>
                                     <select
                                         multiple
                                         value={formData.proyectos}
@@ -345,7 +345,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                         ))}
                                     </select>
                                     <p className="text-xs text-gray-500 mt-1">
-                                        Mantén presionado Ctrl (Windows) o Cmd (Mac) para seleccionar múltiples proyectos
+                                        MANTÉN PRESIONADO CTRL (WINDOWS) O CMD (MAC) PARA SELECCIONAR MÚLTIPLES PROYECTOS
                                     </p>
                                 </div>
                             </div>
@@ -355,13 +355,13 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                     onClick={cerrarModal}
                                     className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
                                 >
-                                    Cancelar
+                                    CANCELAR
                                 </button>
                                 <button
                                     type="submit"
                                     className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
                                 >
-                                    {editando ? 'Actualizar' : 'Crear'}
+                                    {editando ? 'ACTUALIZAR' : 'CREAR'}
                                 </button>
                             </div>
                         </form>

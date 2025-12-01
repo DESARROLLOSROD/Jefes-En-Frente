@@ -125,7 +125,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
     // Validación de horómetros
     for (const maq of formData.controlMaquinaria) {
       if (maq.vehiculoId && maq.horometroFinal < maq.horometroInicial) {
-        setMensaje(`Error: El horómetro final no puede ser menor al inicial para el vehículo ${maq.nombre}`);
+        setMensaje(`ERROR: EL HORÓMETRO FINAL NO PUEDE SER MENOR AL INICIAL PARA EL VEHÍCULO ${maq.nombre}`);
         setLoading(false);
         return;
       }
@@ -140,7 +140,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
       }
 
       if (resultado.success) {
-        setMensaje(reporteInicial ? 'Reporte actualizado exitosamente!' : 'Reporte creado exitosamente!');
+        setMensaje(reporteInicial ? 'REPORTE ACTUALIZADO EXITOSAMENTE!' : 'REPORTE CREADO EXITOSAMENTE!');
 
         if (!reporteInicial) {
           const hoy = new Date();
@@ -165,10 +165,10 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
           }, 1500);
         }
       } else {
-        setMensaje('Error: ' + resultado.error);
+        setMensaje('ERROR: ' + resultado.error);
       }
     } catch (error) {
-      setMensaje('Error de conexión con el servidor');
+      setMensaje('ERROR DE CONEXIÓN CON EL SERVIDOR');
     } finally {
       setLoading(false);
     }
@@ -257,7 +257,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
       </div>
 
       {mensaje && (
-        <div className={`p-4 mb-6 rounded-lg ${mensaje.includes('exitosamente') ? 'bg-green-100 text-green-700 border border-green-300' :
+        <div className={`p-4 mb-6 rounded-lg ${mensaje.includes('EXITOSAMENTE') ? 'bg-green-100 text-green-700 border border-green-300' :
           'bg-red-100 text-red-700 border border-red-300'
         }`}>
           {mensaje}
@@ -286,8 +286,8 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
                 onChange={(e) => handleTurnoChange(e.target.value as 'primer' | 'segundo')}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border"
               >
-                <option value="primer">Primer Turno (7:00 AM - 7:00 PM)</option>
-                <option value="segundo">Segundo Turno (7:00 PM - 7:00 AM)</option>
+                <option value="primer">PRIMER TURNO (7:00 AM - 7:00 PM)</option>
+                <option value="segundo">SEGUNDO TURNO (7:00 PM - 7:00 AM)</option>
               </select>
             </div>
             <div>
@@ -318,8 +318,8 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
               <input
                 type="text"
                 value={formData.zonaTrabajo}
-                onChange={(e) => setFormData({ ...formData, zonaTrabajo: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border"
+                onChange={(e) => setFormData({ ...formData, zonaTrabajo: e.target.value.toUpperCase() })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border uppercase"
                 required
               />
             </div>
@@ -328,8 +328,8 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
               <input
                 type="text"
                 value={formData.seccionTrabajo}
-                onChange={(e) => setFormData({ ...formData, seccionTrabajo: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border"
+                onChange={(e) => setFormData({ ...formData, seccionTrabajo: e.target.value.toUpperCase() })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border uppercase"
                 required
               />
             </div>
@@ -338,8 +338,8 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
               <input
                 type="text"
                 value={formData.jefeFrente}
-                onChange={(e) => setFormData({ ...formData, jefeFrente: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border"
+                onChange={(e) => setFormData({ ...formData, jefeFrente: e.target.value.toUpperCase() })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border uppercase"
                 required
               />
             </div>
@@ -348,8 +348,8 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
               <input
                 type="text"
                 value={formData.sobrestante}
-                onChange={(e) => setFormData({ ...formData, sobrestante: e.target.value })}
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border"
+                onChange={(e) => setFormData({ ...formData, sobrestante: e.target.value.toUpperCase() })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border uppercase"
                 required
               />
             </div>
@@ -380,26 +380,26 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
           {formData.controlMaquinaria.map((maq, index) => (
             <div key={index} className="bg-white p-4 rounded-lg mb-4 shadow">
               <div className="flex justify-between items-center mb-3">
-                <h4 className="font-bold text-gray-700">Máquina {index + 1}</h4>
+                <h4 className="font-bold text-gray-700">MÁQUINA {index + 1}</h4>
                 {formData.controlMaquinaria.length > 1 && (
                   <button
                     type="button"
                     onClick={() => eliminarControlMaquinaria(index)}
                     className="text-red-600 hover:text-red-800 font-semibold"
                   >
-                    Eliminar
+                    ELIMINAR
                   </button>
                 )}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Vehículo</label>
+                  <label className="block text-sm font-medium text-gray-700">VEHÍCULO</label>
                   <select
                     value={maq.vehiculoId}
                     onChange={(e) => seleccionarVehiculo(index, e.target.value)}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2 border"
                   >
-                    <option value="">Seleccione vehículo...</option>
+                    <option value="">SELECCIONE VEHÍCULO...</option>
                     {vehiculosDisponibles.map(v => (
                       <option key={v._id} value={v._id}>
                         {v.nombre} - {v.noEconomico}
@@ -408,7 +408,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Horómetro Inicial</label>
+                  <label className="block text-sm font-medium text-gray-700">HORÓMETRO INICIAL</label>
                   <input
                     type="number"
                     value={maq.horometroInicial || 0}
@@ -418,7 +418,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Horómetro Final</label>
+                  <label className="block text-sm font-medium text-gray-700">HORÓMETRO FINAL</label>
                   <input
                     type="number"
                     value={maq.horometroFinal || 0}
@@ -428,7 +428,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Horas de Operación</label>
+                  <label className="block text-sm font-medium text-gray-700">HORAS DE OPERACIÓN</label>
                   <input
                     type="number"
                     value={maq.horasOperacion || 0}
@@ -438,21 +438,21 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Operador</label>
+                  <label className="block text-sm font-medium text-gray-700">OPERADOR</label>
                   <input
                     type="text"
                     value={maq.operador}
-                    onChange={(e) => actualizarControlMaquinaria(index, 'operador', e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2 border"
+                    onChange={(e) => actualizarControlMaquinaria(index, 'operador', e.target.value.toUpperCase())}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2 border uppercase"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Actividad</label>
+                  <label className="block text-sm font-medium text-gray-700">ACTIVIDAD</label>
                   <input
                     type="text"
                     value={maq.actividad}
-                    onChange={(e) => actualizarControlMaquinaria(index, 'actividad', e.target.value)}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2 border"
+                    onChange={(e) => actualizarControlMaquinaria(index, 'actividad', e.target.value.toUpperCase())}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2 border uppercase"
                   />
                 </div>
               </div>
@@ -463,7 +463,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
             onClick={agregarControlMaquinaria}
             className="mt-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors font-semibold"
           >
-            + Agregar Maquinaria
+            + AGREGAR MAQUINARIA
           </button>
         </div>
 
@@ -472,10 +472,10 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
           <h3 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2">OBSERVACIONES</h3>
           <textarea
             value={formData.observaciones}
-            onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
+            onChange={(e) => setFormData({ ...formData, observaciones: e.target.value.toUpperCase() })}
             rows={4}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 p-2 border"
-            placeholder="Escriba cualquier observación adicional..."
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 p-2 border uppercase"
+            placeholder="ESCRIBA CUALQUIER OBSERVACIÓN ADICIONAL..."
           />
         </div>
 
@@ -486,7 +486,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
             disabled={loading}
             className="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 transition-colors font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? 'Guardando...' : (reporteInicial ? 'ACTUALIZAR REPORTE' : 'GUARDAR REPORTE')}
+            {loading ? 'GUARDANDO...' : (reporteInicial ? 'ACTUALIZAR REPORTE' : 'GUARDAR REPORTE')}
           </button>
         </div>
       </form>

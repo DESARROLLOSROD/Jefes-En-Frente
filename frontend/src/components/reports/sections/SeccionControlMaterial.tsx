@@ -42,20 +42,20 @@ const SeccionControlMaterial: React.FC<SeccionControlMaterialProps> = ({
       const nuevosMateriales = materiales.filter((_, i) => i !== index);
       onMaterialesChange(nuevosMateriales);
     } else {
-      alert('Debe haber al menos un registro');
+      alert('DEBE HABER AL MENOS UN REGISTRO');
     }
   };
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xl font-bold text-gray-800">Control de Material</h3>
+        <h3 className="text-xl font-bold text-gray-800">CONTROL DE MATERIAL</h3>
         <button
           type="button"
           onClick={handleAgregarNuevo}
           className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors font-semibold shadow-md flex items-center"
         >
-          <span className="mr-2">+</span> Agregar Material
+          <span className="mr-2">+</span> AGREGAR MATERIAL
         </button>
       </div>
 
@@ -63,12 +63,12 @@ const SeccionControlMaterial: React.FC<SeccionControlMaterialProps> = ({
         <table className="min-w-full bg-white border border-gray-200 rounded-lg">
           <thead className="bg-green-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Material</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Unidad</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Cantidad</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Zona</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Elevación</th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Acciones</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">MATERIAL</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">UNIDAD</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">CANTIDAD</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">ZONA</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">ELEVACIÓN</th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">ACCIONES</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -85,7 +85,7 @@ const SeccionControlMaterial: React.FC<SeccionControlMaterialProps> = ({
                     onClick={() => handleEditar(index)}
                     className="text-green-600 hover:text-green-800 mr-3 font-semibold"
                   >
-                    Editar
+                    EDITAR
                   </button>
                   <button
                     type="button"
@@ -93,7 +93,7 @@ const SeccionControlMaterial: React.FC<SeccionControlMaterialProps> = ({
                     className="text-red-600 hover:text-red-800 font-semibold"
                     disabled={materiales.length === 1}
                   >
-                    Eliminar
+                    ELIMINAR
                   </button>
                 </td>
               </tr>
@@ -110,7 +110,7 @@ const SeccionControlMaterial: React.FC<SeccionControlMaterialProps> = ({
         }}
         onSave={handleGuardar}
         materialInicial={materialEditando?.data || null}
-        title={materialEditando !== null ? 'Editar Control de Material' : 'Agregar Control de Material'}
+        title={materialEditando !== null ? 'EDITAR CONTROL DE MATERIAL' : 'AGREGAR CONTROL DE MATERIAL'}
       />
     </div>
   );

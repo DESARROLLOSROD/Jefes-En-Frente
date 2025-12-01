@@ -16,7 +16,7 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
   onClose,
   onSave,
   acarreoInicial,
-  title = 'Agregar Control de Acarreo'
+  title = 'AGREGAR CONTROL DE ACARREO'
 }) => {
   const [formData, setFormData] = useState<ControlAcarreo>({
     material: '',
@@ -64,7 +64,9 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
   }, [formData.noViaje, formData.capacidad]);
 
   const handleChange = (campo: keyof ControlAcarreo, valor: string | number) => {
-    setFormData(prev => ({ ...prev, [campo]: valor }));
+    // Convertir a mayúsculas si es texto
+    const valorFinal = typeof valor === 'string' ? valor.toUpperCase() : valor;
+    setFormData(prev => ({ ...prev, [campo]: valorFinal }));
     // Limpiar error del campo al modificarlo
     if (errors[campo]) {
       setErrors(prev => ({ ...prev, [campo]: '' }));
@@ -75,19 +77,19 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.material.trim()) {
-      newErrors.material = 'El material es requerido';
+      newErrors.material = 'EL MATERIAL ES REQUERIDO';
     }
     if (!formData.noViaje || formData.noViaje <= 0) {
-      newErrors.noViaje = 'El número de viajes debe ser mayor a 0';
+      newErrors.noViaje = 'EL NÚMERO DE VIAJES DEBE SER MAYOR A 0';
     }
     if (!formData.capacidad || Number(formData.capacidad) <= 0) {
-      newErrors.capacidad = 'La capacidad debe ser mayor a 0';
+      newErrors.capacidad = 'LA CAPACIDAD DEBE SER MAYOR A 0';
     }
     if (!formData.capaOrigen.trim()) {
-      newErrors.capaOrigen = 'El origen es requerido';
+      newErrors.capaOrigen = 'EL ORIGEN ES REQUERIDO';
     }
     if (!formData.destino.trim()) {
-      newErrors.destino = 'El destino es requerido';
+      newErrors.destino = 'EL DESTINO ES REQUERIDO';
     }
 
     setErrors(newErrors);
@@ -128,11 +130,11 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
             {/* Material */}
             <div>
               <AutocompleteInput
-                label="Material"
+                label="MATERIAL"
                 value={formData.material}
                 onChange={(value) => handleChange('material', value)}
                 options={MATERIALES}
-                placeholder="Seleccione o escriba el material..."
+                placeholder="SELECCIONE O ESCRIBA EL MATERIAL..."
                 required
               />
               {errors.material && (
@@ -143,7 +145,7 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
             {/* Número de Viajes */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                No. de Viajes <span className="text-red-500">*</span>
+                NO. DE VIAJES <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -161,11 +163,11 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
             {/* Capacidad */}
             <div>
               <AutocompleteInput
-                label="Capacidad (m³)"
+                label="CAPACIDAD (M³)"
                 value={formData.capacidad}
                 onChange={(value) => handleChange('capacidad', value)}
                 options={CAPACIDADES_CAMION}
-                placeholder="Seleccione capacidad..."
+                placeholder="SELECCIONE CAPACIDAD..."
                 required
               />
               {errors.capacidad && (
@@ -176,7 +178,7 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
             {/* Volumen Suelto (Calculado automáticamente) */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Vol. Suelto (m³) <span className="text-blue-500 text-xs">(Calculado)</span>
+                VOL. SUELTO (M³) <span className="text-blue-500 text-xs">(CALCULADO)</span>
               </label>
               <input
                 type="text"
@@ -186,46 +188,46 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
                 placeholder="0.00"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Fórmula: No. Viajes × Capacidad = {formData.volSuelto || '0.00'} m³
+                FÓRMULA: NO. VIAJES × CAPACIDAD = {formData.volSuelto || '0.00'} M³
               </p>
             </div>
 
             {/* Capa No. */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Capa No.
+                CAPA NO.
               </label>
               <input
                 type="text"
                 value={formData.capaNo}
                 onChange={(e) => handleChange('capaNo', e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Ej: Capa 1, Capa 2..."
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
+                placeholder="EJ: CAPA 1, CAPA 2..."
               />
             </div>
 
             {/* Elevación Ariza */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Elevación Ariza
+                ELEVACIÓN
               </label>
               <input
                 type="text"
                 value={formData.elevacionAriza}
                 onChange={(e) => handleChange('elevacionAriza', e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Ej: 100.50 m"
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
+                placeholder="EJ: 100.50 M"
               />
             </div>
 
             {/* Origen */}
             <div>
               <AutocompleteInput
-                label="Origen"
+                label="ORIGEN"
                 value={formData.capaOrigen}
                 onChange={(value) => handleChange('capaOrigen', value)}
                 options={ORIGENES}
-                placeholder="Seleccione o escriba el origen..."
+                placeholder="SELECCIONE O ESCRIBA EL ORIGEN..."
                 required
               />
               {errors.capaOrigen && (
@@ -236,11 +238,11 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
             {/* Destino */}
             <div>
               <AutocompleteInput
-                label="Destino"
+                label="DESTINO"
                 value={formData.destino}
                 onChange={(value) => handleChange('destino', value)}
                 options={DESTINOS}
-                placeholder="Seleccione o escriba el destino..."
+                placeholder="SELECCIONE O ESCRIBA EL DESTINO..."
                 required
               />
               {errors.destino && (
@@ -256,13 +258,13 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
               onClick={onClose}
               className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-semibold"
             >
-              Cancelar
+              CANCELAR
             </button>
             <button
               type="submit"
               className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-md"
             >
-              Guardar
+              GUARDAR
             </button>
           </div>
         </form>

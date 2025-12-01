@@ -16,7 +16,7 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
   onClose,
   onSave,
   materialInicial,
-  title = 'Agregar Control de Material'
+  title = 'AGREGAR CONTROL DE MATERIAL'
 }) => {
   const [formData, setFormData] = useState<ControlMaterial>({
     material: '',
@@ -44,7 +44,9 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
   }, [materialInicial, isOpen]);
 
   const handleChange = (campo: keyof ControlMaterial, valor: string) => {
-    setFormData(prev => ({ ...prev, [campo]: valor }));
+    // Convertir a mayúsculas
+    const valorFinal = valor.toUpperCase();
+    setFormData(prev => ({ ...prev, [campo]: valorFinal }));
     if (errors[campo]) {
       setErrors(prev => ({ ...prev, [campo]: '' }));
     }
@@ -54,16 +56,16 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.material.trim()) {
-      newErrors.material = 'El material es requerido';
+      newErrors.material = 'EL MATERIAL ES REQUERIDO';
     }
     if (!formData.unidad.trim()) {
-      newErrors.unidad = 'La unidad es requerida';
+      newErrors.unidad = 'LA UNIDAD ES REQUERIDA';
     }
     if (!formData.cantidad.trim() || Number(formData.cantidad) <= 0) {
-      newErrors.cantidad = 'La cantidad debe ser mayor a 0';
+      newErrors.cantidad = 'LA CANTIDAD DEBE SER MAYOR A 0';
     }
     if (!formData.zona.trim()) {
-      newErrors.zona = 'La zona es requerida';
+      newErrors.zona = 'LA ZONA ES REQUERIDA';
     }
 
     setErrors(newErrors);
@@ -103,11 +105,11 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
             {/* Material */}
             <div className="md:col-span-2">
               <AutocompleteInput
-                label="Material"
+                label="MATERIAL"
                 value={formData.material}
                 onChange={(value) => handleChange('material', value)}
                 options={MATERIALES}
-                placeholder="Seleccione o escriba el material..."
+                placeholder="SELECCIONE O ESCRIBA EL MATERIAL..."
                 required
               />
               {errors.material && (
@@ -118,11 +120,11 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
             {/* Unidad */}
             <div>
               <AutocompleteInput
-                label="Unidad"
+                label="UNIDAD"
                 value={formData.unidad}
                 onChange={(value) => handleChange('unidad', value)}
                 options={UNIDADES_MEDIDA}
-                placeholder="Seleccione unidad..."
+                placeholder="SELECCIONE UNIDAD..."
                 required
               />
               {errors.unidad && (
@@ -133,7 +135,7 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
             {/* Cantidad */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Cantidad <span className="text-red-500">*</span>
+                CANTIDAD <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -152,14 +154,14 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
             {/* Zona */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Zona <span className="text-red-500">*</span>
+                ZONA <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={formData.zona}
                 onChange={(e) => handleChange('zona', e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="Ej: Zona A, Tramo 1..."
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 uppercase"
+                placeholder="EJ: ZONA A, TRAMO 1..."
               />
               {errors.zona && (
                 <p className="text-red-500 text-xs mt-1">{errors.zona}</p>
@@ -169,14 +171,14 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
             {/* Elevación */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Elevación
+                ELEVACIÓN
               </label>
               <input
                 type="text"
                 value={formData.elevacion}
                 onChange={(e) => handleChange('elevacion', e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                placeholder="Ej: 100.50 m"
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 uppercase"
+                placeholder="EJ: 100.50 M"
               />
             </div>
           </div>
@@ -188,13 +190,13 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
               onClick={onClose}
               className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-semibold"
             >
-              Cancelar
+              CANCELAR
             </button>
             <button
               type="submit"
               className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold shadow-md"
             >
-              Guardar
+              GUARDAR
             </button>
           </div>
         </form>

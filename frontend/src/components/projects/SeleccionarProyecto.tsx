@@ -18,10 +18,10 @@ const SeleccionarProyecto: React.FC = () => {
         if (resultado.success && resultado.data) {
           setProyectos(resultado.data);
         } else {
-          setError('Error al cargar proyectos');
+          setError('ERROR AL CARGAR PROYECTOS');
         }
       } catch (err) {
-        setError('Error de conexión');
+        setError('ERROR DE CONEXIÓN');
       } finally {
         setLoading(false);
       }
@@ -39,7 +39,7 @@ const SeleccionarProyecto: React.FC = () => {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando proyectos...</p>
+          <p className="mt-4 text-gray-600">CARGANDO PROYECTOS...</p>
         </div>
       </div>
     );
@@ -62,12 +62,12 @@ const SeleccionarProyecto: React.FC = () => {
         <div className="text-center">
           <h1 className="text-4xl font-bold mb-2 text-orange-600">🏗️</h1>
           <h2 className="text-3xl font-extrabold text-white">
-            Seleccionar Proyecto
+            SELECCIONAR PROYECTO
           </h2>
           <p className="mt-2 text-sm text-gray-200">
-            Hola, {user?.nombre}. {user?.rol === 'admin'
-              ? 'Selecciona el proyecto en el que trabajarás hoy.'
-              : 'Selecciona uno de tus proyectos asignados.'}
+            HOLA, {user?.nombre}. {user?.rol === 'admin'
+              ? 'SELECCIONA EL PROYECTO EN EL QUE TRABAJARÁS HOY.'
+              : 'SELECCIONA UNO DE TUS PROYECTOS ASIGNADOS.'}
           </p>
         </div>
 
@@ -79,8 +79,8 @@ const SeleccionarProyecto: React.FC = () => {
 
         {proyectosFiltrados.length === 0 ? (
           <div className="text-center py-12 bg-white rounded-lg shadow-md">
-            <p className="text-gray-600 text-lg">No tienes proyectos asignados</p>
-            <p className="text-gray-500 text-sm mt-2">Contacta al administrador para que te asigne proyectos</p>
+            <p className="text-gray-600 text-lg">NO TIENES PROYECTOS ASIGNADOS</p>
+            <p className="text-gray-500 text-sm mt-2">CONTACTA AL ADMINISTRADOR PARA QUE TE ASIGNE PROYECTOS</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
@@ -105,7 +105,7 @@ const SeleccionarProyecto: React.FC = () => {
                 {proyecto?._id === proyectoItem._id && (
                   <div className="mt-3">
                     <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                      ✅ Seleccionado
+                      ✅ SELECCIONADO
                     </span>
                   </div>
                 )}
@@ -116,7 +116,7 @@ const SeleccionarProyecto: React.FC = () => {
 
         <div className="text-center mt-8">
           <p className="text-sm text-gray-300">
-            Una vez seleccionado el proyecto, podrás comenzar a crear reportes.
+            UNA VEZ SELECCIONADO EL PROYECTO, PODRÁS COMENZAR A CREAR REPORTES.
           </p>
         </div>
       </div>

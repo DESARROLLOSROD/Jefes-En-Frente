@@ -31,7 +31,7 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
 
   const cargarReportes = async () => {
     if (!proyecto?._id) {
-      setError('No hay proyecto seleccionado');
+      setError('NO HAY PROYECTO SELECCIONADO');
       setLoading(false);
       return;
     }
@@ -41,10 +41,10 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
         setReportes(resultado.data);
         setError('');
       } else {
-        setError('Error al cargar reportes: ' + (resultado.error || 'Desconocido'));
+        setError('ERROR AL CARGAR REPORTES: ' + (resultado.error || 'DESCONOCIDO'));
       }
     } catch (e) {
-      setError('Error de conexión con el servidor');
+      setError('ERROR DE CONEXIÓN CON EL SERVIDOR');
     } finally {
       setLoading(false);
     }
@@ -66,21 +66,21 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
     const response = await reporteService.eliminarReporte(reporteEliminar._id!);
 
     if (response.success) {
-      mostrarMensaje('Reporte eliminado correctamente');
+      mostrarMensaje('REPORTE ELIMINADO CORRECTAMENTE');
       setMostrarConfirmacion(false);
       setReporteEliminar(null);
       cargarReportes();
     } else {
-      mostrarMensaje(response.error || 'Error al eliminar reporte');
+      mostrarMensaje(response.error || 'ERROR AL ELIMINAR REPORTE');
     }
   };
 
   const handleDescargarPDF = (reporte: ReporteActividades) => {
     try {
-      generarPDFReporte(reporte, proyecto?.nombre || 'Proyecto');
-      mostrarMensaje('PDF generado correctamente');
+      generarPDFReporte(reporte, proyecto?.nombre || 'PROYECTO');
+      mostrarMensaje('PDF GENERADO CORRECTAMENTE');
     } catch (error) {
-      mostrarMensaje('Error al generar PDF');
+      mostrarMensaje('ERROR AL GENERAR PDF');
       console.error('Error generando PDF:', error);
     }
   };
@@ -89,7 +89,7 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
     return (
       <div className="text-center py-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto"></div>
-        <p className="mt-2 text-gray-600">Cargando reportes...</p>
+        <p className="mt-2 text-gray-600">CARGANDO REPORTES...</p>
       </div>
     );
   }
@@ -98,10 +98,10 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
     return (
       <div className="text-center py-8">
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded max-w-md mx-auto">
-          <strong>Error:</strong> {error}
+          <strong>ERROR:</strong> {error}
         </div>
         <button onClick={cargarReportes} className="mt-4 bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700">
-          Reintentar
+          REINTENTAR
         </button>
       </div>
     );
@@ -117,18 +117,18 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
       )}
       <div className="bg-white p-6 rounded-lg shadow-md">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">📋 Reportes de {proyecto?.nombre}</h2>
+          <h2 className="text-2xl font-bold text-gray-800">REPORTES DE {proyecto?.nombre}</h2>
           <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-            {reportes.length} reporte{reportes.length !== 1 ? 's' : ''}
+            {reportes.length} REPORTE{reportes.length !== 1 ? 'S' : ''}
           </span>
         </div>
         {reportes.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">📭</div>
-            <p className="text-gray-600 text-lg mb-4">No hay reportes registrados aún</p>
-            <p className="text-gray-500 mb-6">Crea tu primer reporte en la pestaña "Nuevo Reporte"</p>
+            <p className="text-gray-600 text-lg mb-4">NO HAY REPORTES REGISTRADOS AÚN</p>
+            <p className="text-gray-500 mb-6">CREA TU PRIMER REPORTE EN LA PESTAÑA "NUEVO REPORTE"</p>
             <div className="bg-orange-100 border border-orange-300 rounded-lg p-4 inline-block">
-              <p className="text-orange-800 font-medium">💡 Los reportes aparecerán aquí después de crearlos</p>
+              <p className="text-orange-800 font-medium">LOS REPORTES APARECERÁN AQUÍ DESPUÉS DE CREARLOS</p>
             </div>
           </div>
         ) : (
@@ -136,11 +136,11 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
             <table className="min-w-full bg-white rounded-lg overflow-hidden">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Turno</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Zona de Trabajo</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jefe de Frente</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">FECHA</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TURNO</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ZONA DE TRABAJO</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">JEFE DE FRENTE</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACCIONES</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
@@ -151,7 +151,7 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 uppercase">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${reporte.turno === 'primer' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'}`}>
-                        {reporte.turno === 'primer' ? '🕖 Primer Turno' : '🕗 Segundo Turno'}
+                        {reporte.turno === 'primer' ? 'PRIMER TURNO' : 'SEGUNDO TURNO'}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900 uppercase">{reporte.zonaTrabajo}</td>
@@ -161,9 +161,9 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
                       <button
                         className="text-green-600 hover:text-green-900 mr-3 font-semibold"
                         onClick={() => handleDescargarPDF(reporte)}
-                        title="Descargar PDF"
+                        title="DESCARGAR PDF"
                       >
-                        📄 PDF
+                        PDF
                       </button>
                       {(user?.rol === 'admin' || user?.rol === 'supervisor') && (
                         <>
@@ -171,13 +171,13 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
                             className="text-blue-600 hover:text-blue-900 mr-3 font-semibold"
                             onClick={() => onEditar(reporte)}
                           >
-                            ✏️ Editar
+                            EDITAR
                           </button>
                           <button
                             className="text-red-600 hover:text-red-900 mr-3"
                             onClick={() => handleEliminarClick(reporte)}
                           >
-                            🗑️ Eliminar
+                            ELIMINAR
                           </button>
                         </>
                       )}
@@ -194,11 +194,11 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
       {mostrarConfirmacion && reporteEliminar && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-2xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">⚠️ Confirmar Eliminación</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-4">CONFIRMAR ELIMINACIÓN</h3>
             <p className="text-gray-600 mb-6">
-              ¿Estás seguro de que deseas eliminar el reporte <strong>{reporteEliminar.zonaTrabajo}</strong>?
+              ¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR EL REPORTE <strong>{reporteEliminar.zonaTrabajo}</strong>?
               <br />
-              <span className="text-red-600 font-semibold">Esta acción es PERMANENTE y no se puede deshacer.</span>
+              <span className="text-red-600 font-semibold">ESTA ACCIÓN ES PERMANENTE Y NO SE PUEDE DESHACER.</span>
             </p>
             <div className="flex justify-end space-x-3">
               <button
@@ -208,13 +208,13 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
                 }}
                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-semibold"
               >
-                Cancelar
+                CANCELAR
               </button>
               <button
                 onClick={handleConfirmarEliminar}
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold"
               >
-                Eliminar
+                ELIMINAR
               </button>
             </div>
           </div>

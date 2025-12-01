@@ -16,7 +16,7 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
   onClose,
   onSave,
   aguaInicial,
-  title = 'Agregar Control de Agua'
+  title = 'AGREGAR CONTROL DE AGUA'
 }) => {
   const [formData, setFormData] = useState<ControlAgua>({
     noEconomico: '',
@@ -59,7 +59,9 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
   }, [formData.viaje, formData.capacidad]);
 
   const handleChange = (campo: keyof ControlAgua, valor: string | number) => {
-    setFormData(prev => ({ ...prev, [campo]: valor }));
+    // Convertir a mayúsculas si es texto
+    const valorFinal = typeof valor === 'string' ? valor.toUpperCase() : valor;
+    setFormData(prev => ({ ...prev, [campo]: valorFinal }));
     if (errors[campo]) {
       setErrors(prev => ({ ...prev, [campo]: '' }));
     }
@@ -69,19 +71,19 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.noEconomico.trim()) {
-      newErrors.noEconomico = 'El número económico es requerido';
+      newErrors.noEconomico = 'EL NÚMERO ECONÓMICO ES REQUERIDO';
     }
     if (!formData.viaje || formData.viaje <= 0) {
-      newErrors.viaje = 'El número de viajes debe ser mayor a 0';
+      newErrors.viaje = 'EL NÚMERO DE VIAJES DEBE SER MAYOR A 0';
     }
     if (!formData.capacidad || Number(formData.capacidad) <= 0) {
-      newErrors.capacidad = 'La capacidad debe ser mayor a 0';
+      newErrors.capacidad = 'LA CAPACIDAD DEBE SER MAYOR A 0';
     }
     if (!formData.origen.trim()) {
-      newErrors.origen = 'El origen es requerido';
+      newErrors.origen = 'EL ORIGEN ES REQUERIDO';
     }
     if (!formData.destino.trim()) {
-      newErrors.destino = 'El destino es requerido';
+      newErrors.destino = 'EL DESTINO ES REQUERIDO';
     }
 
     setErrors(newErrors);
@@ -121,14 +123,14 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
             {/* No. Económico */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                No. Económico <span className="text-red-500">*</span>
+                NO. ECONÓMICO <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 value={formData.noEconomico}
                 onChange={(e) => handleChange('noEconomico', e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                placeholder="Ej: 001, A-123..."
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 uppercase"
+                placeholder="EJ: 001, A-123..."
               />
               {errors.noEconomico && (
                 <p className="text-red-500 text-xs mt-1">{errors.noEconomico}</p>
@@ -138,7 +140,7 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
             {/* Número de Viajes */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                No. de Viajes <span className="text-red-500">*</span>
+                NO. DE VIAJES <span className="text-red-500">*</span>
               </label>
               <input
                 type="number"
@@ -156,11 +158,11 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
             {/* Capacidad */}
             <div>
               <AutocompleteInput
-                label="Capacidad (m³)"
+                label="CAPACIDAD (M³)"
                 value={formData.capacidad}
                 onChange={(value) => handleChange('capacidad', value)}
                 options={CAPACIDADES_CAMION}
-                placeholder="Seleccione capacidad..."
+                placeholder="SELECCIONE CAPACIDAD..."
                 required
               />
               {errors.capacidad && (
@@ -171,7 +173,7 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
             {/* Volumen (Calculado automáticamente) */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Volumen (m³) <span className="text-cyan-500 text-xs">(Calculado)</span>
+                VOLUMEN (M³) <span className="text-cyan-500 text-xs">(CALCULADO)</span>
               </label>
               <input
                 type="text"
@@ -181,18 +183,18 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
                 placeholder="0.00"
               />
               <p className="text-xs text-gray-500 mt-1">
-                Fórmula: No. Viajes × Capacidad = {formData.volumen || '0.00'} m³
+                FÓRMULA: NO. VIAJES × CAPACIDAD = {formData.volumen || '0.00'} M³
               </p>
             </div>
 
             {/* Origen */}
             <div>
               <AutocompleteInput
-                label="Origen"
+                label="ORIGEN"
                 value={formData.origen}
                 onChange={(value) => handleChange('origen', value)}
                 options={ORIGENES}
-                placeholder="Seleccione o escriba el origen..."
+                placeholder="SELECCIONE O ESCRIBA EL ORIGEN..."
                 required
               />
               {errors.origen && (
@@ -203,11 +205,11 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
             {/* Destino */}
             <div>
               <AutocompleteInput
-                label="Destino"
+                label="DESTINO"
                 value={formData.destino}
                 onChange={(value) => handleChange('destino', value)}
                 options={DESTINOS}
-                placeholder="Seleccione o escriba el destino..."
+                placeholder="SELECCIONE O ESCRIBA EL DESTINO..."
                 required
               />
               {errors.destino && (
@@ -223,13 +225,13 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
               onClick={onClose}
               className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-semibold"
             >
-              Cancelar
+              CANCELAR
             </button>
             <button
               type="submit"
               className="px-6 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors font-semibold shadow-md"
             >
-              Guardar
+              GUARDAR
             </button>
           </div>
         </form>

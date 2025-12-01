@@ -44,7 +44,7 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
       const nuevosAcarreos = acarreos.filter((_, i) => i !== index);
       onAcarreosChange(nuevosAcarreos);
     } else {
-      alert('Debe haber al menos un registro');
+      alert('DEBE HABER AL MENOS UN REGISTRO');
     }
   };
 
@@ -57,13 +57,13 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
   return (
     <div className="bg-white rounded-lg shadow-md p-6">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-xl font-bold text-gray-800">Control de Acarreos</h3>
+        <h3 className="text-xl font-bold text-gray-800">CONTROL DE ACARREOS</h3>
         <button
           type="button"
           onClick={handleAgregarNuevo}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-md flex items-center"
         >
-          <span className="mr-2">+</span> Agregar Acarreo
+          <span className="mr-2">+</span> AGREGAR ACARREO
         </button>
       </div>
 
@@ -72,13 +72,13 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
         <table className="min-w-full bg-white border border-gray-200 rounded-lg">
           <thead className="bg-blue-50">
             <tr>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Material</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">No. Viajes</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Capacidad</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Vol. Suelto</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Origen</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Destino</th>
-              <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Acciones</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">MATERIAL</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">NO. VIAJES</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">CAPACIDAD</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">VOL. SUELTO</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">ORIGEN</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">DESTINO</th>
+              <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">ACCIONES</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
@@ -86,9 +86,9 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
               <tr key={index} className="hover:bg-gray-50">
                 <td className="px-4 py-3 text-sm text-gray-900">{acarreo.material || '-'}</td>
                 <td className="px-4 py-3 text-sm text-gray-900">{acarreo.noViaje || 0}</td>
-                <td className="px-4 py-3 text-sm text-gray-900">{acarreo.capacidad || '-'} m³</td>
+                <td className="px-4 py-3 text-sm text-gray-900">{acarreo.capacidad || '-'} M³</td>
                 <td className="px-4 py-3 text-sm font-bold text-blue-600">
-                  {acarreo.volSuelto || '0.00'} m³
+                  {acarreo.volSuelto || '0.00'} M³
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-900">{acarreo.capaOrigen || '-'}</td>
                 <td className="px-4 py-3 text-sm text-gray-900">{acarreo.destino || '-'}</td>
@@ -98,7 +98,7 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
                     onClick={() => handleEditar(index)}
                     className="text-blue-600 hover:text-blue-800 mr-3 font-semibold"
                   >
-                    Editar
+                    EDITAR
                   </button>
                   <button
                     type="button"
@@ -106,7 +106,7 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
                     className="text-red-600 hover:text-red-800 font-semibold"
                     disabled={acarreos.length === 1}
                   >
-                    Eliminar
+                    ELIMINAR
                   </button>
                 </td>
               </tr>
@@ -115,10 +115,10 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
           <tfoot className="bg-gray-100">
             <tr>
               <td colSpan={3} className="px-4 py-3 text-sm font-bold text-gray-900 text-right">
-                Total Volumen:
+                TOTAL VOLUMEN:
               </td>
               <td className="px-4 py-3 text-sm font-bold text-blue-700">
-                {calcularTotalVolumen()} m³
+                {calcularTotalVolumen()} M³
               </td>
               <td colSpan={3}></td>
             </tr>
@@ -135,7 +135,7 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
         }}
         onSave={handleGuardar}
         acarreoInicial={acarreoEditando?.data || null}
-        title={acarreoEditando !== null ? 'Editar Control de Acarreo' : 'Agregar Control de Acarreo'}
+        title={acarreoEditando !== null ? 'EDITAR CONTROL DE ACARREO' : 'AGREGAR CONTROL DE ACARREO'}
       />
     </div>
   );

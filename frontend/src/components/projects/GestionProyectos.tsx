@@ -27,7 +27,7 @@ const GestionProyectos: React.FC = () => {
             setProyectos(response.data);
             setError('');
         } else {
-            setError(response.error || 'Error al cargar proyectos');
+            setError(response.error || 'ERROR AL CARGAR PROYECTOS');
         }
         setLoading(false);
     };
@@ -41,7 +41,7 @@ const GestionProyectos: React.FC = () => {
                 cargarProyectos();
                 cerrarModal();
             } else {
-                alert(response.error || 'Error al actualizar proyecto');
+                alert(response.error || 'ERROR AL ACTUALIZAR PROYECTO');
             }
         } else {
             const response = await proyectoService.crearProyecto(formData);
@@ -49,18 +49,18 @@ const GestionProyectos: React.FC = () => {
                 cargarProyectos();
                 cerrarModal();
             } else {
-                alert(response.error || 'Error al crear proyecto');
+                alert(response.error || 'ERROR AL CREAR PROYECTO');
             }
         }
     };
 
     const handleEliminar = async (id: string) => {
-        if (window.confirm('¿Estás seguro de eliminar este proyecto?')) {
+        if (window.confirm('¿ESTÁS SEGURO DE ELIMINAR ESTE PROYECTO?')) {
             const response = await proyectoService.eliminarProyecto(id);
             if (response.success) {
                 cargarProyectos();
             } else {
-                alert(response.error || 'Error al eliminar proyecto');
+                alert(response.error || 'ERROR AL ELIMINAR PROYECTO');
             }
         }
     };
@@ -89,17 +89,17 @@ const GestionProyectos: React.FC = () => {
         setProyectoEditar(null);
     };
 
-    if (loading) return <div className="text-center p-8">Cargando proyectos...</div>;
+    if (loading) return <div className="text-center p-8">CARGANDO PROYECTOS...</div>;
 
     return (
         <div className="max-w-6xl mx-auto p-6">
             <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-bold text-gray-800">Gestión de Proyectos</h2>
+                <h2 className="text-2xl font-bold text-gray-800">GESTIÓN DE PROYECTOS</h2>
                 <button
                     onClick={() => abrirModal()}
                     className="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700"
                 >
-                    + Nuevo Proyecto
+                    + NUEVO PROYECTO
                 </button>
             </div>
 
@@ -120,13 +120,13 @@ const GestionProyectos: React.FC = () => {
                                 onClick={() => abrirModal(proyecto)}
                                 className="text-blue-600 hover:text-blue-800"
                             >
-                                Editar
+                                EDITAR
                             </button>
                             <button
                                 onClick={() => handleEliminar(proyecto._id)}
                                 className="text-red-600 hover:text-red-800"
                             >
-                                Eliminar
+                                ELIMINAR
                             </button>
                         </div>
                     </div>
@@ -137,45 +137,45 @@ const GestionProyectos: React.FC = () => {
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                     <div className="bg-white rounded-lg p-8 max-w-md w-full">
                         <h3 className="text-xl font-bold mb-4">
-                            {proyectoEditar ? 'Editar Proyecto' : 'Nuevo Proyecto'}
+                            {proyectoEditar ? 'EDITAR PROYECTO' : 'NUEVO PROYECTO'}
                         </h3>
                         <form onSubmit={handleSubmit}>
                             <div className="mb-4">
                                 <label className="block text-gray-700 text-sm font-bold mb-2 uppercase">
-                                    Nombre *
+                                    NOMBRE *
                                 </label>
                                 <input
                                     type="text"
                                     value={formData.nombre}
-                                    onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
+                                    onChange={(e) => setFormData({ ...formData, nombre: e.target.value.toUpperCase() })}
                                     className="w-full border rounded px-3 py-2 uppercase"
-                                    placeholder="Nombre del proyecto"
+                                    placeholder="NOMBRE DEL PROYECTO"
                                     required
                                 />
                             </div>
                             <div className="mb-4">
                                 <label className="block text-gray-700 text-sm font-bold mb-2 uppercase">
-                                    Ubicación *
+                                    UBICACIÓN *
                                 </label>
                                 <input
                                     type="text"
                                     value={formData.ubicacion}
-                                    onChange={(e) => setFormData({ ...formData, ubicacion: e.target.value })}
+                                    onChange={(e) => setFormData({ ...formData, ubicacion: e.target.value.toUpperCase() })}
                                     className="w-full border rounded px-3 py-2 uppercase"
-                                    placeholder="Ubicación del proyecto"
+                                    placeholder="UBICACIÓN DEL PROYECTO"
                                     required
                                 />
                             </div>
                             <div className="mb-6">
                                 <label className="block text-gray-700 text-sm font-bold mb-2 uppercase">
-                                    Descripción *
+                                    DESCRIPCIÓN *
                                 </label>
                                 <textarea
                                     value={formData.descripcion}
-                                    onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
+                                    onChange={(e) => setFormData({ ...formData, descripcion: e.target.value.toUpperCase() })}
                                     className="w-full border rounded px-3 py-2 uppercase"
                                     rows={3}
-                                    placeholder="Descripción del proyecto"
+                                    placeholder="DESCRIPCIÓN DEL PROYECTO"
                                     required
                                 />
                             </div>
@@ -185,13 +185,13 @@ const GestionProyectos: React.FC = () => {
                                     onClick={cerrarModal}
                                     className="px-4 py-2 text-gray-600 hover:text-gray-800"
                                 >
-                                    Cancelar
+                                    CANCELAR
                                 </button>
                                 <button
                                     type="submit"
                                     className="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700"
                                 >
-                                    Guardar
+                                    GUARDAR
                                 </button>
                             </div>
                         </form>

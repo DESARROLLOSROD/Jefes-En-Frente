@@ -15,7 +15,7 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
   value,
   onChange,
   options,
-  placeholder = 'Seleccione o escriba...',
+  placeholder = 'SELECCIONE O ESCRIBA...',
   className = '',
   disabled = false,
   label,
@@ -87,7 +87,7 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
         onFocus={handleFocus}
         placeholder={placeholder}
         disabled={disabled}
-        className={`w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+        className={`w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase ${
           disabled ? 'bg-gray-100 cursor-not-allowed' : 'bg-white'
         } ${className}`}
       />
@@ -112,7 +112,7 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
       {showDropdown && filteredOptions.length === 0 && value && !disabled && (
         <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
           <div className="px-3 py-2 text-gray-500 text-sm">
-            No se encontraron coincidencias. Puede escribir un valor personalizado.
+            NO SE ENCONTRARON COINCIDENCIAS. PUEDE ESCRIBIR UN VALOR PERSONALIZADO.
           </div>
         </div>
       )}

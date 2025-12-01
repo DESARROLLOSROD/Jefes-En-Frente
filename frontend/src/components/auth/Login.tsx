@@ -18,10 +18,10 @@ const Login: React.FC = () => {
     try {
       const success = await login(email, password);
       if (!success) {
-        setError('Credenciales incorrectas');
+        setError('CREDENCIALES INCORRECTAS');
       }
     } catch (err) {
-      setError('Error de conexión');
+      setError('ERROR DE CONEXIÓN');
     } finally {
       setLoading(false);
     }
@@ -40,7 +40,7 @@ const Login: React.FC = () => {
           <div className="text-center">
             <h1 className="text-4xl font-bold mb-2 text-orange-600">🏗️</h1>
             <h2 className="mt-2 text-3xl font-extrabold text-gray-900 uppercase tracking-wide">
-              Jefes en Frente
+              JEFES EN FRENTE
             </h2>
             <p className="mt-2 text-sm text-gray-600 font-medium">
               SISTEMA INTEGRAL DE REPORTES MINEROS
@@ -51,7 +51,7 @@ const Login: React.FC = () => {
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="email" className="sr-only">
-                Email
+                EMAIL
               </label>
               <input
                 id="email"
@@ -60,14 +60,14 @@ const Login: React.FC = () => {
                 autoComplete="email"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
-                placeholder="Correo Electrónico"
+                placeholder="CORREO ELECTRÓNICO"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             <div>
               <label htmlFor="password" className="sr-only">
-                Contraseña
+                CONTRASEÑA
               </label>
               <input
                 id="password"
@@ -76,7 +76,7 @@ const Login: React.FC = () => {
                 autoComplete="current-password"
                 required
                 className="appearance-none rounded-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-orange-500 focus:border-orange-500 focus:z-10 sm:text-sm"
-                placeholder="Contraseña"
+                placeholder="CONTRASEÑA"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -85,7 +85,7 @@ const Login: React.FC = () => {
 
           {error && (
             <div className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 text-sm" role="alert">
-              <p className="font-bold">Error</p>
+              <p className="font-bold">ERROR</p>
               <p>{error}</p>
             </div>
           )}
@@ -96,7 +96,7 @@ const Login: React.FC = () => {
               disabled={loading}
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-md text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 transition-colors uppercase tracking-wider shadow-lg"
             >
-              {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+              {loading ? 'INICIANDO SESIÓN...' : 'INICIAR SESIÓN'}
             </button>
           </div>
 
