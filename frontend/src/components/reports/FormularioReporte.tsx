@@ -259,7 +259,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
       {mensaje && (
         <div className={`p-4 mb-6 rounded-lg ${mensaje.includes('EXITOSAMENTE') ? 'bg-green-100 text-green-700 border border-green-300' :
           'bg-red-100 text-red-700 border border-red-300'
-        }`}>
+          }`}>
           {mensaje}
         </div>
       )}
@@ -350,7 +350,6 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
                 value={formData.sobrestante}
                 onChange={(e) => setFormData({ ...formData, sobrestante: e.target.value.toUpperCase() })}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border uppercase"
-                required
               />
             </div>
           </div>

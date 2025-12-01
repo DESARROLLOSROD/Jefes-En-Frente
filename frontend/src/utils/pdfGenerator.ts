@@ -181,7 +181,7 @@ export const generarPDFReporte = (
 
         renderTable(
             "CONTROL DE ACARREOS",
-            [["Material", "No. Viaje", "Capacidad", "Vol. Suelto", "Capa", "Ariza", "Origen", "Destino"]],
+            [["Material", "No. Viaje", "Capacidad", "Vol. Suelto", "Capa", "Elevación", "Origen", "Destino"]],
             bodyAcarreo
         );
     }
