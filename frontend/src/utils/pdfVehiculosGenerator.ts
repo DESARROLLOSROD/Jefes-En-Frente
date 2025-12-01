@@ -1,16 +1,23 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Vehiculo } from '../types/gestion';
+import logo from "../logo.png"; // AJUSTA la ruta
 
 export const generarPDFVehiculos = (vehiculos: Vehiculo[]) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
+
+    const ORANGE = "rgb(76, 78, 201)";
+    const DARK = "rgb(26,26,26)";
+    const GRAY = "rgb(80,80,80)";
+
     let yPosition = 20;
 
     // Header Principal
+    doc.addImage(logo, "PNG", 13, 8, 32, 32);
     doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
-    doc.text('REPORTE DE PARQUE VEHICULAR', pageWidth / 2, yPosition, { align: 'center' });
+    doc.text('REPORTE DE PARQUE VEHICULAR', pageWidth / 1.80, yPosition, { align: 'center' });
 
     yPosition += 10;
     doc.setFontSize(12);
@@ -21,7 +28,16 @@ export const generarPDFVehiculos = (vehiculos: Vehiculo[]) => {
         day: 'numeric',
         timeZone: 'UTC'
     });
+
+
+
     doc.text(`Generado el: ${fechaHoy}`, pageWidth / 2, yPosition, { align: 'center' });
+
+
+    // Línea corporativa
+    doc.setDrawColor(ORANGE);
+    doc.setLineWidth(1.5);
+    doc.line(10, 42, pageWidth - 10, 42);
 
     yPosition += 20;
 
@@ -51,7 +67,7 @@ export const generarPDFVehiculos = (vehiculos: Vehiculo[]) => {
         head: [['Nombre', 'Tipo', 'No. Económico', 'H. Inicial', 'H. Final', 'H. Operación', 'Proyectos']],
         body: tableBody,
         theme: 'grid',
-        headStyles: { fillColor: [230, 126, 34], textColor: 255, fontStyle: 'bold' }, // Naranja (matching theme)
+        headStyles: { fillColor: ORANGE, textColor: 255, fontStyle: 'bold' }, // Naranja (matching theme)
         styles: { fontSize: 9, cellPadding: 3 },
         margin: { left: 10, right: 10 }
     });

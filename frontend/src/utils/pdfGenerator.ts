@@ -11,7 +11,7 @@ export const generarPDFReporte = (
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-    const ORANGE = "rgb(44, 48, 231)";
+    const ORANGE = "rgb(76, 78, 201)";
     const DARK = "rgb(26,26,26)";
     const GRAY = "rgb(80,80,80)";
 

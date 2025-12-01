@@ -255,7 +255,7 @@ const Dashboard: React.FC = () => {
       )}
 
       {/* Footer */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-gray-900 text-white p-4 z-40">
+      <footer className="fixed bottom-0 left-0 right-0 bg-gray-00 text-white p-4 z-40">
         <div className="container mx-auto text-center">
           <p>© 2025 DESARROLLOS ROD</p>
           <p className="text-gray-400 text-sm mt-1">

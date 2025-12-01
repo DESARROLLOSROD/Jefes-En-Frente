@@ -1,34 +1,58 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import logo from '../logo.png'; // corporate logo
 import { ReporteActividades } from '../types/reporte';
 import { Proyecto } from '../types/gestion';
 
 export const generarPDFGeneral = (reportes: ReporteActividades[], proyectos: Proyecto[]) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-    let yPosition = 20;
+    const pageHeight = doc.internal.pageSize.getHeight();
 
-    // Header Principal
-    doc.setFontSize(20);
+    // Define corporate colors
+    const ORANGE = "rgb(76, 78, 201)"; // matches pdfGenerator.ts
+    const DARK = "rgb(26,26,26)";
+    const GRAY = "rgb(80,80,80)";
+
+    // Header corporativo
+    doc.addImage(logo, 'PNG', 13, 8, 32, 32);
     doc.setFont('helvetica', 'bold');
-    doc.text('REPORTE GENERAL DE ACTIVIDADES', pageWidth / 2, yPosition, { align: 'center' });
-
-    yPosition += 10;
-    doc.setFontSize(12);
+    doc.setFontSize(20);
+    doc.setTextColor(DARK);
+    doc.text('REPORTE GENERAL DE ACTIVIDADES', pageWidth / 1.80, 21, { align: 'center' });
     doc.setFont('helvetica', 'normal');
-    const fechaHoy = new Date().toLocaleDateString('es-MX', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        timeZone: 'UTC'
-    });
-    doc.text(`Generado el: ${fechaHoy}`, pageWidth / 2, yPosition, { align: 'center' });
+    doc.setFontSize(12);
+    doc.setTextColor(GRAY);
+    doc.text('GENERADO POR JEFES EN FRENTE', pageWidth / 1.80, 30, { align: 'center' });
+    // Línea corporativa
+    doc.setDrawColor(ORANGE);
+    doc.setLineWidth(1.5);
+    doc.line(10, 42, pageWidth - 10, 42);
 
-    yPosition += 20;
+    // Footer corporativo
+    const addFooter = () => {
+        const pageNumber = doc.getNumberOfPages();
+        doc.setFontSize(9);
+        doc.setTextColor(GRAY);
+        doc.text(`Página ${pageNumber}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+    };
+    addFooter();
+
+    let yPosition = 55; // start after header
+
+    // Fecha de generación
+    const fechaHoy = new Date().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(DARK);
+    doc.text('Fecha de generación:', 15, yPosition);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(GRAY);
+    doc.text(fechaHoy, 70, yPosition);
+    yPosition += 10;
 
     // Agrupar reportes por proyecto
     const reportesPorProyecto: { [key: string]: ReporteActividades[] } = {};
-
     reportes.forEach(reporte => {
         if (!reportesPorProyecto[reporte.proyectoId]) {
             reportesPorProyecto[reporte.proyectoId] = [];
@@ -36,27 +60,28 @@ export const generarPDFGeneral = (reportes: ReporteActividades[], proyectos: Pro
         reportesPorProyecto[reporte.proyectoId].push(reporte);
     });
 
-    // Iterar sobre cada proyecto
+    // Iterar proyectos
     Object.keys(reportesPorProyecto).forEach((proyectoId, index) => {
         const proyecto = proyectos.find(p => p._id === proyectoId);
         const nombreProyecto = proyecto ? proyecto.nombre : 'Proyecto Desconocido';
         const reportesDelProyecto = reportesPorProyecto[proyectoId];
 
-        // Nueva página para cada proyecto (excepto el primero si hay espacio)
+        // Nueva página si no es el primero y hay espacio limitado
         if (index > 0) {
             doc.addPage();
-            yPosition = 20;
+            addFooter();
+            yPosition = 55;
         }
 
-        // Título del Proyecto
-        doc.setFontSize(16);
+        // Título del proyecto
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(255, 140, 0); // Naranja
+        doc.setFontSize(16);
+        doc.setTextColor(255, 140, 0); // naranja
         doc.text(`PROYECTO: ${nombreProyecto.toUpperCase()}`, 15, yPosition);
-        doc.setTextColor(0, 0, 0); // Reset color
+        doc.setTextColor(DARK);
         yPosition += 10;
 
-        // Tabla de Reportes del Proyecto
+        // Tabla de reportes del proyecto
         const tableBody = reportesDelProyecto.map(reporte => {
             const fecha = new Date(reporte.fecha).toLocaleDateString('es-MX', { timeZone: 'UTC' });
             return [
@@ -66,7 +91,7 @@ export const generarPDFGeneral = (reportes: ReporteActividades[], proyectos: Pro
                 reporte.seccionTrabajo ? reporte.seccionTrabajo.toUpperCase() : '-',
                 reporte.jefeFrente.toUpperCase(),
                 reporte.controlMaquinaria?.length || 0,
-                reporte.controlAcarreo?.length || 0
+                reporte.controlAcarreo?.length || 0,
             ];
         });
 
@@ -75,15 +100,15 @@ export const generarPDFGeneral = (reportes: ReporteActividades[], proyectos: Pro
             head: [['Fecha', 'Turno', 'Zona', 'Sección', 'Jefe Frente', 'Maq.', 'Acarreos']],
             body: tableBody,
             theme: 'grid',
-            headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' }, // Azul
-            styles: { fontSize: 10, cellPadding: 3 },
-            margin: { left: 15, right: 15 }
+            headStyles: { fillColor: ORANGE, textColor: [255, 255, 255], fontStyle: 'bold' },
+            alternateRowStyles: { fillColor: [245, 245, 245] },
+            styles: { fontSize: 9, textColor: DARK, cellPadding: 3 },
+            margin: { left: 15, right: 15 },
         });
-
         yPosition = (doc as any).lastAutoTable.finalY + 15;
     });
 
-    // Descargar
+    // Guardar archivo
     const fechaArchivo = new Date().toISOString().split('T')[0];
     doc.save(`Reporte_General_${fechaArchivo}.pdf`);
 };

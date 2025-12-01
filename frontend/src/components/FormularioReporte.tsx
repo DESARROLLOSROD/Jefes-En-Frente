@@ -462,11 +462,11 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ reporteInicial, o
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">MATERIAL</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">No. VIAJE</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">CAPACIDAD</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">CAPACIDAD (M3)</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">VOL. SUELTO</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">CAPA No.</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">ELEVACION ARIZA</th>
-                  <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">CAPA ORIGEN</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">ELEVACION</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">ORIGEN</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">DESTINO</th>
                   <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">ACCIONES</th>
                 </tr>
