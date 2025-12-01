@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { Proyecto } from '../types/auth';
-import { authService } from '../services/auth';
-import LogoROD from '../Logo_ROD.png';
+import { useAuth } from '../../contexts/AuthContext';
+import { Proyecto } from '../../types/auth';
+import { authService } from '../../services/auth';
+import LogoROD from '../../Logo_ROD.png';
 
 const SeleccionarProyecto: React.FC = () => {
   const [proyectos, setProyectos] = useState<Proyecto[]>([]);

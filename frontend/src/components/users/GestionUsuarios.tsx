@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Usuario, CrearUsuarioDTO, ActualizarUsuarioDTO } from '../types/usuario.types';
-import { usuarioService } from '../services/usuario.service';
+import { Usuario, CrearUsuarioDTO, ActualizarUsuarioDTO } from '../../types/usuario.types';
+import { usuarioService } from '../../services/usuario.service';
 import FormularioUsuario from './FormularioUsuario';
 
 interface GestionUsuariosProps {

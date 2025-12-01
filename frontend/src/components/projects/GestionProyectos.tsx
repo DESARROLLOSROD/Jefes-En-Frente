@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { proyectoService } from '../services/api';
-import { Proyecto } from '../types/gestion';
+import { proyectoService } from '../../services/api';
+import { Proyecto } from '../../types/gestion';
 
 const GestionProyectos: React.FC = () => {
     const [proyectos, setProyectos] = useState<Proyecto[]>([]);

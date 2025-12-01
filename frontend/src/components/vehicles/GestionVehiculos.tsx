@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { vehiculoService, proyectoService } from '../services/api';
-import { Vehiculo, Proyecto } from '../types/gestion';
-import { generarPDFVehiculos } from '../utils/pdfVehiculosGenerator';
+import { vehiculoService, proyectoService } from '../../services/api';
+import { Vehiculo, Proyecto } from '../../types/gestion';
+import { generarPDFVehiculos } from '../../utils/pdfVehiculosGenerator';
 
 interface GestionVehiculosProps {
     userRol?: 'admin' | 'supervisor' | 'operador';

@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import FormularioReporte from './FormularioReporte';
-import ListaReportes from './ListaReportes';
-import GestionUsuarios from './GestionUsuarios';
-import GestionProyectos from './GestionProyectos';
-import GestionVehiculos from './GestionVehiculos';
-import { ReporteActividades } from '../types/reporte';
-import { reporteService, proyectoService } from '../services/api';
-import { generarPDFGeneral } from '../utils/pdfGeneralGenerator';
-import { Proyecto } from '../types/gestion';
-import LogoROD from '../Logo_ROD.png';
+import { useAuth } from '../../contexts/AuthContext';
+import FormularioReporte from '../reports/FormularioReporte';
+import ListaReportes from '../reports/ListaReportes';
+import GestionUsuarios from '../users/GestionUsuarios';
+import GestionProyectos from '../projects/GestionProyectos';
+import GestionVehiculos from '../vehicles/GestionVehiculos';
+import { ReporteActividades } from '../../types/reporte';
+import { reporteService, proyectoService } from '../../services/api';
+import { generarPDFGeneral } from '../../utils/pdfGeneralGenerator';
+import { Proyecto } from '../../types/gestion';
+import LogoROD from '../../Logo_ROD.png';
 
 const Dashboard: React.FC = () => {
   const [vistaActual, setVistaActual] = useState<'formulario' | 'lista' | 'usuarios' | 'proyectos' | 'vehiculos'>('formulario');

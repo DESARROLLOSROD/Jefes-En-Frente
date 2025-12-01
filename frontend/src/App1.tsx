@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import FormularioReporte from './components/FormularioReporte';
+import FormularioReporte from './components/reports/FormularioReporte';
 import './App.css';
 
 const App: React.FC = () => {
@@ -20,21 +20,19 @@ const App: React.FC = () => {
           <div className="flex space-x-8">
             <button
               onClick={() => setVistaActual('formulario')}
-              className={`py-4 px-6 font-semibold text-lg transition-all duration-300 ${
-                vistaActual === 'formulario'
+              className={`py-4 px-6 font-semibold text-lg transition-all duration-300 ${vistaActual === 'formulario'
                   ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
                   : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
-              }`}
+                }`}
             >
               📝 Nuevo Reporte
             </button>
             <button
               onClick={() => setVistaActual('lista')}
-              className={`py-4 px-6 font-semibold text-lg transition-all duration-300 ${
-                vistaActual === 'lista'
+              className={`py-4 px-6 font-semibold text-lg transition-all duration-300 ${vistaActual === 'lista'
                   ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
                   : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
-              }`}
+                }`}
             >
               📋 Ver Reportes
             </button>

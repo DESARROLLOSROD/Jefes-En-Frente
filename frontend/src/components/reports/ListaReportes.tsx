@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { ReporteActividades } from '../types/reporte';
-import { reporteService } from '../services/api';
-import { generarPDFReporte } from '../utils/pdfGenerator';
+import { useAuth } from '../../contexts/AuthContext';
+import { ReporteActividades } from '../../types/ReporteActividades';
+import { reporteService } from '../../services/api';
+import { generarPDFReporte } from '../../utils/pdfGenerator';
 
 interface ListaReportesProps {
   onEditar: (reporte: ReporteActividades) => void;

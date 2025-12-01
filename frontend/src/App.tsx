@@ -1,12 +1,11 @@
 import React from 'react';
 import { useAuth } from './contexts/AuthContext';
-import Login from './components/Login';
-import SeleccionarProyecto from './components/SeleccionarProyecto';
-import Dashboard from './components/Dashboard';
-import './App.css';
+import Login from './components/auth/Login';
+import SeleccionarProyecto from './components/projects/SeleccionarProyecto';
+import Dashboard from './components/dashboard/Dashboard';
 
 const App: React.FC = () => {
-  const { user, proyecto, loading } = useAuth();
+  const { user, loading, proyecto } = useAuth();
 
   if (loading) {
     return (

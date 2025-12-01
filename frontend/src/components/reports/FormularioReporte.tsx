@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ReporteActividades, ControlAcarreo, ControlAgua, ControlMaquinaria, ControlMaterial } from '../types/reporte';
-import { reporteService, vehiculoService } from '../services/api';
-import { useAuth } from '../contexts/AuthContext';
-import { Vehiculo } from '../types/gestion';
+import { ReporteActividades, ControlAcarreo, ControlAgua, ControlMaquinaria, ControlMaterial } from '../../types/reporte';
+import { reporteService, vehiculoService } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
+import { Vehiculo } from '../../types/gestion';
 
 interface FormularioReporteProps {
   reporteInicial?: ReporteActividades | null;
@@ -77,7 +77,6 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ reporteInicial, o
       };
 
       // Remove _id and fechaCreacion to match the state type (Omit<ReporteActividades, ...>)
-      // We keep the ID separately if needed for update, or just use reporteInicial._id
       const { _id, fechaCreacion, ...restoDatos } = datosCargados;
       setFormData(restoDatos);
     }
@@ -167,7 +166,7 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ reporteInicial, o
         if (onFinalizar) {
           setTimeout(() => {
             onFinalizar();
-          }, 1500); // Esperar un poco para mostrar el mensaje de éxito
+          }, 1500);
         }
       } else {
         setMensaje('❌ Error: ' + resultado.error);
@@ -202,7 +201,19 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ reporteInicial, o
 
   const actualizarControlAcarreo = (index: number, campo: keyof ControlAcarreo, valor: string | number) => {
     const nuevosAcarreos = [...formData.controlAcarreo];
-    nuevosAcarreos[index] = { ...nuevosAcarreos[index], [campo]: valor };
+    const acarreoActual = { ...nuevosAcarreos[index], [campo]: valor };
+
+    // Calcular volumen suelto automáticamente
+    if (campo === 'noViaje' || campo === 'capacidad') {
+      const noViaje = campo === 'noViaje' ? Number(valor) : Number(acarreoActual.noViaje);
+      const capacidad = campo === 'capacidad' ? Number(valor) : Number(acarreoActual.capacidad);
+
+      if (!isNaN(noViaje) && !isNaN(capacidad)) {
+        acarreoActual.volSuelto = (noViaje * capacidad).toFixed(2);
+      }
+    }
+
+    nuevosAcarreos[index] = acarreoActual;
     setFormData({ ...formData, controlAcarreo: nuevosAcarreos });
   };
 
@@ -328,7 +339,7 @@ const FormularioReporte: React.FC<FormularioReporteProps> = ({ reporteInicial, o
 
   return (
     <div className="max-w-7xl mx-auto bg-white/50 p-6 rounded-lg shadow-md">
-      <div className="text-center  mb-8">
+      <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900">
           {reporteInicial ? 'EDITAR REPORTE DE ACTIVIDADES' : 'REPORTE DE ACTIVIDADES'}
         </h1>

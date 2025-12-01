@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import LogoROD from '../Logo_ROD.png';
+import { useAuth } from '../../contexts/AuthContext';
+import LogoROD from '../../Logo_ROD.png';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');

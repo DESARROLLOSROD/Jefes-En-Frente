@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Usuario, CrearUsuarioDTO, ActualizarUsuarioDTO } from '../types/usuario.types';
-import { Proyecto } from '../types/auth';
-import { authService } from '../services/auth';
+import { Usuario, CrearUsuarioDTO, ActualizarUsuarioDTO } from '../../types/usuario.types';
+import { Proyecto } from '../../types/auth';
+import { authService } from '../../services/auth';
 
 interface FormularioUsuarioProps {
     usuario?: Usuario | null;
