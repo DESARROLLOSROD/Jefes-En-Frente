@@ -8,8 +8,6 @@ export const generarPDFVehiculos = (vehiculos: Vehiculo[]) => {
     const pageWidth = doc.internal.pageSize.getWidth();
 
     const ORANGE = "rgb(76, 78, 201)";
-    const DARK = "rgb(26,26,26)";
-    const GRAY = "rgb(80,80,80)";
 
     let yPosition = 20;
 

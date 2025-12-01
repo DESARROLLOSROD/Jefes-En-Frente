@@ -45,7 +45,7 @@ export const generarPDFReporte = (
     // FOOTER CORPORATIVO (número de página)
     // ------------------------------------------------
     const addFooter = () => {
-        const pageNumber = doc.internal.getNumberOfPages();
+        const pageNumber = (doc as any).internal.getNumberOfPages();
 
         doc.setFontSize(9);
         doc.setTextColor(GRAY);
@@ -155,21 +155,36 @@ export const generarPDFReporte = (
     // ------------------------------------------------
     // TABLAS
     // ------------------------------------------------
-    if (reporte.controlAcarreo?.length)
+    if (reporte.controlAcarreo?.length) {
+        // Calcular totales
+        const totalVolumenAcarreo = reporte.controlAcarreo
+            .reduce((sum, item) => sum + (parseFloat(item.volSuelto) || 0), 0)
+            .toFixed(2);
+
+        const bodyAcarreo: any[] = reporte.controlAcarreo.map((i) => [
+            i.material,
+            i.noViaje.toString(),
+            `${i.capacidad} m³`,
+            `${i.volSuelto} m³`,
+            i.capaNo,
+            i.elevacionAriza,
+            i.capaOrigen,
+            i.destino,
+        ]);
+
+        // Agregar fila de total
+        bodyAcarreo.push([
+            { content: 'TOTAL VOLUMEN:', colSpan: 3, styles: { fontStyle: 'bold', halign: 'right' } },
+            { content: `${totalVolumenAcarreo} m³`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220] } },
+            '', '', '', ''
+        ]);
+
         renderTable(
             "CONTROL DE ACARREOS",
             [["Material", "No. Viaje", "Capacidad", "Vol. Suelto", "Capa", "Ariza", "Origen", "Destino"]],
-            reporte.controlAcarreo.map((i) => [
-                i.material,
-                i.noViaje,
-                i.capacidad,
-                i.volSuelto,
-                i.capaNo,
-                i.elevacionAriza,
-                i.capaOrigen,
-                i.destino,
-            ])
+            bodyAcarreo
         );
+    }
 
     if (reporte.controlMaterial?.length)
         renderTable(
@@ -184,32 +199,45 @@ export const generarPDFReporte = (
             ])
         );
 
-    if (reporte.controlAgua?.length)
+    if (reporte.controlAgua?.length) {
+        const totalVolumenAgua = reporte.controlAgua
+            .reduce((sum, item) => sum + (parseFloat(item.volumen) || 0), 0)
+            .toFixed(2);
+
+        const bodyAgua: any[] = reporte.controlAgua.map((i) => [
+            i.noEconomico,
+            i.viaje.toString(),
+            `${i.capacidad} m³`,
+            `${i.volumen} m³`,
+            i.origen,
+            i.destino,
+        ]);
+
+        bodyAgua.push([
+            { content: 'TOTAL VOLUMEN:', colSpan: 3, styles: { fontStyle: 'bold', halign: 'right' } },
+            { content: `${totalVolumenAgua} m³`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220] } },
+            '', ''
+        ]);
+
         renderTable(
             "CONTROL DE AGUA",
             [["No. Económico", "Viaje", "Capacidad", "Volumen", "Origen", "Destino"]],
-            reporte.controlAgua.map((i) => [
-                i.noEconomico,
-                i.viaje,
-                i.capacidad,
-                i.volumen,
-                i.origen,
-                i.destino,
-            ])
+            bodyAgua
         );
+    }
 
     if (reporte.controlMaquinaria?.length)
         renderTable(
             "CONTROL DE MAQUINARIA",
             [["Tipo", "No. Económico", "Horómetro Inicial", "Horómetro Final", "Horas", "Operador", "Actividad"]],
             reporte.controlMaquinaria.map((i) => [
-                i.tipo,
-                i.numeroEconomico,
-                i.horometroInicial,
-                i.horometroFinal,
-                i.horasOperacion,
-                i.operador,
-                i.actividad,
+                i.tipo || '-',
+                i.numeroEconomico || '-',
+                i.horometroInicial?.toString() || '0',
+                i.horometroFinal?.toString() || '0',
+                i.horasOperacion?.toString() || '0',
+                i.operador || '-',
+                i.actividad || '-',
             ])
         );
 

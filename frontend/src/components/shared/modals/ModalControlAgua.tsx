@@ -1,0 +1,241 @@
+import React, { useState, useEffect } from 'react';
+import { ControlAgua } from '../../../types/reporte';
+import AutocompleteInput from '../AutocompleteInput';
+import { ORIGENES, DESTINOS, CAPACIDADES_CAMION } from '../../../constants/reporteConstants';
+
+interface ModalControlAguaProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (agua: ControlAgua) => void;
+  aguaInicial?: ControlAgua | null;
+  title?: string;
+}
+
+const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
+  isOpen,
+  onClose,
+  onSave,
+  aguaInicial,
+  title = 'Agregar Control de Agua'
+}) => {
+  const [formData, setFormData] = useState<ControlAgua>({
+    noEconomico: '',
+    viaje: 0,
+    capacidad: '',
+    volumen: '',
+    origen: '',
+    destino: ''
+  });
+
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  useEffect(() => {
+    if (aguaInicial) {
+      setFormData(aguaInicial);
+    } else {
+      setFormData({
+        noEconomico: '',
+        viaje: 0,
+        capacidad: '',
+        volumen: '',
+        origen: '',
+        destino: ''
+      });
+    }
+    setErrors({});
+  }, [aguaInicial, isOpen]);
+
+  // Cálculo automático reactivo: Viajes × Capacidad = Volumen
+  useEffect(() => {
+    const viaje = Number(formData.viaje);
+    const capacidad = Number(formData.capacidad);
+
+    if (!isNaN(viaje) && !isNaN(capacidad) && viaje > 0 && capacidad > 0) {
+      const volumenCalculado = (viaje * capacidad).toFixed(2);
+      setFormData(prev => ({ ...prev, volumen: volumenCalculado }));
+    } else if (viaje === 0 || capacidad === 0) {
+      setFormData(prev => ({ ...prev, volumen: '0.00' }));
+    }
+  }, [formData.viaje, formData.capacidad]);
+
+  const handleChange = (campo: keyof ControlAgua, valor: string | number) => {
+    setFormData(prev => ({ ...prev, [campo]: valor }));
+    if (errors[campo]) {
+      setErrors(prev => ({ ...prev, [campo]: '' }));
+    }
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!formData.noEconomico.trim()) {
+      newErrors.noEconomico = 'El número económico es requerido';
+    }
+    if (!formData.viaje || formData.viaje <= 0) {
+      newErrors.viaje = 'El número de viajes debe ser mayor a 0';
+    }
+    if (!formData.capacidad || Number(formData.capacidad) <= 0) {
+      newErrors.capacidad = 'La capacidad debe ser mayor a 0';
+    }
+    if (!formData.origen.trim()) {
+      newErrors.origen = 'El origen es requerido';
+    }
+    if (!formData.destino.trim()) {
+      newErrors.destino = 'El destino es requerido';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateForm()) {
+      onSave(formData);
+      onClose();
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-cyan-600 to-cyan-700 text-white px-6 py-4 rounded-t-lg">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">{title}</h2>
+            <button
+              onClick={onClose}
+              className="text-white hover:text-gray-200 transition-colors text-2xl font-bold"
+              type="button"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+
+        {/* Body */}
+        <form onSubmit={handleSubmit} className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* No. Económico */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                No. Económico <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={formData.noEconomico}
+                onChange={(e) => handleChange('noEconomico', e.target.value)}
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                placeholder="Ej: 001, A-123..."
+              />
+              {errors.noEconomico && (
+                <p className="text-red-500 text-xs mt-1">{errors.noEconomico}</p>
+              )}
+            </div>
+
+            {/* Número de Viajes */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                No. de Viajes <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
+                value={formData.viaje}
+                onChange={(e) => handleChange('viaje', Number(e.target.value))}
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                placeholder="0"
+                min="0"
+              />
+              {errors.viaje && (
+                <p className="text-red-500 text-xs mt-1">{errors.viaje}</p>
+              )}
+            </div>
+
+            {/* Capacidad */}
+            <div>
+              <AutocompleteInput
+                label="Capacidad (m³)"
+                value={formData.capacidad}
+                onChange={(value) => handleChange('capacidad', value)}
+                options={CAPACIDADES_CAMION}
+                placeholder="Seleccione capacidad..."
+                required
+              />
+              {errors.capacidad && (
+                <p className="text-red-500 text-xs mt-1">{errors.capacidad}</p>
+              )}
+            </div>
+
+            {/* Volumen (Calculado automáticamente) */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Volumen (m³) <span className="text-cyan-500 text-xs">(Calculado)</span>
+              </label>
+              <input
+                type="text"
+                value={formData.volumen}
+                readOnly
+                className="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed font-bold text-cyan-600"
+                placeholder="0.00"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Fórmula: No. Viajes × Capacidad = {formData.volumen || '0.00'} m³
+              </p>
+            </div>
+
+            {/* Origen */}
+            <div>
+              <AutocompleteInput
+                label="Origen"
+                value={formData.origen}
+                onChange={(value) => handleChange('origen', value)}
+                options={ORIGENES}
+                placeholder="Seleccione o escriba el origen..."
+                required
+              />
+              {errors.origen && (
+                <p className="text-red-500 text-xs mt-1">{errors.origen}</p>
+              )}
+            </div>
+
+            {/* Destino */}
+            <div>
+              <AutocompleteInput
+                label="Destino"
+                value={formData.destino}
+                onChange={(value) => handleChange('destino', value)}
+                options={DESTINOS}
+                placeholder="Seleccione o escriba el destino..."
+                required
+              />
+              {errors.destino && (
+                <p className="text-red-500 text-xs mt-1">{errors.destino}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-semibold"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors font-semibold shadow-md"
+            >
+              Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default ModalControlAgua;

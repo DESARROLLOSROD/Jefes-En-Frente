@@ -1,0 +1,899 @@
+import React, { useState, useEffect } from 'react';
+import { ReporteActividades, ControlAcarreo, ControlAgua, ControlMaquinaria, ControlMaterial } from '../../types/reporte';
+import { reporteService, vehiculoService } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
+import { Vehiculo } from '../../types/gestion';
+
+interface FormularioReporteProps {
+  reporteInicial?: ReporteActividades | null;
+  onFinalizar?: () => void;
+}
+
+const FormularioReporte: React.FC<FormularioReporteProps> = ({ reporteInicial, onFinalizar }) => {
+  const { proyecto, user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [mensaje, setMensaje] = useState('');
+  const [vehiculosDisponibles, setVehiculosDisponibles] = useState<Vehiculo[]>([]);
+
+  // Estado inicial sin proyecto/user
+  const [formData, setFormData] = useState<Omit<ReporteActividades, '_id' | 'fechaCreacion'>>({
+    fecha: new Date().toISOString().split('T')[0],
+    ubicacion: '',
+    proyectoId: '',
+    usuarioId: '',
+    turno: 'primer',
+    inicioActividades: '07:00',
+    terminoActividades: '19:00',
+    zonaTrabajo: '',
+    seccionTrabajo: '',
+    jefeFrente: '',
+    sobrestante: '',
+    controlAcarreo: [
+      { material: '', noViaje: 0, capacidad: '', volSuelto: '', capaNo: '', elevacionAriza: '', capaOrigen: '', destino: '' }
+    ],
+    controlMaterial: [
+      { material: '', unidad: '', cantidad: '', zona: '', elevacion: '' }
+    ],
+    controlAgua: [
+      { noEconomico: '', viaje: 0, capacidad: '', volumen: '', origen: '', destino: '' }
+    ],
+    controlMaquinaria: [
+      {
+        vehiculoId: '',
+        nombre: '',
+        tipo: '',
+        numeroEconomico: '',
+        horometroInicial: 0,
+        horometroFinal: 0,
+        horasOperacion: 0,
+        operador: '',
+        actividad: ''
+      }
+    ],
+    observaciones: '',
+    creadoPor: user?.nombre || ''
+  });
+
+  // Cargar datos si estamos editando
+  useEffect(() => {
+    if (reporteInicial) {
+      // Asegurarnos de que los arrays tengan al menos un elemento vacío si vienen vacíos del backend
+      const datosCargados = {
+        ...reporteInicial,
+        controlAcarreo: reporteInicial.controlAcarreo?.length > 0 ? reporteInicial.controlAcarreo : [{ material: '', noViaje: 0, capacidad: '', volSuelto: '', capaNo: '', elevacionAriza: '', capaOrigen: '', destino: '' }],
+        controlMaterial: reporteInicial.controlMaterial?.length > 0 ? reporteInicial.controlMaterial : [{ material: '', unidad: '', cantidad: '', zona: '', elevacion: '' }],
+        controlAgua: reporteInicial.controlAgua?.length > 0 ? reporteInicial.controlAgua : [{ noEconomico: '', viaje: 0, capacidad: '', volumen: '', origen: '', destino: '' }],
+        controlMaquinaria: reporteInicial.controlMaquinaria?.length > 0 ? reporteInicial.controlMaquinaria : [{
+          vehiculoId: '',
+          nombre: '',
+          tipo: '',
+          numeroEconomico: '',
+          horometroInicial: 0,
+          horometroFinal: 0,
+          horasOperacion: 0,
+          operador: '',
+          actividad: ''
+        }]
+      };
+
+      // Remove _id and fechaCreacion to match the state type (Omit<ReporteActividades, ...>)
+      const { _id, fechaCreacion, ...restoDatos } = datosCargados;
+      setFormData(restoDatos);
+    }
+  }, [reporteInicial]);
+
+  // Actualizar ubicación y proyectoId cuando cambia el proyecto (solo si no estamos editando o si queremos forzarlo)
+  useEffect(() => {
+    if (proyecto && !reporteInicial) {
+      setFormData(prev => ({
+        ...prev,
+        ubicacion: proyecto.ubicacion,
+        proyectoId: proyecto._id || ''
+      }));
+    }
+  }, [proyecto, reporteInicial]);
+
+  // Cargar vehículos del proyecto actual
+  useEffect(() => {
+    const cargarVehiculos = async () => {
+      if (proyecto?._id) {
+        const response = await vehiculoService.obtenerVehiculosPorProyecto(proyecto._id);
+        if (response.success && response.data) {
+          setVehiculosDisponibles(response.data);
+        }
+      }
+    };
+    cargarVehiculos();
+  }, [proyecto]);
+
+  // Actualizar usuarioId cuando cambia el usuario (solo si no estamos editando)
+  useEffect(() => {
+    if (user && !reporteInicial) {
+      setFormData(prev => ({
+        ...prev,
+        usuarioId: user._id || '',
+        creadoPor: user.nombre
+      }));
+    }
+  }, [user, reporteInicial]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setMensaje('');
+
+    // Validación de horómetros
+    for (const maq of formData.controlMaquinaria) {
+      if (maq.vehiculoId && maq.horometroFinal < maq.horometroInicial) {
+        setMensaje(`❌ Error: El horómetro final no puede ser menor al inicial para el vehículo ${maq.nombre}`);
+        setLoading(false);
+        return;
+      }
+    }
+
+    try {
+      let resultado;
+      if (reporteInicial && reporteInicial._id) {
+        // Actualizar reporte existente
+        resultado = await reporteService.actualizarReporte(reporteInicial._id, formData);
+      } else {
+        // Crear nuevo reporte
+        resultado = await reporteService.crearReporte(formData);
+      }
+
+      if (resultado.success) {
+        setMensaje(reporteInicial ? '✅ Reporte actualizado exitosamente!' : '✅ Reporte creado exitosamente!');
+
+        if (!reporteInicial) {
+          //FECHA LOCAL
+          const hoy = new Date();
+          const fechaLocal =
+            hoy.getFullYear() + "-" +
+            String(hoy.getMonth() + 1).padStart(2, '0') + "-" +
+            String(hoy.getDate()).padStart(2, '0');
+          // Limpiar formulario solo si es creación
+          setFormData({
+            ...formData,
+            fecha: fechaLocal,
+            inicioActividades: formData.turno === 'primer' ? '07:00' : '19:00',
+            terminoActividades: formData.turno === 'primer' ? '19:00' : '07:00',
+            observaciones: '',
+            creadoPor: user?.nombre || '',
+          });
+        }
+
+        // Notificar al padre que terminamos
+        if (onFinalizar) {
+          setTimeout(() => {
+            onFinalizar();
+          }, 1500);
+        }
+      } else {
+        setMensaje('❌ Error: ' + resultado.error);
+      }
+    } catch (error) {
+      setMensaje('❌ Error de conexión con el servidor');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Función para actualizar horarios según el turno seleccionado
+  const handleTurnoChange = (nuevoTurno: 'primer' | 'segundo') => {
+    setFormData({
+      ...formData,
+      turno: nuevoTurno,
+      inicioActividades: nuevoTurno === 'primer' ? '07:00' : '19:00',
+      terminoActividades: nuevoTurno === 'primer' ? '19:00' : '07:00'
+    });
+  };
+
+  // Funciones para control de acarreos
+  const agregarControlAcarreo = () => {
+    setFormData({
+      ...formData,
+      controlAcarreo: [
+        ...formData.controlAcarreo,
+        { material: '', noViaje: 0, capacidad: '', volSuelto: '', capaNo: '', elevacionAriza: '', capaOrigen: '', destino: '' }
+      ]
+    });
+  };
+
+  const actualizarControlAcarreo = (index: number, campo: keyof ControlAcarreo, valor: string | number) => {
+    const nuevosAcarreos = [...formData.controlAcarreo];
+    const acarreoActual = { ...nuevosAcarreos[index], [campo]: valor };
+
+    // Calcular volumen suelto automáticamente
+    if (campo === 'noViaje' || campo === 'capacidad') {
+      const noViaje = campo === 'noViaje' ? Number(valor) : Number(acarreoActual.noViaje);
+      const capacidad = campo === 'capacidad' ? Number(valor) : Number(acarreoActual.capacidad);
+
+      if (!isNaN(noViaje) && !isNaN(capacidad)) {
+        acarreoActual.volSuelto = (noViaje * capacidad).toFixed(2);
+      }
+    }
+
+    nuevosAcarreos[index] = acarreoActual;
+    setFormData({ ...formData, controlAcarreo: nuevosAcarreos });
+  };
+
+  const eliminarControlAcarreo = (index: number) => {
+    if (formData.controlAcarreo.length > 1) {
+      const nuevosAcarreos = formData.controlAcarreo.filter((_, i) => i !== index);
+      setFormData({ ...formData, controlAcarreo: nuevosAcarreos });
+    }
+  };
+
+  // Functions for Control Material
+  const agregarControlMaterial = () => {
+    setFormData({
+      ...formData,
+      controlMaterial: [
+        ...formData.controlMaterial,
+        { material: '', unidad: '', cantidad: '', zona: '', elevacion: '' }
+      ]
+    });
+  };
+
+  const actualizarControlMaterial = (index: number, campo: keyof ControlMaterial, valor: string) => {
+    const nuevosMateriales = [...formData.controlMaterial];
+    nuevosMateriales[index] = { ...nuevosMateriales[index], [campo]: valor };
+    setFormData({ ...formData, controlMaterial: nuevosMateriales });
+  };
+
+  const eliminarControlMaterial = (index: number) => {
+    if (formData.controlMaterial.length > 1) {
+      const nuevosMateriales = formData.controlMaterial.filter((_, i) => i !== index);
+      setFormData({ ...formData, controlMaterial: nuevosMateriales });
+    }
+  };
+
+  // Funciones para control de agua
+  const agregarControlAgua = () => {
+    setFormData({
+      ...formData,
+      controlAgua: [
+        ...formData.controlAgua,
+        { noEconomico: '', viaje: 0, capacidad: '', volumen: '', origen: '', destino: '' }
+      ]
+    });
+  };
+
+  const actualizarControlAgua = (index: number, campo: keyof ControlAgua, valor: string | number) => {
+    const nuevosAgua = [...formData.controlAgua];
+    nuevosAgua[index] = { ...nuevosAgua[index], [campo]: valor };
+    setFormData({ ...formData, controlAgua: nuevosAgua });
+  };
+
+  const eliminarControlAgua = (index: number) => {
+    if (formData.controlAgua.length > 1) {
+      const nuevosAgua = formData.controlAgua.filter((_, i) => i !== index);
+      setFormData({ ...formData, controlAgua: nuevosAgua });
+    }
+  };
+
+  // Funciones para control de maquinaria
+  const agregarControlMaquinaria = () => {
+    setFormData({
+      ...formData,
+      controlMaquinaria: [
+        ...formData.controlMaquinaria,
+        {
+          vehiculoId: '',
+          nombre: '',
+          tipo: '',
+          numeroEconomico: '',
+          horometroInicial: 0,
+          horometroFinal: 0,
+          horasOperacion: 0,
+          operador: '',
+          actividad: ''
+        }
+      ]
+    });
+  };
+
+  const actualizarControlMaquinaria = (index: number, campo: keyof ControlMaquinaria, valor: string | number) => {
+    const nuevaMaquinaria = [...formData.controlMaquinaria];
+    nuevaMaquinaria[index] = { ...nuevaMaquinaria[index], [campo]: valor };
+    setFormData({ ...formData, controlMaquinaria: nuevaMaquinaria });
+  };
+
+  const eliminarControlMaquinaria = (index: number) => {
+    if (formData.controlMaquinaria.length > 1) {
+      const nuevaMaquinaria = formData.controlMaquinaria.filter((_, i) => i !== index);
+      setFormData({ ...formData, controlMaquinaria: nuevaMaquinaria });
+    }
+  };
+
+  // Función para manejar la selección de vehículo
+  const seleccionarVehiculo = (index: number, vehiculoId: string) => {
+    const vehiculo = vehiculosDisponibles.find(v => v._id === vehiculoId);
+    if (vehiculo) {
+      const nuevaMaquinaria = [...formData.controlMaquinaria];
+      nuevaMaquinaria[index] = {
+        ...nuevaMaquinaria[index],
+        vehiculoId: vehiculo._id,
+        nombre: vehiculo.nombre,
+        tipo: vehiculo.tipo,
+        numeroEconomico: vehiculo.noEconomico,
+        horometroInicial: vehiculo.horometroInicial,
+        horometroFinal: vehiculo.horometroFinal || vehiculo.horometroInicial,
+        horasOperacion: 0 // Se calculará al cambiar horometroFinal
+      };
+      setFormData({ ...formData, controlMaquinaria: nuevaMaquinaria });
+    }
+  };
+
+  // Función para calcular horas de operación
+  const calcularHorasOperacion = (index: number, horometroFinal: number) => {
+    const nuevaMaquinaria = [...formData.controlMaquinaria];
+    const horometroInicial = nuevaMaquinaria[index].horometroInicial;
+    nuevaMaquinaria[index] = {
+      ...nuevaMaquinaria[index],
+      horometroFinal,
+      horasOperacion: horometroFinal - horometroInicial
+    };
+    setFormData({ ...formData, controlMaquinaria: nuevaMaquinaria });
+  };
+
+  return (
+    <div className="max-w-7xl mx-auto bg-white/50 p-6 rounded-lg shadow-md">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">
+          {reporteInicial ? 'EDITAR REPORTE DE ACTIVIDADES' : 'REPORTE DE ACTIVIDADES'}
+        </h1>
+        <p className="text-lg text-gray-900 mt-2">GENERAL CONTRACTOR</p>
+        <p className="text-gray-900">UBICACIÓN : {proyecto?.nombre} </p>
+      </div>
+
+      {mensaje && (
+        <div className={`p-4 mb-6 rounded-lg ${mensaje.includes('✅') ? 'bg-green-100 text-green-700 border border-green-300' :
+          'bg-red-100 text-red-700 border border-red-300'
+          }`}>
+          {mensaje}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-8">
+        {/* SECCIÓN 1: INFORMACIÓN GENERAL */}
+        <div className="border-2 border-orange-400 rounded-lg p-6 bg-orange-50">
+          <h3 className="text-xl font-bold mb-4 text-orange-800 border-b pb-2">INFORMACIÓN GENERAL</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-gray-700">FECHA</label>
+              <input
+                type="date"
+                value={formData.fecha}
+                onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700">TURNO</label>
+              <select
+                value={formData.turno}
+                onChange={(e) => handleTurnoChange(e.target.value as 'primer' | 'segundo')}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border"
+              >
+                <option value="primer">Primer Turno (7:00 AM - 7:00 PM)</option>
+                <option value="segundo">Segundo Turno (7:00 PM - 7:00 AM)</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700">INICIO ACTIVIDADES</label>
+              <input
+                type="time"
+                value={formData.inicioActividades}
+                onChange={(e) => setFormData({ ...formData, inicioActividades: e.target.value })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700">TERMINO ACTIVIDADES</label>
+              <input
+                type="time"
+                value={formData.terminoActividades}
+                onChange={(e) => setFormData({ ...formData, terminoActividades: e.target.value })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* SECCIÓN 2: ZONA Y PERSONAL */}
+        <div className="border-2 border-blue-400 rounded-lg p-6 bg-blue-50">
+          <h3 className="text-xl font-bold mb-4 text-blue-800 border-b pb-2">ZONA DE TRABAJO Y PERSONAL</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-bold text-gray-700">ZONA DE TRABAJO * </label>
+              <input
+                required
+                type="text"
+                value={formData.zonaTrabajo}
+                onChange={(e) => setFormData({ ...formData, zonaTrabajo: e.target.value })}
+
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border uppercase"
+                placeholder="Zona principal de trabajo"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700">SECCIÓN DE TRABAJO *</label>
+              <input
+                required
+                type="text"
+                value={formData.seccionTrabajo}
+                onChange={(e) => setFormData({ ...formData, seccionTrabajo: e.target.value })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border uppercase"
+                placeholder="Sección específica (Ej: Sección 3.1)"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700">JEFE DE FRENTE *</label>
+              <input
+                required
+                type="text"
+                value={formData.jefeFrente}
+                onChange={(e) => setFormData({ ...formData, jefeFrente: e.target.value })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border uppercase"
+                placeholder="Puma Bauda"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-gray-700">SOBRESTANTE</label>
+              <input
+
+                type="text"
+                value={formData.sobrestante}
+                onChange={(e) => setFormData({ ...formData, sobrestante: e.target.value })}
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border uppercase  "
+                placeholder="Librarino de lopes"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* SECCIÓN 4: CONTROL DE ACARREOS */}
+        <div className="border-2 border-red-400 rounded-lg p-6 bg-red-50">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold text-red-800 border-b pb-2">CONTROL DE ACARREOS</h3>
+            <button
+              type="button"
+              onClick={agregarControlAcarreo}
+              className="bg-red-600 text-white px-4 py-2 rounded text-sm hover:bg-red-700 font-semibold"
+            >
+              + Agregar Fila
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white rounded-lg overflow-hidden border border-red-300">
+              <thead className="bg-red-100">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">MATERIAL</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">No. VIAJE</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">CAPACIDAD (M3)</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">VOL. SUELTO</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">CAPA No.</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">ELEVACION</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">ORIGEN</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">DESTINO</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-red-800 uppercase border border-red-300">ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {formData.controlAcarreo.map((acarreo, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 border border-red-200">
+                      <input
+                        type="text"
+                        value={acarreo.material}
+                        onChange={(e) => actualizarControlAcarreo(index, 'material', e.target.value)}
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
+                        placeholder="Material"
+                      />
+                    </td>
+                    <td className="px-4 py-2 border border-red-200">
+                      <input
+                        type="number"
+                        min={0}
+                        value={acarreo.noViaje}
+                        onChange={(e) => actualizarControlAcarreo(index, 'noViaje', parseInt(e.target.value) || 0)}
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
+                        placeholder="0"
+                      />
+                    </td>
+                    <td className="px-4 py-2 border border-red-200">
+                      <input
+                        type="text"
+                        value={acarreo.capacidad}
+                        onChange={(e) => actualizarControlAcarreo(index, 'capacidad', e.target.value)}
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
+                        placeholder="Capacidad"
+                      />
+                    </td>
+                    <td className="px-4 py-2 border border-red-200">
+                      <input
+                        type="text"
+                        value={acarreo.volSuelto}
+                        onChange={(e) => actualizarControlAcarreo(index, 'volSuelto', e.target.value)}
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
+                        placeholder="Vol. Suelto"
+                      />
+                    </td>
+                    <td className="px-4 py-2 border border-red-200">
+                      <input
+                        type="text"
+                        value={acarreo.capaNo}
+                        onChange={(e) => actualizarControlAcarreo(index, 'capaNo', e.target.value)}
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
+                        placeholder="Capa No."
+                      />
+                    </td>
+                    <td className="px-4 py-2 border border-red-200">
+                      <input
+                        type="text"
+                        value={acarreo.elevacionAriza}
+                        onChange={(e) => actualizarControlAcarreo(index, 'elevacionAriza', e.target.value)}
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
+                        placeholder="Elevación"
+                      />
+                    </td>
+                    <td className="px-4 py-2 border border-red-200">
+                      <input
+                        type="text"
+                        value={acarreo.capaOrigen}
+                        onChange={(e) => actualizarControlAcarreo(index, 'capaOrigen', e.target.value)}
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
+                        placeholder="Origen"
+                      />
+                    </td>
+                    <td className="px-4 py-2 border border-red-200">
+                      <input
+                        type="text"
+                        value={acarreo.destino}
+                        onChange={(e) => actualizarControlAcarreo(index, 'destino', e.target.value)}
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase "
+                        placeholder="Destino"
+                      />
+                    </td>
+                    <td className="px-4 py-2 border border-red-200">
+                      <button
+                        type="button"
+                        onClick={() => eliminarControlAcarreo(index)}
+                        className="text-red-600 hover:text-red-800 text-sm font-semibold bg-red-100 px-2 py-1 rounded"
+                        disabled={formData.controlAcarreo.length === 1}
+                      >
+                        {formData.controlAcarreo.length === 1 ? '—' : 'Eliminar'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* SECCIÓN 5: CONTROL DE MATERIAL */}
+        <div className="border-2 border-green-400 rounded-lg p-6 bg-green-50">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold text-green-800 border-b pb-2">CONTROL DE MATERIAL</h3>
+            <button type="button" onClick={agregarControlMaterial} className="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700 font-semibold">+ Agregar Fila</button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white rounded-lg overflow-hidden border border-green-300">
+              <thead className="bg-green-100">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-green-800 uppercase border border-green-300">MATERIAL</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-green-800 uppercase border border-green-300">UNIDAD</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-green-800 uppercase border border-green-300">CANTIDAD</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-green-800 uppercase border border-green-300">ZONA</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-green-800 uppercase border border-green-300">ELEVACIÓN</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-green-800 uppercase border border-green-300">ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {formData.controlMaterial.map((mat, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.material} onChange={(e) => actualizarControlMaterial(index, 'material', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase" placeholder="Material" /></td>
+                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.unidad} onChange={(e) => actualizarControlMaterial(index, 'unidad', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase" placeholder="Unidad" /></td>
+                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.cantidad} onChange={(e) => actualizarControlMaterial(index, 'cantidad', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase" placeholder="Cantidad" /></td>
+                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.zona} onChange={(e) => actualizarControlMaterial(index, 'zona', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase" placeholder="Zona" /></td>
+                    <td className="px-4 py-2 border border-green-200"><input type="text" value={mat.elevacion} onChange={(e) => actualizarControlMaterial(index, 'elevacion', e.target.value)} className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase" placeholder="Elevación" /></td>
+                    <td className="px-4 py-2 border border-green-200"><button type="button" onClick={() => eliminarControlMaterial(index)} className="text-green-600 hover:text-green-800 text-sm font-semibold bg-green-100 px-2 py-1 rounded" disabled={formData.controlMaterial.length === 1}>{formData.controlMaterial.length === 1 ? '—' : 'Eliminar'}</button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* SECCIÓN 6: CONTROL DE AGUA */}
+        <div className="border-2 border-cyan-400 rounded-lg p-6 bg-cyan-50">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold text-cyan-800 border-b pb-2">CONTROL DE AGUA</h3>
+            <button
+              type="button"
+              onClick={agregarControlAgua}
+              className="bg-cyan-600 text-white px-4 py-2 rounded text-sm hover:bg-cyan-700 font-semibold"
+            >
+              + Agregar Fila
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white rounded-lg overflow-hidden border border-cyan-300">
+              <thead className="bg-cyan-100">
+                <tr>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-cyan-800 uppercase border border-cyan-300">No. ECONÓMICO</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-cyan-800 uppercase border border-cyan-300">VIAJE</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-cyan-800 uppercase border border-cyan-300">CAPACIDAD</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-cyan-800 uppercase border border-cyan-300">VOLUMEN</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-cyan-800 uppercase border border-cyan-300">ORIGEN</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-cyan-800 uppercase border border-cyan-300">DESTINO</th>
+                  <th className="px-4 py-3 text-left text-xs font-bold text-cyan-800 uppercase border border-cyan-300">ACCIONES</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {formData.controlAgua.map((agua, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 border border-cyan-200">
+                      <input
+                        type="text"
+                        value={agua.noEconomico}
+                        onChange={(e) => actualizarControlAgua(index, 'noEconomico', e.target.value)}
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
+                        placeholder="No. Económico"
+                      />
+                    </td>
+                    <td className="px-4 py-2 border border-cyan-200">
+                      <input
+                        type="number"
+                        min={0}
+                        value={agua.viaje}
+                        onChange={(e) => actualizarControlAgua(index, 'viaje', parseInt(e.target.value) || 0)}
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
+                        placeholder="0"
+                      />
+                    </td>
+                    <td className="px-4 py-2 border border-cyan-200">
+                      <input
+                        type="text"
+                        value={agua.capacidad}
+                        onChange={(e) => actualizarControlAgua(index, 'capacidad', e.target.value)}
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
+                        placeholder="Capacidad"
+                      />
+                    </td>
+                    <td className="px-4 py-2 border border-cyan-200">
+                      <input
+                        type="text"
+                        value={agua.volumen}
+                        onChange={(e) => actualizarControlAgua(index, 'volumen', e.target.value)}
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
+                        placeholder="Volumen"
+                      />
+                    </td>
+                    <td className="px-4 py-2 border border-cyan-200">
+                      <input
+                        type="text"
+                        value={agua.origen}
+                        onChange={(e) => actualizarControlAgua(index, 'origen', e.target.value)}
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
+                        placeholder="Origen"
+                      />
+                    </td>
+                    <td className="px-4 py-2 border border-cyan-200">
+                      <input
+                        type="text"
+                        value={agua.destino}
+                        onChange={(e) => actualizarControlAgua(index, 'destino', e.target.value)}
+                        className="w-full border-none bg-transparent focus:ring-0 p-1 uppercase"
+                        placeholder="Destino"
+                      />
+                    </td>
+                    <td className="px-4 py-2 border border-cyan-200">
+                      <button
+                        type="button"
+                        onClick={() => eliminarControlAgua(index)}
+                        className="text-cyan-600 hover:text-cyan-800 text-sm font-semibold bg-cyan-100 px-2 py-1 rounded"
+                        disabled={formData.controlAgua.length === 1}
+                      >
+                        {formData.controlAgua.length === 1 ? '—' : 'Eliminar'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* SECCIÓN 7: CONTROL DE MAQUINARIA */}
+        <div className="border-2 border-indigo-400 rounded-lg p-6 bg-indigo-50">
+          <h3 className="text-xl font-bold mb-4 text-indigo-800 border-b pb-2">CONTROL DE MAQUINARIA</h3>
+          <div className="space-y-4">
+            {formData.controlMaquinaria.map((maquinaria, index) => (
+              <div key={index} className="border-2 border-blue-200 rounded-lg p-4 bg-blue-50">
+                <div className="flex justify-between items-center mb-3">
+                  <h4 className="font-bold text-blue-800">Equipo #{index + 1}</h4>
+                  {formData.controlMaquinaria.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => eliminarControlMaquinaria(index)}
+                      className="text-red-600 hover:text-red-800 font-bold"
+                    >
+                      ✖ Eliminar
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Selector de Vehículo */}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-bold text-gray-700">VEHÍCULO *</label>
+                    <select
+                      required
+                      value={maquinaria.vehiculoId || ''}
+                      onChange={(e) => seleccionarVehiculo(index, e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                    >
+                      <option value="">Seleccione un vehículo...</option>
+                      {vehiculosDisponibles.map(vehiculo => (
+                        <option key={vehiculo._id} value={vehiculo._id}>
+                          {vehiculo.nombre} - {vehiculo.noEconomico} ({vehiculo.tipo})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {/* Campos Auto-completados (solo lectura) */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700">TIPO</label>
+                    <input
+                      type="text"
+                      value={maquinaria.tipo}
+                      readOnly
+                      className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2 border"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700">NOMBRE</label>
+                    <input
+                      type="text"
+                      value={maquinaria.nombre}
+                      readOnly
+                      className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2 border"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700">NO. ECONÓMICO</label>
+                    <input
+                      type="text"
+                      value={maquinaria.numeroEconomico}
+                      readOnly
+                      className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2 border"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700">HORÓMETRO INICIAL</label>
+                    <input
+                      type="number"
+                      value={maquinaria.horometroInicial}
+                      readOnly
+                      className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2 border"
+                    />
+                  </div>
+                  {/* Horómetro Final - Editable */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700">HORÓMETRO FINAL *</label>
+                    <input
+                      type="number"
+                      required
+                      min={maquinaria.horometroInicial}
+                      value={maquinaria.horometroFinal}
+                      onChange={(e) => calcularHorasOperacion(index, Number(e.target.value))}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
+                    />
+                  </div>
+                  {/* Horas de Operación - Calculado automáticamente */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700">HORAS DE OPERACIÓN</label>
+                    <input
+                      type="number"
+                      value={maquinaria.horasOperacion}
+                      readOnly
+                      className="mt-1 block w-full rounded-md border-gray-300 bg-green-100 shadow-sm p-2 border font-bold text-green-700"
+                    />
+                  </div>
+                  {/* Campos Editables */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700">OPERADOR *</label>
+                    <input
+                      type="text"
+                      required
+                      value={maquinaria.operador}
+                      onChange={(e) => actualizarControlMaquinaria(index, 'operador', e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border uppercase"
+                      placeholder="Operador"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-bold text-gray-700">ACTIVIDAD *</label>
+                    <textarea
+                      required
+                      value={maquinaria.actividad}
+                      onChange={(e) => actualizarControlMaquinaria(index, 'actividad', e.target.value)}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border uppercase"
+                      placeholder="Actividad"
+                      rows={2}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={agregarControlMaquinaria}
+              className="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 font-bold"
+            >
+              + Agregar Maquinaria
+            </button>
+          </div>
+        </div>
+
+        {/* SECCIÓN 8: OBSERVACIONES */}
+        <div className="border-2 border-gray-400 rounded-lg p-6 bg-gray-50">
+          <h3 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2">OBSERVACIONES</h3>
+          <div>
+            <label className="block text-sm font-bold text-gray-700">OBSERVACIONES GENERALES</label>
+            <textarea
+              value={formData.observaciones}
+              onChange={(e) => setFormData({ ...formData, observaciones: e.target.value })}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 p-2 border uppercase"
+              rows={4}
+              placeholder="Escriba aquí cualquier observación relevante..."
+            />
+          </div>
+        </div>
+
+        {/* SECCIÓN 9: CREADO POR */}
+        <div className="border-2 border-gray-400 rounded-lg p-6 bg-gray-50">
+          <h3 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2">REGISTRADO POR</h3>
+          <input
+            type="text"
+            value={formData.creadoPor}
+            onChange={(e) => setFormData({ ...formData, creadoPor: e.target.value })}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 p-2 border uppercase"
+            placeholder="Nombre de quien registra el reporte"
+            required
+          />
+          <p className="text-sm text-gray-600 mt-2">
+            💡 Este campo es obligatorio para identificar quién generó el reporte.
+          </p>
+        </div>
+
+        <div className="flex justify-end space-x-4 pt-4">
+          {onFinalizar && (
+            <button
+              type="button"
+              onClick={onFinalizar}
+              className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 font-bold"
+            >
+              Cancelar
+            </button>
+          )}
+          <button
+            type="submit"
+            disabled={loading}
+            className={`px-8 py-2 rounded-lg text-white font-bold ${loading ? 'bg-orange-300 cursor-not-allowed' : 'bg-orange-600 hover:bg-orange-700'
+              }`}
+          >
+            {loading ? 'Guardando...' : (reporteInicial ? 'Actualizar Reporte' : 'Guardar Reporte')}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default FormularioReporte;
