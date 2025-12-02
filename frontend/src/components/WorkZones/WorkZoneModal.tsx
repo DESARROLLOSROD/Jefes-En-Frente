@@ -69,7 +69,7 @@ const WorkZoneModal: React.FC<WorkZoneModalProps> = ({ isOpen, onClose, onSave, 
               </label>
               <input
                 type="text"
-                className="form-input"
+                className="form-input uppercase"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="EJ: ZONA NORTE, ÁREA DE EXTRACCIÓN..."
@@ -81,7 +81,7 @@ const WorkZoneModal: React.FC<WorkZoneModalProps> = ({ isOpen, onClose, onSave, 
             <div className="form-group">
               <label className="form-label">DESCRIPCIÓN</label>
               <textarea
-                className="form-textarea"
+                className="form-textarea uppercase"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="DESCRIPCIÓN OPCIONAL DE LA ZONA..."
@@ -92,7 +92,7 @@ const WorkZoneModal: React.FC<WorkZoneModalProps> = ({ isOpen, onClose, onSave, 
               <div className="form-group">
                 <label className="form-label">ESTADO</label>
                 <select
-                  className="form-select"
+                  className="form-select uppercase"
                   value={status}
                   onChange={(e) => setStatus(e.target.value as 'active' | 'inactive' | 'completed')}
                 >

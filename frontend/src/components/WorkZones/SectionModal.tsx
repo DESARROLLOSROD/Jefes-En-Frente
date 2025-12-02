@@ -68,7 +68,7 @@ const SectionModal: React.FC<SectionModalProps> = ({ isOpen, onClose, onSave, se
               </label>
               <input
                 type="text"
-                className="form-input"
+                className="form-input uppercase"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="EJ: SECCIÓN A, BLOQUE 1..."
@@ -80,7 +80,7 @@ const SectionModal: React.FC<SectionModalProps> = ({ isOpen, onClose, onSave, se
             <div className="form-group">
               <label className="form-label">DESCRIPCIÓN</label>
               <textarea
-                className="form-textarea"
+                className="form-textarea uppercase"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="DESCRIPCIÓN OPCIONAL DE LA SECCIÓN..."
