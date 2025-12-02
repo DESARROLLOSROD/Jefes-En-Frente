@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ReporteActividades, ControlMaquinaria } from '../../types/reporte';
 import { reporteService, vehiculoService } from '../../services/api';
+import { workZoneService } from '../../services/workZone.service';
 import { useAuth } from '../../contexts/AuthContext';
 import { Vehiculo } from '../../types/gestion';
+import { WorkZone } from '../../types/workZone.types';
 import SeccionControlAcarreo from './sections/SeccionControlAcarreo';
 import SeccionControlMaterial from './sections/SeccionControlMaterial';
 import SeccionControlAgua from './sections/SeccionControlAgua';
@@ -17,6 +19,8 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState('');
   const [vehiculosDisponibles, setVehiculosDisponibles] = useState<Vehiculo[]>([]);
+  const [zonasDisponibles, setZonasDisponibles] = useState<WorkZone[]>([]);
+  const [zonaSeleccionada, setZonaSeleccionada] = useState<WorkZone | null>(null);
 
   const [formData, setFormData] = useState<Omit<ReporteActividades, '_id' | 'fechaCreacion'>>({
     fecha: new Date().toISOString().split('T')[0],
@@ -26,8 +30,8 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
     turno: 'primer',
     inicioActividades: '07:00',
     terminoActividades: '19:00',
-    zonaTrabajo: '',
-    seccionTrabajo: '',
+    zonaTrabajo: { zonaId: '', zonaNombre: '' },
+    seccionTrabajo: { seccionId: '', seccionNombre: '' },
     jefeFrente: '',
     sobrestante: '',
     controlAcarreo: [
@@ -93,6 +97,29 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
     }
   }, [proyecto, reporteInicial]);
 
+  // Cargar zonas del proyecto
+  useEffect(() => {
+    const cargarZonas = async () => {
+      if (proyecto?._id) {
+        try {
+          const zonas = await workZoneService.getZonesByProject(proyecto._id);
+          setZonasDisponibles(zonas.filter(z => z.status === 'active'));
+
+          // Si estamos editando, establecer la zona seleccionada
+          if (reporteInicial && reporteInicial.zonaTrabajo?.zonaId) {
+            const zonaInicial = zonas.find(z => z._id === reporteInicial.zonaTrabajo.zonaId);
+            if (zonaInicial) {
+              setZonaSeleccionada(zonaInicial);
+            }
+          }
+        } catch (error) {
+          console.error('Error al cargar zonas:', error);
+        }
+      }
+    };
+    cargarZonas();
+  }, [proyecto, reporteInicial]);
+
   // Cargar vehículos del proyecto
   useEffect(() => {
     const cargarVehiculos = async () => {
@@ -116,6 +143,36 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
       }));
     }
   }, [user, reporteInicial]);
+
+  const handleZonaChange = (zonaId: string) => {
+    const zona = zonasDisponibles.find(z => z._id === zonaId);
+    if (zona) {
+      setZonaSeleccionada(zona);
+      setFormData(prev => ({
+        ...prev,
+        zonaTrabajo: {
+          zonaId: zona._id,
+          zonaNombre: zona.name
+        },
+        seccionTrabajo: { seccionId: '', seccionNombre: '' }
+      }));
+    }
+  };
+
+  const handleSeccionChange = (seccionId: string) => {
+    if (zonaSeleccionada) {
+      const seccion = zonaSeleccionada.sections.find(s => s.id === seccionId);
+      if (seccion) {
+        setFormData(prev => ({
+          ...prev,
+          seccionTrabajo: {
+            seccionId: seccion.id,
+            seccionNombre: seccion.name
+          }
+        }));
+      }
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -330,23 +387,36 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div>
               <label className="block text-sm font-bold text-gray-700">ZONA DE TRABAJO</label>
-              <input
-                type="text"
-                value={formData.zonaTrabajo}
-                onChange={(e) => setFormData(prev => ({ ...prev, zonaTrabajo: e.target.value.toUpperCase() }))}
+              <select
+                value={formData.zonaTrabajo.zonaId}
+                onChange={(e) => handleZonaChange(e.target.value)}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border uppercase"
                 required
-              />
+              >
+                <option value="">SELECCIONAR ZONA</option>
+                {zonasDisponibles.map((zona) => (
+                  <option key={zona._id} value={zona._id}>
+                    {zona.name.toUpperCase()}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-700">SECCIÓN DE TRABAJO</label>
-              <input
-                type="text"
-                value={formData.seccionTrabajo}
-                onChange={(e) => setFormData(prev => ({ ...prev, seccionTrabajo: e.target.value.toUpperCase() }))}
+              <select
+                value={formData.seccionTrabajo.seccionId}
+                onChange={(e) => handleSeccionChange(e.target.value)}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border uppercase"
                 required
-              />
+                disabled={!zonaSeleccionada || zonaSeleccionada.sections.length === 0}
+              >
+                <option value="">SELECCIONAR SECCIÓN</option>
+                {zonaSeleccionada?.sections.filter(s => s.status === 'active').map((seccion) => (
+                  <option key={seccion.id} value={seccion.id}>
+                    {seccion.name.toUpperCase()}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-sm font-bold text-gray-700">JEFE DE FRENTE</label>

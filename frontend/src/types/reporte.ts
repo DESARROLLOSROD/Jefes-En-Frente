@@ -46,6 +46,16 @@ export interface ControlMaquinaria {
 }
 
 
+export interface ZonaTrabajo {
+  zonaId: string;
+  zonaNombre: string;
+}
+
+export interface SeccionTrabajo {
+  seccionId: string;
+  seccionNombre: string;
+}
+
 export interface ReporteActividades {
   _id?: string;
   // NUEVO: Campos de autenticación
@@ -56,8 +66,8 @@ export interface ReporteActividades {
   turno: 'primer' | 'segundo';
   inicioActividades: string;
   terminoActividades: string;
-  zonaTrabajo: string;
-  seccionTrabajo: string;
+  zonaTrabajo: ZonaTrabajo;
+  seccionTrabajo: SeccionTrabajo;
   jefeFrente: string;
   sobrestante: string;
   controlAcarreo: ControlAcarreo[];

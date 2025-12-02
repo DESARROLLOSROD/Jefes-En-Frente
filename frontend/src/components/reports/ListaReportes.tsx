@@ -138,8 +138,9 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">FECHA</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TURNO</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ZONA DE TRABAJO</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">JEFE DE FRENTE</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ZONA</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SECCIÓN</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">JEFE</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ACCIONES</th>
                 </tr>
               </thead>
@@ -154,7 +155,12 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
                         {reporte.turno === 'primer' ? 'PRIMER TURNO' : 'SEGUNDO TURNO'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-900 uppercase">{reporte.zonaTrabajo}</td>
+                    <td className="px-6 py-4 text-sm text-gray-900 uppercase">
+                      {reporte.zonaTrabajo?.zonaNombre || reporte.zonaTrabajo || 'N/A'}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900 uppercase">
+                      {reporte.seccionTrabajo?.seccionNombre || reporte.seccionTrabajo || 'N/A'}
+                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 uppercase">{reporte.jefeFrente}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       {/* Botones de acción */}

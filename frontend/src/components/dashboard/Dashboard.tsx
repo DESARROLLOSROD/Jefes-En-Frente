@@ -5,6 +5,7 @@ import ListaReportes from '../reports/ListaReportes';
 import GestionUsuarios from '../users/GestionUsuarios';
 import GestionProyectos from '../projects/GestionProyectos';
 import GestionVehiculos from '../vehicles/GestionVehiculos';
+import { WorkZoneManager } from '../WorkZones';
 import { ReporteActividades } from '../../types/reporte';
 import { reporteService, proyectoService } from '../../services/api';
 import { generarPDFGeneral } from '../../utils/pdfGeneralGenerator';
@@ -12,7 +13,7 @@ import { Proyecto } from '../../types/gestion';
 import LogoROD from '../../Logo_ROD.png';
 
 const Dashboard: React.FC = () => {
-  const [vistaActual, setVistaActual] = useState<'formulario' | 'lista' | 'usuarios' | 'proyectos' | 'vehiculos'>('formulario');
+  const [vistaActual, setVistaActual] = useState<'formulario' | 'lista' | 'usuarios' | 'proyectos' | 'vehiculos' | 'zonas'>('formulario');
   const [reporteEditar, setReporteEditar] = useState<ReporteActividades | null>(null);
   const { user, proyecto, logout } = useAuth();
   const [loadingGeneral, setLoadingGeneral] = useState(false);
@@ -150,6 +151,15 @@ const Dashboard: React.FC = () => {
             >
               📋 VER REPORTES
             </button>
+            <button
+              onClick={() => setVistaActual('zonas')}
+              className={`py-4 px-6 font-semibold text-lg transition-all duration-300 whitespace-nowrap ${vistaActual === 'zonas'
+                ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
+                : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
+                }`}
+            >
+              📍 ZONAS DE TRABAJO
+            </button>
             {(user?.rol === 'admin' || user?.rol === 'supervisor') && (
               <>
                 <button
@@ -204,6 +214,12 @@ const Dashboard: React.FC = () => {
               setReporteEditar(reporte);
               setVistaActual('formulario');
             }}
+          />
+        )}
+        {vistaActual === 'zonas' && proyecto && (
+          <WorkZoneManager
+            projectId={proyecto._id}
+            isAdmin={user?.rol === 'admin' || user?.rol === 'supervisor'}
           />
         )}
         {(user?.rol === 'admin' || user?.rol === 'supervisor') && (

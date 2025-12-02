@@ -52,8 +52,14 @@ const reporteActividadesSchema = new Schema<IReporteActividades>({
   turno: String,
   inicioActividades: String,
   terminoActividades: String,
-  zonaTrabajo: String,
-  seccionTrabajo: String,
+  zonaTrabajo: {
+    zonaId: String,
+    zonaNombre: String
+  },
+  seccionTrabajo: {
+    seccionId: String,
+    seccionNombre: String
+  },
   jefeFrente: String,
   sobrestante: String,
   controlAcarreo: [controlAcarreoSchema],

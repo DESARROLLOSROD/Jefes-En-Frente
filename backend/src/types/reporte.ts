@@ -38,14 +38,24 @@ export interface IControlMaquinaria {
   horometroFinal?: number;
 }
 
+export interface IZonaTrabajo {
+  zonaId: string;
+  zonaNombre: string;
+}
+
+export interface ISeccionTrabajo {
+  seccionId: string;
+  seccionNombre: string;
+}
+
 export interface IReporteActividades extends Document {
   fecha: Date;
   ubicacion: string;
   turno: string;
   inicioActividades: string;
   terminoActividades: string;
-  zonaTrabajo: string;
-  seccionTrabajo: string;
+  zonaTrabajo: IZonaTrabajo;
+  seccionTrabajo: ISeccionTrabajo;
   jefeFrente: string;
   sobrestante: string;
   controlAcarreo: Types.Array<IControlAcarreo>;

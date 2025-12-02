@@ -88,8 +88,8 @@ export const generarPDFGeneral = (reportes: ReporteActividades[], proyectos: Pro
             return [
                 fecha,
                 reporte.turno === 'primer' ? '1ER' : '2DO',
-                reporte.zonaTrabajo.toUpperCase(),
-                reporte.seccionTrabajo ? reporte.seccionTrabajo.toUpperCase() : '-',
+                (reporte.zonaTrabajo?.zonaNombre || reporte.zonaTrabajo || 'N/A').toUpperCase(),
+                (reporte.seccionTrabajo?.seccionNombre || reporte.seccionTrabajo || '-').toUpperCase(),
                 reporte.jefeFrente.toUpperCase(),
                 reporte.controlMaquinaria?.length || 0,
                 reporte.controlAcarreo?.length || 0,

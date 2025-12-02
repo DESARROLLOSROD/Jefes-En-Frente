@@ -92,8 +92,8 @@ export const generarPDFReporte = (
 
     const infoItems = [
         ["Ubicación:", reporte.ubicacion],
-        ["Zona de Trabajo:", reporte.zonaTrabajo],
-        ["Sección de Trabajo:", reporte.seccionTrabajo],
+        ["Zona de Trabajo:", reporte.zonaTrabajo?.zonaNombre || reporte.zonaTrabajo || 'N/A'],
+        ["Sección de Trabajo:", reporte.seccionTrabajo?.seccionNombre || reporte.seccionTrabajo || 'N/A'],
         ["Jefe de Frente:", reporte.jefeFrente],
         ["Sobrestante:", reporte.sobrestante],
     ];
@@ -274,7 +274,8 @@ export const generarPDFReporte = (
     // GUARDAR ARCHIVO
     // ------------------------------------------------
     const fechaArchivo = new Date(reporte.fecha).toISOString().split("T")[0];
-    const zona = reporte.zonaTrabajo.replace(/\s+/g, "_").substring(0, 20);
+    const zonaNombre = typeof reporte.zonaTrabajo === 'string' ? reporte.zonaTrabajo : (reporte.zonaTrabajo?.zonaNombre || 'Zona');
+    const zona = zonaNombre.replace(/\s+/g, "_").substring(0, 20);
     const filename = `Reporte_${fechaArchivo}_${zona}.pdf`;
 
     doc.save(filename);
