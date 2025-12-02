@@ -37,6 +37,7 @@ const controlMaquinariaSchema = new Schema<IControlMaquinaria>({
   operador: String,
   actividad: String,
   vehiculoId: { type: Schema.Types.ObjectId, ref: 'Vehiculo' },
+  horometroInicial: Number,
   horometroFinal: Number
 });
 

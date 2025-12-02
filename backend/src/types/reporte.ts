@@ -35,6 +35,7 @@ export interface IControlMaquinaria {
   operador: string;
   actividad: string;
   vehiculoId?: string;
+  horometroInicial?: number;
   horometroFinal?: number;
 }
 

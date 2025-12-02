@@ -70,6 +70,7 @@ export const generarPDFReporte = (
         year: "numeric",
         month: "long",
         day: "numeric",
+        timeZone: "UTC"
     });
 
     doc.text("Fecha:", 15, yPosition);
