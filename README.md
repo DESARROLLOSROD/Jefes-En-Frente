@@ -1,85 +1,156 @@
 # Jefes-En-Frente
 
-## Descripción del proyecto
+## 📋 Descripción del Proyecto
 
-Esta aplicación web **Jefes-En-Frente** permite a los operadores gestionar y reportar actividades diarias de control de recursos como agua, material y acarreo. El objetivo principal es facilitar la captura, edición y generación de reportes en formato PDF, con roles diferenciados (operador y administrador) que limitan o habilitan funcionalidades específicas.
+**Jefes-En-Frente** es una plataforma web integral diseñada para la gestión y reporte de actividades en proyectos de minería y construcción. Su objetivo principal es optimizar el control de recursos (agua, material, acarreo) y facilitar la toma de decisiones mediante reportes detallados y accesibles.
 
-## Funcionalidades clave
+La aplicación permite a los operadores registrar actividades diarias y a los administradores gestionar el sistema completo, asegurando la integridad de los datos y proporcionando herramientas para la generación de documentación formal en PDF.
 
-- **Creación y edición de reportes** de control de agua, material y acarreo.
-- **Generación de PDFs** personalizados para cada reporte y un reporte general consolidado.
-- **Control de permisos**: los operadores solo pueden crear y descargar reportes, mientras que los administradores pueden editar y eliminar.
-- **Interfaz dinámica** con componentes reutilizables y micro‑animaciones para una mejor experiencia de usuario.
+## ✨ Funcionalidades Clave
 
-## Tecnologías usadas
+### 🛠️ Gestión Operativa
+- **Reportes Diarios**: Creación y edición de reportes de control de agua, material y acarreo.
+- **Gestión de Proyectos**: Administración de múltiples proyectos con sus respectivas configuraciones.
+- **Control de Flota**: Registro y seguimiento de vehículos y maquinaria.
 
-- **Frontend**: React, TypeScript, Vite.
-- **Backend**: Node.js, Express, TypeScript.
-- **Generación de PDFs**: pdf-lib (u otra librería similar).
-- **Estilos**: CSS modular con enfoque en diseño premium y responsivo.
+### 👥 Roles y Permisos
+- **Administrador**: Acceso total al sistema (Crear/Editar/Eliminar reportes, gestionar usuarios, proyectos y vehículos).
+- **Operador (Jefe en Frente)**: Permisos enfocados en la operación diaria (Crear reportes, visualizar historial, descargar PDFs).
 
-## Estructura del Proyecto
+### 📄 Documentación y Exportación
+- **Generación de PDFs**: Creación automática de reportes formales con diseño corporativo.
+- **Reportes Consolidados**: Capacidad de generar reportes generales que agrupan actividades por proyecto.
 
-El proyecto está organizado en dos directorios principales: `backend` y `frontend`.
+### 💻 Experiencia de Usuario
+- **Interfaz Moderna**: Diseño responsivo y amigable con modo oscuro y micro-animaciones.
+- **Feedback en Tiempo Real**: Notificaciones y validaciones para asegurar la calidad de los datos.
+
+## 🚀 Tecnologías Utilizadas
+
+### Frontend
+- **Core**: [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vitejs.dev/)
+- **Estilos**: [TailwindCSS](https://tailwindcss.com/) para diseño utilitario y responsivo.
+- **PDFs**: `jspdf` y `jspdf-autotable` para generación de documentos en el cliente.
+- **HTTP Client**: `axios` para comunicación con el backend.
+
+### Backend
+- **Runtime**: [Node.js](https://nodejs.org/)
+- **Framework**: [Express](https://expressjs.com/)
+- **Lenguaje**: TypeScript
+- **Base de Datos**: MongoDB (con `mongoose` como ODM).
+- **Autenticación**: JWT (JSON Web Tokens) y `bcryptjs`.
+
+## ⚙️ Requisitos Previos
+
+- **Node.js**: v18 o superior.
+- **MongoDB**: Instancia local o conexión a MongoDB Atlas.
+
+## 📦 Instalación y Configuración
+
+### 1. Clonar el repositorio
+
+```bash
+git clone <url-del-repositorio>
+cd Jefes-En-Frente
+```
+
+### 2. Configurar el Backend
+
+Navega al directorio del backend e instala las dependencias:
+
+```bash
+cd backend
+npm install
+```
+
+Crea un archivo `.env` en la raíz de `backend` con las siguientes variables (ejemplo):
+
+```env
+PORT=5000
+MONGO_URI=mongodb://localhost:27017/jefes-en-frente
+JWT_SECRET=tu_secreto_super_seguro
+```
+
+Inicializa la base de datos con usuarios y datos por defecto:
+
+```bash
+npm run init
+# Opcional: Cargar datos de prueba
+npm run seed
+```
+
+Inicia el servidor de desarrollo:
+
+```bash
+npm run dev
+```
+
+### 3. Configurar el Frontend
+
+Navega al directorio del frontend e instala las dependencias:
+
+```bash
+cd ../frontend
+npm install
+```
+
+Inicia el servidor de desarrollo:
+
+```bash
+npm run dev
+```
+
+La aplicación estará disponible típicamente en `http://localhost:5173`.
+
+## 📂 Estructura del Proyecto
 
 ```
 Jefes-En-Frente/
-├── backend/                # Servidor Node.js/Express
+├── backend/                # API RESTful con Node.js/Express
 │   ├── src/
-│   │   ├── controllers/    # Lógica de negocio
-│   │   ├── middleware/     # Middlewares (auth, validación)
-│   │   ├── models/         # Modelos de datos
-│   │   ├── routes/         # Definición de endpoints API
-│   │   ├── scripts/        # Scripts de mantenimiento
-│   │   ├── types/          # Tipos TypeScript
-│   │   └── server.ts       # Entry point del servidor
-│   ├── Dockerfile
-│   └── package.json
+│   │   ├── controllers/    # Lógica de los endpoints
+│   │   ├── middleware/     # Auth, validaciones, manejo de errores
+│   │   ├── models/         # Esquemas de Mongoose (User, Report, etc.)
+│   │   ├── routes/         # Definición de rutas (auth, reportes, etc.)
+│   │   ├── scripts/        # Scripts de inicialización y mantenimiento
+│   │   ├── types/          # Definiciones de tipos globales
+│   │   └── server.ts       # Punto de entrada del servidor
+│   └── ...
 │
-└── frontend/               # Cliente React/Vite
+└── frontend/               # SPA con React/Vite
     ├── src/
-    │   ├── components/     # Componentes UI reutilizables
-    │   ├── contexts/       # Estado global (React Context)
-    │   ├── services/       # Comunicación con API
-    │   ├── types/          # Interfaces TypeScript
-    │   ├── utils/          # Funciones auxiliares
-    │   ├── App.tsx         # Componente principal
-    │   └── main.tsx        # Entry point React
-    ├── Dockerfile
-    ├── index.html
-    ├── tailwind.config.js
-    └── vite.config.ts
+    │   ├── components/     # Componentes UI (Forms, Tables, Layouts)
+    │   ├── contexts/       # Estado global (AuthContext)
+    │   ├── services/       # Capa de servicio API (axios)
+    │   ├── utils/          # Generadores de PDF, formateadores
+    │   ├── pages/          # Vistas principales (Dashboard, Login)
+    │   └── App.tsx         # Configuración de rutas
+    └── ...
 ```
 
-### Descripción de Directorios
+## 🔌 API Overview
 
-### Backend (`/backend`)
+Principales grupos de endpoints disponibles en el backend:
 
-El backend está construido con Node.js y Express, utilizando TypeScript.
+- **Auth**: `/api/auth` (Login, Registro, Verificación de token)
+- **Reportes**: `/api/reportes` (CRUD de reportes diarios)
+- **Proyectos**: `/api/proyectos` (Gestión de proyectos mineros)
+- **Vehículos**: `/api/vehiculos` (Gestión de flota)
+- **Usuarios**: `/api/usuarios` (Administración de usuarios del sistema)
 
-- **`src/server.ts`**: Punto de entrada de la aplicación.
-- **`src/routes`**: Definición de las rutas de la API (endpoints).
-- **`src/controllers`** (o lógica en rutas): Manejo de la lógica de negocio.
-- **`src/models`**: Modelos de datos (interacción con base de datos o estructuras en memoria).
-- **`src/middleware`**: Middlewares para validación, autenticación y manejo de errores.
-- **`src/types`**: Definiciones de tipos TypeScript compartidos.
-- **`src/scripts`**: Scripts de utilidad para mantenimiento o configuración.
+## 📜 Scripts Disponibles
 
-### Frontend (`/frontend`)
+### Backend
+- `npm run dev`: Inicia el servidor en modo desarrollo con recarga automática.
+- `npm run build`: Compila el código TypeScript a JavaScript en `dist/`.
+- `npm run start`: Inicia el servidor compilado (producción).
+- `npm run init`: Crea el usuario administrador inicial.
 
-El frontend es una SPA (Single Page Application) construida con React y Vite.
-
-- **`src/main.tsx`**: Punto de entrada de React.
-- **`src/App.tsx`**: Componente raíz y configuración de rutas.
-- **`src/components`**: Componentes de UI reutilizables (botones, formularios, tablas, etc.).
-- **`src/pages`** (o vistas en componentes): Vistas principales de la aplicación.
-- **`src/services`**: Módulos para la comunicación con la API del backend.
-- **`src/contexts`**: Contextos de React para manejo de estado global (ej. autenticación).
-- **`src/utils`**: Funciones de utilidad y helpers.
-- **`src/types`**: Definiciones de interfaces y tipos para TypeScript.
-- **`src/constants`**: Valores constantes y configuración estática.
-- **`src/App.css` / `index.css`**: Estilos globales y específicos de la app.
+### Frontend
+- `npm run dev`: Inicia el servidor de desarrollo de Vite.
+- `npm run build`: Construye la aplicación para producción.
+- `npm run preview`: Vista previa local de la build de producción.
 
 ---
 
-> **Nota**: Este proyecto está en continuo desarrollo. Consulte la documentación interna para más detalles sobre la arquitectura y los próximos pasos.
+> **Nota**: Este proyecto es propiedad privada y está diseñado para uso interno.
