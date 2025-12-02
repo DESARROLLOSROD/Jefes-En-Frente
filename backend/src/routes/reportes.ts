@@ -64,19 +64,14 @@ router.get('/', async (req: AuthRequest, res) => {
   try {
     const { proyectoId } = req.query;
 
-    console.log('📋 Obteniendo reportes para proyecto:', proyectoId);
+    console.log('📋 Obteniendo reportes. Proyecto:', proyectoId || 'TODOS');
 
-    if (!proyectoId) {
-      const response: ApiResponse<null> = {
-        success: false,
-        error: 'proyectoId es requerido'
-      };
-      return res.status(400).json(response);
+    const query: any = {};
+    if (proyectoId) {
+      query.proyectoId = proyectoId;
     }
 
-    const reportes = await ReporteActividades.find({
-      proyectoId: proyectoId
-    }).sort({ fecha: -1, fechaCreacion: -1 });
+    const reportes = await ReporteActividades.find(query).sort({ fecha: -1, fechaCreacion: -1 });
 
     console.log(`✅ ${reportes.length} reportes encontrados`);
 

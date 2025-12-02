@@ -72,11 +72,17 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
+    console.log('🔵 MODAL MATERIAL handleSubmit llamado');
+    console.log('📝 FormData del modal:', formData);
+
     if (validateForm()) {
+      console.log('✅ Validación pasada, llamando onSave');
       onSave(formData);
+      console.log('🚪 Cerrando modal');
       onClose();
+    } else {
+      console.log('❌ Validación falló');
     }
   };
 
@@ -100,7 +106,7 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
         </div>
 
         {/* Body */}
-        <form onSubmit={handleSubmit} className="p-6">
+        <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Material */}
             <div className="md:col-span-2">
@@ -193,13 +199,14 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
               CANCELAR
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={handleSubmit}
               className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold shadow-md"
             >
               GUARDAR
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

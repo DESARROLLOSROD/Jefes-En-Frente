@@ -122,6 +122,13 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
     setLoading(true);
     setMensaje('');
 
+    console.log('📋 FORMULARIO ENVIADO');
+    console.log('📦 Control de Acarreo:', formData.controlAcarreo);
+    console.log('📦 Control de Material:', formData.controlMaterial);
+    console.log('📦 Control de Agua:', formData.controlAgua);
+    console.log('📦 Control de Maquinaria:', formData.controlMaquinaria);
+    console.log('📦 FormData completo:', formData);
+
     // Validación de horómetros
     for (const maq of formData.controlMaquinaria) {
       if (maq.vehiculoId && maq.horometroFinal < maq.horometroInicial) {
@@ -149,14 +156,14 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
             String(hoy.getMonth() + 1).padStart(2, '0') + "-" +
             String(hoy.getDate()).padStart(2, '0');
 
-          setFormData({
-            ...formData,
+          setFormData(prev => ({
+            ...prev,
             fecha: fechaLocal,
-            inicioActividades: formData.turno === 'primer' ? '07:00' : '19:00',
-            terminoActividades: formData.turno === 'primer' ? '19:00' : '07:00',
+            inicioActividades: prev.turno === 'primer' ? '07:00' : '19:00',
+            terminoActividades: prev.turno === 'primer' ? '19:00' : '07:00',
             observaciones: '',
             creadoPor: user?.nombre || '',
-          });
+          }));
         }
 
         if (onFinalizar) {
@@ -175,20 +182,20 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
   };
 
   const handleTurnoChange = (nuevoTurno: 'primer' | 'segundo') => {
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       turno: nuevoTurno,
       inicioActividades: nuevoTurno === 'primer' ? '07:00' : '19:00',
       terminoActividades: nuevoTurno === 'primer' ? '19:00' : '07:00'
-    });
+    }));
   };
 
   // Funciones para control de maquinaria
   const agregarControlMaquinaria = () => {
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       controlMaquinaria: [
-        ...formData.controlMaquinaria,
+        ...prev.controlMaquinaria,
         {
           vehiculoId: '',
           nombre: '',
@@ -201,49 +208,57 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
           actividad: ''
         }
       ]
-    });
+    }));
   };
 
   const actualizarControlMaquinaria = (index: number, campo: keyof ControlMaquinaria, valor: string | number) => {
-    const nuevaMaquinaria = [...formData.controlMaquinaria];
-    nuevaMaquinaria[index] = { ...nuevaMaquinaria[index], [campo]: valor };
-    setFormData({ ...formData, controlMaquinaria: nuevaMaquinaria });
+    setFormData(prev => {
+      const nuevaMaquinaria = [...prev.controlMaquinaria];
+      nuevaMaquinaria[index] = { ...nuevaMaquinaria[index], [campo]: valor };
+      return { ...prev, controlMaquinaria: nuevaMaquinaria };
+    });
   };
 
   const eliminarControlMaquinaria = (index: number) => {
     if (formData.controlMaquinaria.length > 1) {
-      const nuevaMaquinaria = formData.controlMaquinaria.filter((_, i) => i !== index);
-      setFormData({ ...formData, controlMaquinaria: nuevaMaquinaria });
+      setFormData(prev => ({
+        ...prev,
+        controlMaquinaria: prev.controlMaquinaria.filter((_, i) => i !== index)
+      }));
     }
   };
 
   const seleccionarVehiculo = (index: number, vehiculoId: string) => {
     const vehiculo = vehiculosDisponibles.find(v => v._id === vehiculoId);
     if (vehiculo) {
-      const nuevaMaquinaria = [...formData.controlMaquinaria];
-      nuevaMaquinaria[index] = {
-        ...nuevaMaquinaria[index],
-        vehiculoId: vehiculo._id,
-        nombre: vehiculo.nombre,
-        tipo: vehiculo.tipo,
-        numeroEconomico: vehiculo.noEconomico,
-        horometroInicial: vehiculo.horometroInicial,
-        horometroFinal: vehiculo.horometroFinal || vehiculo.horometroInicial,
-        horasOperacion: 0
-      };
-      setFormData({ ...formData, controlMaquinaria: nuevaMaquinaria });
+      setFormData(prev => {
+        const nuevaMaquinaria = [...prev.controlMaquinaria];
+        nuevaMaquinaria[index] = {
+          ...nuevaMaquinaria[index],
+          vehiculoId: vehiculo._id,
+          nombre: vehiculo.nombre,
+          tipo: vehiculo.tipo,
+          numeroEconomico: vehiculo.noEconomico,
+          horometroInicial: vehiculo.horometroInicial,
+          horometroFinal: vehiculo.horometroFinal || vehiculo.horometroInicial,
+          horasOperacion: 0
+        };
+        return { ...prev, controlMaquinaria: nuevaMaquinaria };
+      });
     }
   };
 
   const calcularHorasOperacion = (index: number, horometroFinal: number) => {
-    const nuevaMaquinaria = [...formData.controlMaquinaria];
-    const horometroInicial = nuevaMaquinaria[index].horometroInicial;
-    nuevaMaquinaria[index] = {
-      ...nuevaMaquinaria[index],
-      horometroFinal,
-      horasOperacion: horometroFinal - horometroInicial
-    };
-    setFormData({ ...formData, controlMaquinaria: nuevaMaquinaria });
+    setFormData(prev => {
+      const nuevaMaquinaria = [...prev.controlMaquinaria];
+      const horometroInicial = nuevaMaquinaria[index].horometroInicial;
+      nuevaMaquinaria[index] = {
+        ...nuevaMaquinaria[index],
+        horometroFinal,
+        horasOperacion: horometroFinal - horometroInicial
+      };
+      return { ...prev, controlMaquinaria: nuevaMaquinaria };
+    });
   };
 
   return (
@@ -274,7 +289,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
               <input
                 type="date"
                 value={formData.fecha}
-                onChange={(e) => setFormData({ ...formData, fecha: e.target.value })}
+                onChange={(e) => setFormData(prev => ({ ...prev, fecha: e.target.value }))}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border"
                 required
               />
@@ -295,7 +310,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
               <input
                 type="time"
                 value={formData.inicioActividades}
-                onChange={(e) => setFormData({ ...formData, inicioActividades: e.target.value })}
+                onChange={(e) => setFormData(prev => ({ ...prev, inicioActividades: e.target.value }))}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border"
                 required
               />
@@ -305,7 +320,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
               <input
                 type="time"
                 value={formData.terminoActividades}
-                onChange={(e) => setFormData({ ...formData, terminoActividades: e.target.value })}
+                onChange={(e) => setFormData(prev => ({ ...prev, terminoActividades: e.target.value }))}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border"
                 required
               />
@@ -318,7 +333,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
               <input
                 type="text"
                 value={formData.zonaTrabajo}
-                onChange={(e) => setFormData({ ...formData, zonaTrabajo: e.target.value.toUpperCase() })}
+                onChange={(e) => setFormData(prev => ({ ...prev, zonaTrabajo: e.target.value.toUpperCase() }))}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border uppercase"
                 required
               />
@@ -328,7 +343,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
               <input
                 type="text"
                 value={formData.seccionTrabajo}
-                onChange={(e) => setFormData({ ...formData, seccionTrabajo: e.target.value.toUpperCase() })}
+                onChange={(e) => setFormData(prev => ({ ...prev, seccionTrabajo: e.target.value.toUpperCase() }))}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border uppercase"
                 required
               />
@@ -338,7 +353,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
               <input
                 type="text"
                 value={formData.jefeFrente}
-                onChange={(e) => setFormData({ ...formData, jefeFrente: e.target.value.toUpperCase() })}
+                onChange={(e) => setFormData(prev => ({ ...prev, jefeFrente: e.target.value.toUpperCase() }))}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border uppercase"
                 required
               />
@@ -348,7 +363,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
               <input
                 type="text"
                 value={formData.sobrestante}
-                onChange={(e) => setFormData({ ...formData, sobrestante: e.target.value.toUpperCase() })}
+                onChange={(e) => setFormData(prev => ({ ...prev, sobrestante: e.target.value.toUpperCase() }))}
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring-orange-500 p-2 border uppercase"
               />
             </div>
@@ -358,19 +373,19 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
         {/* SECCIÓN 2: CONTROL DE ACARREOS (NUEVO COMPONENTE MODULAR) */}
         <SeccionControlAcarreo
           acarreos={formData.controlAcarreo}
-          onAcarreosChange={(acarreos) => setFormData({ ...formData, controlAcarreo: acarreos })}
+          onAcarreosChange={(acarreos) => setFormData(prev => ({ ...prev, controlAcarreo: acarreos }))}
         />
 
         {/* SECCIÓN 3: CONTROL DE MATERIAL (NUEVO COMPONENTE MODULAR) */}
         <SeccionControlMaterial
           materiales={formData.controlMaterial}
-          onMaterialesChange={(materiales) => setFormData({ ...formData, controlMaterial: materiales })}
+          onMaterialesChange={(materiales) => setFormData(prev => ({ ...prev, controlMaterial: materiales }))}
         />
 
         {/* SECCIÓN 4: CONTROL DE AGUA (NUEVO COMPONENTE MODULAR) */}
         <SeccionControlAgua
           aguas={formData.controlAgua}
-          onAguasChange={(aguas) => setFormData({ ...formData, controlAgua: aguas })}
+          onAguasChange={(aguas) => setFormData(prev => ({ ...prev, controlAgua: aguas }))}
         />
 
         {/* SECCIÓN 5: CONTROL DE MAQUINARIA */}
@@ -471,7 +486,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
           <h3 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2">OBSERVACIONES</h3>
           <textarea
             value={formData.observaciones}
-            onChange={(e) => setFormData({ ...formData, observaciones: e.target.value.toUpperCase() })}
+            onChange={(e) => setFormData(prev => ({ ...prev, observaciones: e.target.value.toUpperCase() }))}
             rows={4}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-gray-500 focus:ring-gray-500 p-2 border uppercase"
             placeholder="ESCRIBA CUALQUIER OBSERVACIÓN ADICIONAL..."

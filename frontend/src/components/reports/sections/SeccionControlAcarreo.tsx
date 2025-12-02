@@ -28,14 +28,27 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
   };
 
   const handleGuardar = (acarreo: ControlAcarreo) => {
+    console.log('🚀 handleGuardar llamado con:', acarreo);
+    console.log('📦 Acarreos actuales:', acarreos);
     if (acarreoEditando !== null) {
       // Editando existente
       const nuevosAcarreos = [...acarreos];
       nuevosAcarreos[acarreoEditando.index] = acarreo;
+      console.log('✏️ Editando acarreo en índice:', acarreoEditando.index);
+      console.log('📦 Nuevos acarreos:', nuevosAcarreos);
       onAcarreosChange(nuevosAcarreos);
     } else {
       // Agregando nuevo
-      onAcarreosChange([...acarreos, acarreo]);
+      // Si el primer elemento está vacío (registro inicial), reemplazarlo
+      const primerElementoVacio = acarreos.length === 1 &&
+        !acarreos[0].material &&
+        acarreos[0].noViaje === 0;
+
+      const nuevosAcarreos = primerElementoVacio ? [acarreo] : [...acarreos, acarreo];
+      console.log('➕ Agregando nuevo acarreo');
+      console.log('🔄 Primer elemento vacío:', primerElementoVacio);
+      console.log('📦 Nuevos acarreos:', nuevosAcarreos);
+      onAcarreosChange(nuevosAcarreos);
     }
   };
 

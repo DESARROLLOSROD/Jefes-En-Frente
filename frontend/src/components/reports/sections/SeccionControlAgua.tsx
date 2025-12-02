@@ -28,12 +28,25 @@ const SeccionControlAgua: React.FC<SeccionControlAguaProps> = ({
   };
 
   const handleGuardar = (agua: ControlAgua) => {
+    console.log('🚀 handleGuardar AGUA llamado con:', agua);
+    console.log('📦 Aguas actuales:', aguas);
     if (aguaEditando !== null) {
       const nuevasAguas = [...aguas];
       nuevasAguas[aguaEditando.index] = agua;
+      console.log('✏️ Editando agua en índice:', aguaEditando.index);
+      console.log('📦 Nuevas aguas:', nuevasAguas);
       onAguasChange(nuevasAguas);
     } else {
-      onAguasChange([...aguas, agua]);
+      // Si el primer elemento está vacío (registro inicial), reemplazarlo
+      const primerElementoVacio = aguas.length === 1 &&
+        !aguas[0].noEconomico &&
+        aguas[0].viaje === 0;
+
+      const nuevasAguas = primerElementoVacio ? [agua] : [...aguas, agua];
+      console.log('➕ Agregando nueva agua');
+      console.log('🔄 Primer elemento vacío:', primerElementoVacio);
+      console.log('📦 Nuevas aguas:', nuevasAguas);
+      onAguasChange(nuevasAguas);
     }
   };
 

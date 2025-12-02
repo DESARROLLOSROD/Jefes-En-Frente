@@ -10,7 +10,8 @@ export const generarPDFGeneral = (reportes: ReporteActividades[], proyectos: Pro
     const pageHeight = doc.internal.pageSize.getHeight();
 
     // Define corporate colors
-    const ORANGE = "rgb(76, 78, 201)"; // matches pdfGenerator.ts
+    const ORANGE_RGB: [number, number, number] = [76, 78, 201]; // for autoTable fillColor
+    const ORANGE = "rgb(76, 78, 201)"; // for setDrawColor/setTextColor
     const DARK = "rgb(26,26,26)";
     const GRAY = "rgb(80,80,80)";
 
@@ -100,7 +101,7 @@ export const generarPDFGeneral = (reportes: ReporteActividades[], proyectos: Pro
             head: [['Fecha', 'Turno', 'Zona', 'Sección', 'Jefe Frente', 'Maq.', 'Acarreos']],
             body: tableBody,
             theme: 'grid',
-            headStyles: { fillColor: ORANGE, textColor: [255, 255, 255], fontStyle: 'bold' },
+            headStyles: { fillColor: ORANGE_RGB, textColor: [255, 255, 255], fontStyle: 'bold' },
             alternateRowStyles: { fillColor: [245, 245, 245] },
             styles: { fontSize: 9, textColor: DARK, cellPadding: 3 },
             margin: { left: 15, right: 15 },

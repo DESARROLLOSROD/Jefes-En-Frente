@@ -28,12 +28,25 @@ const SeccionControlMaterial: React.FC<SeccionControlMaterialProps> = ({
   };
 
   const handleGuardar = (material: ControlMaterial) => {
+    console.log('🚀 handleGuardar llamado con:', material);
+    console.log('📦 Materiales actuales:', materiales);
     if (materialEditando !== null) {
       const nuevosMateriales = [...materiales];
       nuevosMateriales[materialEditando.index] = material;
+      console.log('✏️ Editando material en índice:', materialEditando.index);
+      console.log('📦 Nuevos materiales:', nuevosMateriales);
       onMaterialesChange(nuevosMateriales);
     } else {
-      onMaterialesChange([...materiales, material]);
+      // Si el primer elemento está vacío (registro inicial), reemplazarlo
+      const primerElementoVacio = materiales.length === 1 &&
+        !materiales[0].material &&
+        !materiales[0].cantidad;
+
+      const nuevosMateriales = primerElementoVacio ? [material] : [...materiales, material];
+      console.log('➕ Agregando nuevo material');
+      console.log('🔄 Primer elemento vacío:', primerElementoVacio);
+      console.log('📦 Nuevos materiales:', nuevosMateriales);
+      onMaterialesChange(nuevosMateriales);
     }
   };
 
