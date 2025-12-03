@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { proyectoService } from '../../services/api';
 import { Proyecto } from '../../types/gestion';
 import { useAuth } from '../../contexts/AuthContext';
+import { comprimirImagen, formatearTamano, calcularReduccion } from '../../utils/imageCompressor';
+import BibliotecaMapas from '../mapas/BibliotecaMapas';
+import { BibliotecaMapa } from '../../services/bibliotecaMapa.service';
 
 const GestionProyectos: React.FC = () => {
     const { actualizarProyecto } = useAuth();
@@ -19,6 +22,9 @@ const GestionProyectos: React.FC = () => {
         mapa: undefined as { imagen: { data: string; contentType: string }; width: number; height: number } | undefined
     });
     const [previewMapa, setPreviewMapa] = useState<string>('');
+    const [comprimiendo, setComprimiendo] = useState(false);
+    const [infoCompresion, setInfoCompresion] = useState<{ original: number; comprimido: number } | null>(null);
+    const [mostrarBiblioteca, setMostrarBiblioteca] = useState(false);
 
     useEffect(() => {
         cargarProyectos();
@@ -105,13 +111,13 @@ const GestionProyectos: React.FC = () => {
         setPreviewMapa('');
     };
 
-    const handleMapaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleMapaChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Validar tamaño (5MB)
-        if (file.size > 5 * 1024 * 1024) {
-            alert('LA IMAGEN NO DEBE SUPERAR 5MB');
+        // Validar tamaño (10MB máximo para archivo original)
+        if (file.size > 10 * 1024 * 1024) {
+            alert('LA IMAGEN NO DEBE SUPERAR 10MB');
             return;
         }
 
@@ -121,32 +127,58 @@ const GestionProyectos: React.FC = () => {
             return;
         }
 
-        const reader = new FileReader();
-        reader.onload = () => {
-            const img = new Image();
-            img.onload = () => {
-                const base64 = (reader.result as string).split(',')[1];
-                setFormData({
-                    ...formData,
-                    mapa: {
-                        imagen: {
-                            data: base64,
-                            contentType: file.type
-                        },
-                        width: img.width,
-                        height: img.height
-                    }
-                });
-                setPreviewMapa(reader.result as string);
-            };
-            img.src = reader.result as string;
-        };
-        reader.readAsDataURL(file);
+        try {
+            setComprimiendo(true);
+
+            // Comprimir imagen automáticamente
+            const resultado = await comprimirImagen(file, {
+                maxWidth: 1920,
+                maxHeight: 1080,
+                quality: 0.85
+            });
+
+            setFormData({
+                ...formData,
+                mapa: {
+                    imagen: {
+                        data: resultado.base64,
+                        contentType: resultado.contentType
+                    },
+                    width: resultado.width,
+                    height: resultado.height
+                }
+            });
+
+            setPreviewMapa(`data:${resultado.contentType};base64,${resultado.base64}`);
+            setInfoCompresion({
+                original: resultado.tamanioOriginal,
+                comprimido: resultado.tamanioComprimido
+            });
+        } catch (error) {
+            console.error('Error al comprimir imagen:', error);
+            alert('ERROR AL PROCESAR LA IMAGEN');
+        } finally {
+            setComprimiendo(false);
+        }
     };
 
     const eliminarMapa = () => {
         setFormData({ ...formData, mapa: undefined });
         setPreviewMapa('');
+        setInfoCompresion(null);
+    };
+
+    const seleccionarMapaBiblioteca = (mapa: BibliotecaMapa) => {
+        setFormData({
+            ...formData,
+            mapa: {
+                imagen: mapa.imagen,
+                width: mapa.width,
+                height: mapa.height
+            }
+        });
+        setPreviewMapa(`data:${mapa.imagen.contentType};base64,${mapa.imagen.data}`);
+        setMostrarBiblioteca(false);
     };
 
     if (loading) return <div className="text-center p-8">CARGANDO PROYECTOS...</div>;
@@ -243,10 +275,24 @@ const GestionProyectos: React.FC = () => {
                                 <label className="block text-gray-700 text-sm font-bold mb-2 uppercase">
                                     MAPA DEL PROYECTO (Opcional)
                                 </label>
-                                <p className="text-xs text-gray-500 mb-2">PNG o JPG, máximo 5MB</p>
+                                <p className="text-xs text-gray-500 mb-2">
+                                    PNG o JPG, máximo 10MB (se comprimirá automáticamente)
+                                </p>
+                                {comprimiendo && (
+                                    <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded mb-3">
+                                        COMPRIMIENDO IMAGEN...
+                                    </div>
+                                )}
                                 {previewMapa ? (
                                     <div className="relative">
                                         <img src={previewMapa} alt="Preview mapa" className="w-full h-48 object-contain border rounded bg-gray-50" />
+                                        {infoCompresion && (
+                                            <div className="mt-2 text-xs text-gray-600 bg-green-50 p-2 rounded">
+                                                TAMAÑO ORIGINAL: {formatearTamano(infoCompresion.original)} →
+                                                COMPRIMIDO: {formatearTamano(infoCompresion.comprimido)}
+                                                ({calcularReduccion(infoCompresion.original, infoCompresion.comprimido)}% REDUCIDO)
+                                            </div>
+                                        )}
                                         <button
                                             type="button"
                                             onClick={eliminarMapa}
@@ -256,12 +302,22 @@ const GestionProyectos: React.FC = () => {
                                         </button>
                                     </div>
                                 ) : (
-                                    <input
-                                        type="file"
-                                        accept="image/png,image/jpeg,image/jpg"
-                                        onChange={handleMapaChange}
-                                        className="w-full border rounded px-3 py-2"
-                                    />
+                                    <>
+                                        <input
+                                            type="file"
+                                            accept="image/png,image/jpeg,image/jpg"
+                                            onChange={handleMapaChange}
+                                            className="w-full border rounded px-3 py-2 mb-2"
+                                            disabled={comprimiendo}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setMostrarBiblioteca(true)}
+                                            className="w-full bg-purple-600 text-white px-3 py-2 rounded hover:bg-purple-700"
+                                        >
+                                            SELECCIONAR DESDE BIBLIOTECA
+                                        </button>
+                                    </>
                                 )}
                             </div>
                             <div className="flex justify-end space-x-3">
@@ -280,6 +336,27 @@ const GestionProyectos: React.FC = () => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal de biblioteca de mapas */}
+            {mostrarBiblioteca && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
+                    <div className="bg-white rounded-lg p-6 max-w-6xl w-full m-4 max-h-[90vh] overflow-y-auto">
+                        <div className="flex justify-between items-center mb-4">
+                            <h3 className="text-xl font-bold">SELECCIONAR MAPA DE BIBLIOTECA</h3>
+                            <button
+                                onClick={() => setMostrarBiblioteca(false)}
+                                className="text-gray-600 hover:text-gray-800 text-2xl"
+                            >
+                                ✕
+                            </button>
+                        </div>
+                        <BibliotecaMapas
+                            onSeleccionarMapa={seleccionarMapaBiblioteca}
+                            modoSeleccion={true}
+                        />
                     </div>
                 </div>
             )}

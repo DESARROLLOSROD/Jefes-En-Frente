@@ -9,6 +9,7 @@ import SeccionControlAcarreo from './sections/SeccionControlAcarreo';
 import SeccionControlMaterial from './sections/SeccionControlMaterial';
 import SeccionControlAgua from './sections/SeccionControlAgua';
 import MapaPinSelector from '../mapas/MapaPinSelector';
+import MapaMultiplesPins from '../mapas/MapaMultiplesPins';
 
 interface FormularioReporteProps {
   reporteInicial?: ReporteActividades | null;
@@ -59,8 +60,11 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
     ],
     observaciones: '',
     ubicacionMapa: undefined,
+    pinesMapa: [],
     creadoPor: user?.nombre || ''
   });
+
+  const [usarMultiplesPins, setUsarMultiplesPins] = useState(false);
 
   // Recargar proyecto al montar el componente para asegurar que tiene el mapa
   useEffect(() => {
@@ -344,6 +348,13 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
     }));
   };
 
+  const handlePinsMultiplesChange = (pins: Array<{ id: string; pinX: number; pinY: number; etiqueta: string; color?: string }>) => {
+    setFormData(prev => ({
+      ...prev,
+      pinesMapa: pins
+    }));
+  };
+
   return (
     <div className="max-w-7xl mx-auto bg-white/50 p-6 rounded-lg shadow-md">
       <div className="text-center mb-8">
@@ -478,17 +489,43 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
         })()}
         {proyecto?.mapa?.imagen?.data && (
           <div className="border-2 border-blue-400 rounded-lg p-6 bg-blue-50">
-            <h3 className="text-xl font-bold mb-4 text-blue-800 border-b pb-2">UBICACIÓN EN MAPA DEL PROYECTO</h3>
+            <div className="flex justify-between items-center mb-4 border-b pb-2">
+              <h3 className="text-xl font-bold text-blue-800">UBICACIÓN EN MAPA DEL PROYECTO</h3>
+              <div className="flex items-center gap-2">
+                <label className="text-sm font-semibold text-gray-700">MÚLTIPLES PINS:</label>
+                <button
+                  type="button"
+                  onClick={() => setUsarMultiplesPins(!usarMultiplesPins)}
+                  className={`px-3 py-1 rounded text-sm font-semibold ${
+                    usarMultiplesPins
+                      ? 'bg-green-600 text-white'
+                      : 'bg-gray-300 text-gray-700'
+                  }`}
+                >
+                  {usarMultiplesPins ? 'ACTIVADO' : 'DESACTIVADO'}
+                </button>
+              </div>
+            </div>
             <p className="text-sm text-gray-600 mb-4">
-              COLOQUE UN PIN EN EL MAPA PARA INDICAR DÓNDE SE REALIZÓ EL TRABAJO (OPCIONAL)
+              {usarMultiplesPins
+                ? 'AGREGUE MÚLTIPLES PINS CON ETIQUETAS PARA MARCAR DIFERENTES UBICACIONES'
+                : 'COLOQUE UN PIN EN EL MAPA PARA INDICAR DÓNDE SE REALIZÓ EL TRABAJO (OPCIONAL)'}
             </p>
-            <MapaPinSelector
-              mapaImagen={`data:${proyecto.mapa.imagen.contentType};base64,${proyecto.mapa.imagen.data}`}
-              pinX={formData.ubicacionMapa?.pinX}
-              pinY={formData.ubicacionMapa?.pinY}
-              onPinChange={handlePinChange}
-              onPinRemove={handlePinRemove}
-            />
+            {usarMultiplesPins ? (
+              <MapaMultiplesPins
+                mapaImagen={`data:${proyecto.mapa.imagen.contentType};base64,${proyecto.mapa.imagen.data}`}
+                pins={formData.pinesMapa || []}
+                onPinsChange={handlePinsMultiplesChange}
+              />
+            ) : (
+              <MapaPinSelector
+                mapaImagen={`data:${proyecto.mapa.imagen.contentType};base64,${proyecto.mapa.imagen.data}`}
+                pinX={formData.ubicacionMapa?.pinX}
+                pinY={formData.ubicacionMapa?.pinY}
+                onPinChange={handlePinChange}
+                onPinRemove={handlePinRemove}
+              />
+            )}
           </div>
         )}
 

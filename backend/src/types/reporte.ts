@@ -72,6 +72,14 @@ export interface IReporteActividades extends Document {
     pinY: number;
     colocado: boolean;
   };
+  // Múltiples pins con etiquetas
+  pinesMapa?: Array<{
+    id: string;
+    pinX: number;
+    pinY: number;
+    etiqueta: string;
+    color?: string;
+  }>;
   fechaCreacion: Date;
 }
 

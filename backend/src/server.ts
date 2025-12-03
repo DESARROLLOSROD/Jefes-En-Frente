@@ -8,6 +8,7 @@ import { usuariosRouter } from './routes/usuarios.js';
 import { proyectosRouter } from './routes/proyectos.js';
 import { vehiculosRouter } from './routes/vehiculos.js';
 import { workZoneRouter } from './routes/workZone.routes.js';
+import bibliotecaMapaRouter from './routes/bibliotecaMapa.routes.js';
 
 dotenv.config();
 
@@ -45,6 +46,7 @@ app.use('/api/usuarios', usuariosRouter);
 app.use('/api/proyectos', proyectosRouter);
 app.use('/api/vehiculos', vehiculosRouter);
 app.use('/api', workZoneRouter);
+app.use('/api/biblioteca-mapas', bibliotecaMapaRouter);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
