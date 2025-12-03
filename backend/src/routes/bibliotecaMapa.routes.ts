@@ -1,13 +1,13 @@
 import { Router, Request, Response } from 'express';
 import BibliotecaMapa from '../models/BibliotecaMapa.js';
-import { auth } from '../middleware/auth.js';
+import { authMiddleware as auth, AuthRequest } from '../middleware/auth.js';
 
 const router = Router();
 
 // Obtener todos los mapas de la biblioteca (públicos + propios)
 router.get('/', auth, async (req: Request, res: Response) => {
   try {
-    const usuarioId = (req as any).usuario.id;
+    const usuarioId = (req as AuthRequest).user?.userId;
 
     // Obtener mapas públicos o creados por el usuario
     const mapas = await BibliotecaMapa.find({
@@ -27,7 +27,7 @@ router.get('/', auth, async (req: Request, res: Response) => {
 // Obtener mapas por categoría
 router.get('/categoria/:categoria', auth, async (req: Request, res: Response) => {
   try {
-    const usuarioId = (req as any).usuario.id;
+    const usuarioId = (req as AuthRequest).user?.userId;
     const { categoria } = req.params;
 
     const mapas = await BibliotecaMapa.find({
@@ -48,7 +48,7 @@ router.get('/categoria/:categoria', auth, async (req: Request, res: Response) =>
 // Crear nuevo mapa en biblioteca
 router.post('/', auth, async (req: Request, res: Response) => {
   try {
-    const usuarioId = (req as any).usuario.id;
+    const usuarioId = (req as AuthRequest).user?.userId;
     const { nombre, descripcion, categoria, imagen, width, height, etiquetas, esPublico, proyectoId } = req.body;
 
     const nuevoMapa = new BibliotecaMapa({
@@ -75,7 +75,7 @@ router.post('/', auth, async (req: Request, res: Response) => {
 // Eliminar mapa de biblioteca
 router.delete('/:id', auth, async (req: Request, res: Response) => {
   try {
-    const usuarioId = (req as any).usuario.id;
+    const usuarioId = (req as AuthRequest).user?.userId;
     const { id } = req.params;
 
     const mapa = await BibliotecaMapa.findById(id);
