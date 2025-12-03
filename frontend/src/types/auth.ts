@@ -5,6 +5,14 @@ export interface Proyecto {
   descripcion: string;
   activo: boolean;
   fechaCreacion?: string;
+  mapa?: {
+    imagen: {
+      data: string;
+      contentType: string;
+    };
+    width: number;
+    height: number;
+  };
 }
 
 export interface User {
@@ -37,5 +45,7 @@ export interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   seleccionarProyecto: (proyecto: Proyecto) => void;
+  actualizarProyecto: (proyecto: Proyecto) => void;
+  recargarProyectoActual: () => Promise<void>;
   loading: boolean;
 }

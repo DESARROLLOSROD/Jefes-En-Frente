@@ -1,12 +1,12 @@
 import express from 'express';
 import Usuario from '../models/Usuario.js';
-import { verificarToken, verificarAdmin } from '../middleware/auth.middleware.js';
+import { verificarToken, verificarAdmin, verificarAdminOSupervisor } from '../middleware/auth.middleware.js';
 const router = express.Router();
-// Aplicar middleware de autenticación y autorización a todas las rutas
+// Aplicar middleware de autenticación a todas las rutas
 router.use(verificarToken);
-router.use(verificarAdmin);
-// GET /api/usuarios - Listar todos los usuarios
-router.get('/', async (req, res) => {
+// GET y POST permiten admin o supervisor, PUT y DELETE solo admin
+// GET /api/usuarios - Listar todos los usuarios (admin o supervisor)
+router.get('/', verificarAdminOSupervisor, async (req, res) => {
     try {
         const usuarios = await Usuario.find()
             .populate('proyectos', 'nombre ubicacion')
@@ -27,8 +27,8 @@ router.get('/', async (req, res) => {
         res.status(500).json(response);
     }
 });
-// GET /api/usuarios/:id - Obtener un usuario específico
-router.get('/:id', async (req, res) => {
+// GET /api/usuarios/:id - Obtener un usuario específico (admin o supervisor)
+router.get('/:id', verificarAdminOSupervisor, async (req, res) => {
     try {
         const usuario = await Usuario.findById(req.params.id)
             .populate('proyectos', 'nombre ubicacion descripcion')
@@ -55,8 +55,8 @@ router.get('/:id', async (req, res) => {
         res.status(500).json(response);
     }
 });
-// POST /api/usuarios - Crear nuevo usuario
-router.post('/', async (req, res) => {
+// POST /api/usuarios - Crear nuevo usuario (admin o supervisor)
+router.post('/', verificarAdminOSupervisor, async (req, res) => {
     try {
         const { nombre, email, password, rol, proyectos, activo } = req.body;
         // Validaciones
@@ -81,7 +81,7 @@ router.post('/', async (req, res) => {
             nombre,
             email,
             password,
-            rol: rol || 'operador',
+            rol: rol || 'jefe en frente',
             proyectos: proyectos || [],
             activo: activo !== undefined ? activo : true
         });
@@ -105,8 +105,8 @@ router.post('/', async (req, res) => {
         res.status(500).json(response);
     }
 });
-// PUT /api/usuarios/:id - Actualizar usuario
-router.put('/:id', async (req, res) => {
+// PUT /api/usuarios/:id - Actualizar usuario (solo admin)
+router.put('/:id', verificarAdmin, async (req, res) => {
     try {
         const { nombre, email, password, rol, proyectos, activo } = req.body;
         const usuario = await Usuario.findById(req.params.id);
@@ -161,8 +161,8 @@ router.put('/:id', async (req, res) => {
         res.status(500).json(response);
     }
 });
-// DELETE /api/usuarios/:id - Eliminar usuario permanentemente
-router.delete('/:id', async (req, res) => {
+// DELETE /api/usuarios/:id - Eliminar usuario permanentemente (solo admin)
+router.delete('/:id', verificarAdmin, async (req, res) => {
     try {
         const usuario = await Usuario.findById(req.params.id);
         if (!usuario) {

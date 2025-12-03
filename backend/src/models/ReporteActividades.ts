@@ -78,6 +78,11 @@ const reporteActividadesSchema = new Schema<IReporteActividades>({
     type: String,
     required: true
   },
+  ubicacionMapa: {
+    pinX: Number,
+    pinY: Number,
+    colocado: Boolean
+  },
   fechaCreacion: {
     type: Date,
     default: Date.now

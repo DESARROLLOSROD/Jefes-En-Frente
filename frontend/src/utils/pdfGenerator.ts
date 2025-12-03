@@ -3,9 +3,65 @@ import autoTable from "jspdf-autotable";
 import logo from "../logo.png"; // AJUSTA la ruta
 import { ReporteActividades } from "../types/reporte";
 
-export const generarPDFReporte = (
+// Función auxiliar para dibujar el mapa con el pin
+const dibujarMapaConPin = (
+    mapaBase64: string,
+    mapaContentType: string,
+    pinX: number,
+    pinY: number
+): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            reject(new Error('No se pudo crear el contexto del canvas'));
+            return;
+        }
+
+        const img = new Image();
+        img.onload = () => {
+            // Configurar tamaño del canvas
+            canvas.width = img.width;
+            canvas.height = img.height;
+
+            // Dibujar el mapa
+            ctx.drawImage(img, 0, 0);
+
+            // Calcular posición del pin en píxeles
+            const pinXPx = (pinX / 100) * img.width;
+            const pinYPx = (pinY / 100) * img.height;
+
+            // Dibujar el pin rojo
+            const pinSize = Math.max(img.width, img.height) * 0.05; // 5% del tamaño de la imagen
+
+            // Pin circular rojo con borde blanco
+            ctx.beginPath();
+            ctx.arc(pinXPx, pinYPx, pinSize, 0, Math.PI * 2);
+            ctx.fillStyle = '#EF4444';
+            ctx.fill();
+            ctx.strokeStyle = '#FFFFFF';
+            ctx.lineWidth = pinSize * 0.15;
+            ctx.stroke();
+
+            // Círculo blanco interior
+            ctx.beginPath();
+            ctx.arc(pinXPx, pinYPx, pinSize * 0.4, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fill();
+
+            // Convertir canvas a base64
+            const resultado = canvas.toDataURL('image/png').split(',')[1];
+            resolve(resultado);
+        };
+        img.onerror = () => reject(new Error('Error al cargar la imagen del mapa'));
+        img.src = `data:${mapaContentType};base64,${mapaBase64}`;
+    });
+};
+
+export const generarPDFReporte = async (
     reporte: ReporteActividades,
-    nombreProyecto: string
+    nombreProyecto: string,
+    proyectoMapa?: { imagen: { data: string; contentType: string }; width: number; height: number }
 ) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -106,12 +162,68 @@ export const generarPDFReporte = (
 
         doc.setFont("helvetica", "normal");
         doc.setTextColor(GRAY);
-        doc.text(value?.toString().toUpperCase() || "-", 60, yPosition);
+        const valorTexto = typeof value === 'string' ? value : (value || 'N/A');
+        doc.text(valorTexto.toString().toUpperCase() || "-", 60, yPosition);
 
         yPosition += 7;
     });
 
     yPosition += 5;
+
+    // ------------------------------------------------
+    // SECCIÓN DE MAPA CON PIN (SI EXISTE)
+    // ------------------------------------------------
+    if (proyectoMapa?.imagen?.data && reporte.ubicacionMapa?.colocado) {
+        if (yPosition > 180) {
+            doc.addPage();
+            addFooter();
+            yPosition = 20;
+        }
+
+        doc.setFontSize(13);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(DARK);
+        doc.text("UBICACIÓN EN MAPA DEL PROYECTO", 15, yPosition);
+
+        yPosition += 5;
+
+        try {
+            const mapaConPin = await dibujarMapaConPin(
+                proyectoMapa.imagen.data,
+                proyectoMapa.imagen.contentType,
+                reporte.ubicacionMapa.pinX,
+                reporte.ubicacionMapa.pinY
+            );
+
+            // Calcular dimensiones para el PDF manteniendo el aspect ratio
+            const maxWidth = pageWidth - 30;
+            const maxHeight = 80;
+            const aspectRatio = proyectoMapa.width / proyectoMapa.height;
+
+            let imgWidth = maxWidth;
+            let imgHeight = imgWidth / aspectRatio;
+
+            if (imgHeight > maxHeight) {
+                imgHeight = maxHeight;
+                imgWidth = imgHeight * aspectRatio;
+            }
+
+            doc.addImage(mapaConPin, 'PNG', 15, yPosition, imgWidth, imgHeight);
+            yPosition += imgHeight + 5;
+
+            // Agregar texto de zona y sección debajo del mapa
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "bold");
+            doc.setTextColor(DARK);
+            const zonaTexto = `ZONA: ${reporte.zonaTrabajo?.zonaNombre || 'N/A'}`;
+            const seccionTexto = `SECCIÓN: ${reporte.seccionTrabajo?.seccionNombre || 'N/A'}`;
+            doc.text(`${zonaTexto} | ${seccionTexto}`, 15, yPosition);
+
+            yPosition += 10;
+        } catch (error) {
+            console.error('Error al generar mapa con pin:', error);
+        }
+    }
 
     // ------------------------------------------------
     // FUNCIÓN PARA GENERAR TABLAS CORPORATIVAS

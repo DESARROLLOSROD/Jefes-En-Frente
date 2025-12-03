@@ -4,7 +4,7 @@ const usuarioSchema = new Schema({
     nombre: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true, minlength: 6 },
-    rol: { type: String, enum: ['admin', 'supervisor', 'operador'], default: 'operador' },
+    rol: { type: String, enum: ['admin', 'supervisor', 'jefe en frente'], default: 'jefe en frente' },
     proyectos: [{ type: Schema.Types.ObjectId, ref: 'Proyecto' }],
     activo: { type: Boolean, default: true },
     fechaCreacion: { type: Date, default: Date.now }

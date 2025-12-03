@@ -21,6 +21,14 @@ const proyectoSchema = new Schema({
     fechaCreacion: {
         type: Date,
         default: Date.now
+    },
+    mapa: {
+        imagen: {
+            data: String,
+            contentType: String
+        },
+        width: Number,
+        height: Number
     }
 });
 export default model('Proyecto', proyectoSchema);

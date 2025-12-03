@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { proyectoService } from '../../services/api';
 import { Proyecto } from '../../types/gestion';
+import { useAuth } from '../../contexts/AuthContext';
 
 const GestionProyectos: React.FC = () => {
+    const { actualizarProyecto } = useAuth();
     const [proyectos, setProyectos] = useState<Proyecto[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -13,8 +15,10 @@ const GestionProyectos: React.FC = () => {
     const [formData, setFormData] = useState({
         nombre: '',
         ubicacion: '',
-        descripcion: ''
+        descripcion: '',
+        mapa: undefined as { imagen: { data: string; contentType: string }; width: number; height: number } | undefined
     });
+    const [previewMapa, setPreviewMapa] = useState<string>('');
 
     useEffect(() => {
         cargarProyectos();
@@ -37,7 +41,9 @@ const GestionProyectos: React.FC = () => {
 
         if (proyectoEditar) {
             const response = await proyectoService.actualizarProyecto(proyectoEditar._id, formData);
-            if (response.success) {
+            if (response.success && response.data) {
+                // Actualizar el proyecto en el contexto si es el proyecto actual
+                actualizarProyecto(response.data);
                 cargarProyectos();
                 cerrarModal();
             } else {
@@ -71,15 +77,24 @@ const GestionProyectos: React.FC = () => {
             setFormData({
                 nombre: proyecto.nombre,
                 ubicacion: proyecto.ubicacion,
-                descripcion: proyecto.descripcion
+                descripcion: proyecto.descripcion,
+                mapa: (proyecto as any).mapa
             });
+            // Si el proyecto tiene mapa, mostrar preview
+            if ((proyecto as any).mapa?.imagen?.data) {
+                setPreviewMapa(`data:${(proyecto as any).mapa.imagen.contentType};base64,${(proyecto as any).mapa.imagen.data}`);
+            } else {
+                setPreviewMapa('');
+            }
         } else {
             setProyectoEditar(null);
             setFormData({
                 nombre: '',
                 ubicacion: '',
-                descripcion: ''
+                descripcion: '',
+                mapa: undefined
             });
+            setPreviewMapa('');
         }
         setMostrarModal(true);
     };
@@ -87,6 +102,51 @@ const GestionProyectos: React.FC = () => {
     const cerrarModal = () => {
         setMostrarModal(false);
         setProyectoEditar(null);
+        setPreviewMapa('');
+    };
+
+    const handleMapaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        // Validar tamaño (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('LA IMAGEN NO DEBE SUPERAR 5MB');
+            return;
+        }
+
+        // Validar tipo
+        if (!['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)) {
+            alert('SOLO SE PERMITEN IMÁGENES PNG O JPG');
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = () => {
+            const img = new Image();
+            img.onload = () => {
+                const base64 = (reader.result as string).split(',')[1];
+                setFormData({
+                    ...formData,
+                    mapa: {
+                        imagen: {
+                            data: base64,
+                            contentType: file.type
+                        },
+                        width: img.width,
+                        height: img.height
+                    }
+                });
+                setPreviewMapa(reader.result as string);
+            };
+            img.src = reader.result as string;
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const eliminarMapa = () => {
+        setFormData({ ...formData, mapa: undefined });
+        setPreviewMapa('');
     };
 
     if (loading) return <div className="text-center p-8">CARGANDO PROYECTOS...</div>;
@@ -166,7 +226,7 @@ const GestionProyectos: React.FC = () => {
                                     required
                                 />
                             </div>
-                            <div className="mb-6">
+                            <div className="mb-4">
                                 <label className="block text-gray-700 text-sm font-bold mb-2 uppercase">
                                     DESCRIPCIÓN *
                                 </label>
@@ -178,6 +238,31 @@ const GestionProyectos: React.FC = () => {
                                     placeholder="DESCRIPCIÓN DEL PROYECTO"
                                     required
                                 />
+                            </div>
+                            <div className="mb-6">
+                                <label className="block text-gray-700 text-sm font-bold mb-2 uppercase">
+                                    MAPA DEL PROYECTO (Opcional)
+                                </label>
+                                <p className="text-xs text-gray-500 mb-2">PNG o JPG, máximo 5MB</p>
+                                {previewMapa ? (
+                                    <div className="relative">
+                                        <img src={previewMapa} alt="Preview mapa" className="w-full h-48 object-contain border rounded bg-gray-50" />
+                                        <button
+                                            type="button"
+                                            onClick={eliminarMapa}
+                                            className="absolute top-2 right-2 bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
+                                        >
+                                            ELIMINAR
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <input
+                                        type="file"
+                                        accept="image/png,image/jpeg,image/jpg"
+                                        onChange={handleMapaChange}
+                                        className="w-full border rounded px-3 py-2"
+                                    />
+                                )}
                             </div>
                             <div className="flex justify-end space-x-3">
                                 <button

@@ -6,6 +6,14 @@ export interface IProyecto extends Document {
   descripcion: string;
   activo: boolean;
   fechaCreacion: Date;
+  mapa?: {
+    imagen: {
+      data: string;
+      contentType: string;
+    };
+    width: number;
+    height: number;
+  };
 }
 
 const proyectoSchema = new Schema<IProyecto>({
@@ -30,6 +38,14 @@ const proyectoSchema = new Schema<IProyecto>({
   fechaCreacion: {
     type: Date,
     default: Date.now
+  },
+  mapa: {
+    imagen: {
+      data: String,
+      contentType: String
+    },
+    width: Number,
+    height: Number
   }
 });
 

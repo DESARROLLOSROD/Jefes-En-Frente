@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 import { User, Proyecto, AuthContextType } from '../types/auth';
 import { authService } from '../services/auth';
+import { proyectoService } from '../services/api';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -116,12 +117,71 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.setItem('proyecto', JSON.stringify(proyectoSeleccionado));
   };
 
+  const actualizarProyecto = (proyectoActualizado: Proyecto) => {
+    // Si el proyecto actualizado es el proyecto actual, actualizarlo
+    if (proyecto && proyecto._id === proyectoActualizado._id) {
+      setProyecto(proyectoActualizado);
+      localStorage.setItem('proyecto', JSON.stringify(proyectoActualizado));
+    }
+
+    // También actualizar en la lista de proyectos del usuario
+    if (user) {
+      const usuarioActualizado = {
+        ...user,
+        proyectos: user.proyectos.map(p =>
+          p._id === proyectoActualizado._id ? proyectoActualizado : p
+        )
+      };
+      setUser(usuarioActualizado);
+      localStorage.setItem('user', JSON.stringify(usuarioActualizado));
+    }
+  };
+
+  const recargarProyectoActual = async () => {
+    if (!proyecto || !proyecto._id) {
+      console.log('No hay proyecto seleccionado o no tiene ID');
+      return;
+    }
+
+    console.log('Recargando proyecto con ID:', proyecto._id);
+
+    try {
+      const response = await proyectoService.obtenerProyectoPorId(proyecto._id);
+
+      console.log('Respuesta de recargar proyecto:', response);
+
+      if (response.success && response.data) {
+        console.log('Proyecto recargado exitosamente. Tiene mapa:', !!response.data.mapa);
+        setProyecto(response.data);
+        localStorage.setItem('proyecto', JSON.stringify(response.data));
+
+        // También actualizar en la lista de proyectos del usuario
+        if (user) {
+          const usuarioActualizado = {
+            ...user,
+            proyectos: user.proyectos.map(p =>
+              p._id === response.data._id ? response.data : p
+            )
+          };
+          setUser(usuarioActualizado);
+          localStorage.setItem('user', JSON.stringify(usuarioActualizado));
+        }
+      } else {
+        console.error('Error al recargar proyecto:', response.error);
+      }
+    } catch (error) {
+      console.error('Error al recargar proyecto:', error);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     proyecto,
     login,
     logout,
     seleccionarProyecto,
+    actualizarProyecto,
+    recargarProyectoActual,
     loading
   };
 

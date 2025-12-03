@@ -75,6 +75,11 @@ export interface ReporteActividades {
   controlAgua: ControlAgua[];
   controlMaquinaria: ControlMaquinaria[];
   observaciones: string;
+  ubicacionMapa?: {
+    pinX: number;
+    pinY: number;
+    colocado: boolean;
+  };
   // REMOVER: creadoPor ya no es necesario
   fechaCreacion?: string;
   creadoPor?: string; // Optional as per usage in FormularioReporte.tsx line 47

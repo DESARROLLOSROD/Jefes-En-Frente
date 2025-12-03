@@ -8,6 +8,7 @@ import { WorkZone } from '../../types/workZone.types';
 import SeccionControlAcarreo from './sections/SeccionControlAcarreo';
 import SeccionControlMaterial from './sections/SeccionControlMaterial';
 import SeccionControlAgua from './sections/SeccionControlAgua';
+import MapaPinSelector from '../mapas/MapaPinSelector';
 
 interface FormularioReporteProps {
   reporteInicial?: ReporteActividades | null;
@@ -15,7 +16,7 @@ interface FormularioReporteProps {
 }
 
 const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial, onFinalizar }) => {
-  const { proyecto, user } = useAuth();
+  const { proyecto, user, recargarProyectoActual } = useAuth();
   const [loading, setLoading] = useState(false);
   const [mensaje, setMensaje] = useState('');
   const [vehiculosDisponibles, setVehiculosDisponibles] = useState<Vehiculo[]>([]);
@@ -57,8 +58,14 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
       }
     ],
     observaciones: '',
+    ubicacionMapa: undefined,
     creadoPor: user?.nombre || ''
   });
+
+  // Recargar proyecto al montar el componente para asegurar que tiene el mapa
+  useEffect(() => {
+    recargarProyectoActual();
+  }, []);
 
   // Cargar datos si estamos editando
   useEffect(() => {
@@ -318,6 +325,25 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
     });
   };
 
+  // Funciones para manejar el pin en el mapa
+  const handlePinChange = (x: number, y: number) => {
+    setFormData(prev => ({
+      ...prev,
+      ubicacionMapa: {
+        pinX: x,
+        pinY: y,
+        colocado: true
+      }
+    }));
+  };
+
+  const handlePinRemove = () => {
+    setFormData(prev => ({
+      ...prev,
+      ubicacionMapa: undefined
+    }));
+  };
+
   return (
     <div className="max-w-7xl mx-auto bg-white/50 p-6 rounded-lg shadow-md">
       <div className="text-center mb-8">
@@ -440,7 +466,33 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
           </div>
         </div>
 
-        {/* SECCIÓN 2: CONTROL DE ACARREOS (NUEVO COMPONENTE MODULAR) */}
+        {/* SECCIÓN 2: UBICACIÓN EN MAPA */}
+        {(() => {
+          console.log('🗺️ Verificando si mostrar mapa:');
+          console.log('- proyecto:', proyecto);
+          console.log('- proyecto?.mapa:', proyecto?.mapa);
+          console.log('- proyecto?.mapa?.imagen:', proyecto?.mapa?.imagen);
+          console.log('- proyecto?.mapa?.imagen?.data:', proyecto?.mapa?.imagen?.data ? 'SÍ TIENE' : 'NO TIENE');
+          console.log('- Condición cumplida:', !!proyecto?.mapa?.imagen?.data);
+          return null;
+        })()}
+        {proyecto?.mapa?.imagen?.data && (
+          <div className="border-2 border-blue-400 rounded-lg p-6 bg-blue-50">
+            <h3 className="text-xl font-bold mb-4 text-blue-800 border-b pb-2">UBICACIÓN EN MAPA DEL PROYECTO</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              COLOQUE UN PIN EN EL MAPA PARA INDICAR DÓNDE SE REALIZÓ EL TRABAJO (OPCIONAL)
+            </p>
+            <MapaPinSelector
+              mapaImagen={`data:${proyecto.mapa.imagen.contentType};base64,${proyecto.mapa.imagen.data}`}
+              pinX={formData.ubicacionMapa?.pinX}
+              pinY={formData.ubicacionMapa?.pinY}
+              onPinChange={handlePinChange}
+              onPinRemove={handlePinRemove}
+            />
+          </div>
+        )}
+
+        {/* SECCIÓN 3: CONTROL DE ACARREOS (NUEVO COMPONENTE MODULAR) */}
         <SeccionControlAcarreo
           acarreos={formData.controlAcarreo}
           onAcarreosChange={(acarreos) => setFormData(prev => ({ ...prev, controlAcarreo: acarreos }))}

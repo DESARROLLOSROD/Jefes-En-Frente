@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import Proyecto from '../models/Proyecto.js';
 import { verificarToken, verificarAdmin } from './auth.js';
 
@@ -17,15 +18,41 @@ proyectosRouter.get('/', async (req, res) => {
     }
 });
 
+// Obtener proyecto por ID
+proyectosRouter.get('/:id', async (req, res) => {
+    try {
+        // Validar que el ID sea válido
+        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ message: 'ID de proyecto inválido' });
+        }
+
+        const proyecto = await Proyecto.findById(req.params.id);
+        if (!proyecto) {
+            return res.status(404).json({ message: 'Proyecto no encontrado' });
+        }
+        console.log('✅ Proyecto encontrado:', proyecto._id);
+        console.log('✅ Tiene mapa:', !!proyecto.mapa);
+        if (proyecto.mapa) {
+            console.log('✅ Mapa tiene imagen:', !!proyecto.mapa.imagen);
+            console.log('✅ Imagen tiene data:', !!proyecto.mapa.imagen?.data);
+        }
+        res.json(proyecto);
+    } catch (error) {
+        console.error('Error al obtener proyecto:', error);
+        res.status(500).json({ message: 'Error al obtener proyecto', error });
+    }
+});
+
 // Crear nuevo proyecto (solo admin)
 proyectosRouter.post('/', verificarAdmin, async (req, res) => {
     try {
-        const { nombre, ubicacion, descripcion } = req.body;
+        const { nombre, ubicacion, descripcion, mapa } = req.body;
 
         const nuevoProyecto = new Proyecto({
             nombre,
             ubicacion,
-            descripcion
+            descripcion,
+            mapa
         });
 
         await nuevoProyecto.save();
@@ -38,11 +65,11 @@ proyectosRouter.post('/', verificarAdmin, async (req, res) => {
 // Actualizar proyecto (solo admin)
 proyectosRouter.put('/:id', verificarAdmin, async (req, res) => {
     try {
-        const { nombre, ubicacion, descripcion, activo } = req.body;
+        const { nombre, ubicacion, descripcion, activo, mapa } = req.body;
 
         const proyectoActualizado = await Proyecto.findByIdAndUpdate(
             req.params.id,
-            { nombre, ubicacion, descripcion, activo },
+            { nombre, ubicacion, descripcion, activo, mapa },
             { new: true }
         );
 

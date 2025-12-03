@@ -1,11 +1,11 @@
 import express from 'express';
 import Vehiculo from '../models/Vehiculo.js';
-import { verificarToken, verificarAdmin } from '../middleware/auth.middleware.js';
+import { verificarToken, verificarAdmin, verificarAdminOSupervisor } from '../middleware/auth.middleware.js';
 export const vehiculosRouter = express.Router();
 // Middleware de autenticación para todas las rutas
 vehiculosRouter.use(verificarToken);
-// Obtener todos los vehículos
-vehiculosRouter.get('/', async (req, res) => {
+// Obtener todos los vehículos (admin o supervisor)
+vehiculosRouter.get('/', verificarAdminOSupervisor, async (req, res) => {
     try {
         const vehiculos = await Vehiculo.find({ activo: true })
             .populate('proyectos', 'nombre ubicacion')
@@ -16,8 +16,8 @@ vehiculosRouter.get('/', async (req, res) => {
         res.status(500).json({ message: 'Error al obtener vehículos', error });
     }
 });
-// Obtener vehículos por proyecto
-vehiculosRouter.get('/proyecto/:proyectoId', async (req, res) => {
+// Obtener vehículos por proyecto (admin o supervisor)
+vehiculosRouter.get('/proyecto/:proyectoId', verificarAdminOSupervisor, async (req, res) => {
     try {
         const { proyectoId } = req.params;
         const vehiculos = await Vehiculo.find({
@@ -30,8 +30,8 @@ vehiculosRouter.get('/proyecto/:proyectoId', async (req, res) => {
         res.status(500).json({ message: 'Error al obtener vehículos del proyecto', error });
     }
 });
-// Crear nuevo vehículo (solo admin)
-vehiculosRouter.post('/', verificarAdmin, async (req, res) => {
+// Crear nuevo vehículo (admin o supervisor)
+vehiculosRouter.post('/', verificarAdminOSupervisor, async (req, res) => {
     try {
         const { nombre, tipo, horometroInicial, horometroFinal, noEconomico, proyectos } = req.body;
         // Verificar si ya existe el número económico

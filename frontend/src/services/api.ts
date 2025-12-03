@@ -98,6 +98,18 @@ export const proyectoService = {
     }
   },
 
+  async obtenerProyectoPorId(id: string): Promise<ApiResponse<Proyecto>> {
+    try {
+      const response = await api.get<Proyecto>(`/proyectos/${id}`);
+      return { success: true, data: response.data };
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.message || 'Error al obtener proyecto',
+      };
+    }
+  },
+
   async crearProyecto(proyecto: Omit<Proyecto, '_id' | 'fechaCreacion' | 'activo'>): Promise<ApiResponse<Proyecto>> {
     try {
       const response = await api.post<Proyecto>('/proyectos', proyecto);

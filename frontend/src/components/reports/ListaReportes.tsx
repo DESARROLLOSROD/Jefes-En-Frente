@@ -75,9 +75,9 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
     }
   };
 
-  const handleDescargarPDF = (reporte: ReporteActividades) => {
+  const handleDescargarPDF = async (reporte: ReporteActividades) => {
     try {
-      generarPDFReporte(reporte, proyecto?.nombre || 'PROYECTO');
+      await generarPDFReporte(reporte, proyecto?.nombre || 'PROYECTO', proyecto?.mapa);
       mostrarMensaje('PDF GENERADO CORRECTAMENTE');
     } catch (error) {
       mostrarMensaje('ERROR AL GENERAR PDF');

@@ -5,6 +5,14 @@ export interface Proyecto {
     descripcion: string;
     activo: boolean;
     fechaCreacion: string;
+    mapa?: {
+        imagen: {
+            data: string;
+            contentType: string;
+        };
+        width: number;
+        height: number;
+    };
 }
 
 export interface Vehiculo {

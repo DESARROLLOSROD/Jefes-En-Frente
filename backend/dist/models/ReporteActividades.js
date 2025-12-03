@@ -32,6 +32,7 @@ const controlMaquinariaSchema = new Schema({
     operador: String,
     actividad: String,
     vehiculoId: { type: Schema.Types.ObjectId, ref: 'Vehiculo' },
+    horometroInicial: Number,
     horometroFinal: Number
 });
 const reporteActividadesSchema = new Schema({
@@ -46,8 +47,14 @@ const reporteActividadesSchema = new Schema({
     turno: String,
     inicioActividades: String,
     terminoActividades: String,
-    zonaTrabajo: String,
-    seccionTrabajo: String,
+    zonaTrabajo: {
+        zonaId: String,
+        zonaNombre: String
+    },
+    seccionTrabajo: {
+        seccionId: String,
+        seccionNombre: String
+    },
     jefeFrente: String,
     sobrestante: String,
     controlAcarreo: [controlAcarreoSchema],
@@ -64,6 +71,11 @@ const reporteActividadesSchema = new Schema({
     usuarioId: {
         type: String,
         required: true
+    },
+    ubicacionMapa: {
+        pinX: Number,
+        pinY: Number,
+        colocado: Boolean
     },
     fechaCreacion: {
         type: Date,

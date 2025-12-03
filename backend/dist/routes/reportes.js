@@ -54,7 +54,7 @@ router.post('/', async (req, res) => {
 router.get('/', async (req, res) => {
     try {
         const { proyectoId } = req.query;
-        console.log('📋 Obteniendo reportes para proyecto:', proyectoId || 'TODOS');
+        console.log('📋 Obteniendo reportes. Proyecto:', proyectoId || 'TODOS');
         const query = {};
         if (proyectoId) {
             query.proyectoId = proyectoId;

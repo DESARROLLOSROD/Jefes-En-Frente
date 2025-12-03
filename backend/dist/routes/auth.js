@@ -124,4 +124,14 @@ export const verificarAdmin = (req, res, next) => {
     }
     next();
 };
+// Middleware para verificar que el usuario es admin o supervisor
+export const verificarAdminOSupervisor = (req, res, next) => {
+    if (req.user?.rol !== 'admin' && req.user?.rol !== 'supervisor') {
+        return res.status(403).json({
+            success: false,
+            error: 'Acceso denegado. Se requieren permisos de administrador o supervisor.'
+        });
+    }
+    next();
+};
 export { router as authRouter };

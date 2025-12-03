@@ -67,6 +67,11 @@ export interface IReporteActividades extends Document {
   creadoPor: string;
   proyectoId: string;
   usuarioId: string;
+  ubicacionMapa?: {
+    pinX: number;
+    pinY: number;
+    colocado: boolean;
+  };
   fechaCreacion: Date;
 }
 

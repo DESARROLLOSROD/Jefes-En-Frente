@@ -7,6 +7,7 @@ import { authRouter } from './routes/auth.js';
 import { usuariosRouter } from './routes/usuarios.js';
 import { proyectosRouter } from './routes/proyectos.js';
 import { vehiculosRouter } from './routes/vehiculos.js';
+import { workZoneRouter } from './routes/workZone.routes.js';
 dotenv.config();
 const app = express();
 // CORS más permisivo para desarrollo
@@ -35,6 +36,7 @@ app.use('/api/reportes', reporteRouter);
 app.use('/api/usuarios', usuariosRouter);
 app.use('/api/proyectos', proyectosRouter);
 app.use('/api/vehiculos', vehiculosRouter);
+app.use('/api', workZoneRouter);
 // Ruta de prueba
 app.get('/', (req, res) => {
     res.json({
