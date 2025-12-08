@@ -1,8 +1,7 @@
 import axios from 'axios';
 import { ReporteActividades, ApiResponse } from '../types/reporte';
 import { Proyecto, Vehiculo } from '../types/gestion';
-
-const API_BASE_URL = 'http://localhost:5000/api';
+import { API_BASE_URL } from '../config/env';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
