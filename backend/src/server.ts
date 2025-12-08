@@ -18,28 +18,38 @@ const app = express();
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
-  process.env.FRONTEND_URL // URL del frontend en Railway
+  process.env.FRONTEND_URL
 ].filter(Boolean);
+
+console.log('🔧 CORS Config loaded:', {
+  allowedOrigins,
+  envFrontend: process.env.FRONTEND_URL,
+  nodeEnv: process.env.NODE_ENV
+});
 
 app.use(cors({
   origin: (origin, callback) => {
+    // Log para depuración en Railway
+    console.log('🔍 Incoming Request Origin:', origin);
+
     // Permitir requests sin origin (mobile apps, postman, etc)
     if (!origin) return callback(null, true);
 
     // En producción, permitir cualquier dominio de Railway
-    if (origin && origin.includes('.railway.app')) {
+    if (origin.includes('.railway.app') || origin.includes('localhost')) {
       return callback(null, true);
     }
 
     if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
       callback(null, true);
     } else {
+      console.error(`❌ CORS Blocked: Origin ${origin} not in allowed list`);
       callback(new Error('No permitido por CORS'));
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
 
 app.use(express.json({ limit: '50mb' }));
