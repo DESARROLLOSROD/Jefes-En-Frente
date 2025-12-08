@@ -21,8 +21,7 @@ const vehiculoSchema = new Schema<IVehiculo>({
     tipo: {
         type: String,
         required: true,
-        enum: ['Camioneta', 'Camión', 'Maquinaria', 'Otro'],
-        default: 'Camioneta'
+        trim: true
     },
     horometroInicial: {
         type: Number,

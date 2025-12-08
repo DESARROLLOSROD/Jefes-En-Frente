@@ -11,6 +11,7 @@ import { workZoneRouter } from './routes/workZone.routes.js';
 import bibliotecaMapaRouter from './routes/bibliotecaMapa.routes.js';
 import { materialesRouter } from './routes/materiales.js';
 import { capacidadesRouter } from './routes/capacidades.js';
+import tiposVehiculoRouter from './routes/tiposVehiculo.js';
 
 dotenv.config();
 
@@ -74,6 +75,7 @@ app.use('/api', workZoneRouter);
 app.use('/api/biblioteca-mapas', bibliotecaMapaRouter);
 app.use('/api/materiales', materialesRouter);
 app.use('/api/capacidades', capacidadesRouter);
+app.use('/api/tipos-vehiculo', tiposVehiculoRouter);
 
 // Ruta de prueba
 app.get('/', (req, res) => {

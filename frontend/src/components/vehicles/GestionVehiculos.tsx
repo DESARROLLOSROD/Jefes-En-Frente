@@ -3,6 +3,9 @@ import { vehiculoService, proyectoService } from '../../services/api';
 import { Vehiculo, Proyecto } from '../../types/gestion';
 import { generarPDFVehiculos } from '../../utils/pdfVehiculosGenerator';
 import ModalConfirmacion from '../shared/modals/ModalConfirmacion';
+import AutocompleteInput from '../shared/AutocompleteInput';
+import { ITipoVehiculoCatalog } from '../../types/gestion';
+import { tipoVehiculoService } from '../../services/tipoVehiculoService';
 
 interface GestionVehiculosProps {
     userRol?: 'admin' | 'supervisor' | 'operador';
@@ -20,7 +23,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
 
     const [formData, setFormData] = useState({
         nombre: '',
-        tipo: 'Camioneta' as 'Camioneta' | 'Camión' | 'Maquinaria' | 'Otro',
+        tipo: '' as string,
         horometroInicial: 0,
         horometroFinal: 0,
         horasOperacion: 0,
@@ -28,10 +31,20 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
         proyectos: [] as string[],
     });
 
+    const [tiposVehiculo, setTiposVehiculo] = useState<ITipoVehiculoCatalog[]>([]);
+
     useEffect(() => {
         cargarVehiculos();
         cargarProyectos();
+        cargarTiposVehiculo();
     }, []);
+
+    const cargarTiposVehiculo = async () => {
+        const response = await tipoVehiculoService.obtenerTipos();
+        if (response.success && response.data) {
+            setTiposVehiculo(response.data);
+        }
+    };
 
     const cargarVehiculos = async () => {
         setLoading(true);
@@ -54,6 +67,27 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Verificar si el tipo de vehículo existe
+        let tipoFinal = formData.tipo;
+        if (tipoFinal) {
+            const existe = tiposVehiculo.some(t => t.nombre.toUpperCase() === tipoFinal.toUpperCase());
+            if (!existe) {
+                if (window.confirm(`EL TIPO DE VEHÍCULO "${tipoFinal}" NO EXISTE. ¿DESEAS CREARLO?`)) {
+                    const respTipo = await tipoVehiculoService.crearTipo({ nombre: tipoFinal.toUpperCase() });
+                    if (respTipo.success) {
+                        cargarTiposVehiculo();
+                        mostrarMensaje('NUEVO TIPO DE VEHÍCULO CREADO');
+                    } else {
+                        mostrarMensaje('ERROR AL CREAR TIPO DE VEHÍCULO');
+                        return;
+                    }
+                } else {
+                    return;
+                }
+            }
+        }
+
         const response = editando && vehiculoActual
             ? await vehiculoService.actualizarVehiculo(vehiculoActual._id, formData)
             : await vehiculoService.crearVehiculo(formData);
@@ -106,7 +140,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
             setVehiculoActual(null);
             setFormData({
                 nombre: '',
-                tipo: 'Camioneta',
+                tipo: '',
                 horometroInicial: 0,
                 horometroFinal: 0,
                 horasOperacion: 0,
@@ -272,17 +306,16 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                 {/* Tipo */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">TIPO *</label>
-                                    <select
-                                        required
+                                    <AutocompleteInput
                                         value={formData.tipo}
-                                        onChange={e => setFormData({ ...formData, tipo: e.target.value as any })}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                                    >
-                                        <option value="Camioneta">CAMIONETA</option>
-                                        <option value="Camión">CAMIÓN</option>
-                                        <option value="Maquinaria">MAQUINARIA</option>
-                                        <option value="Otro">OTRO</option>
-                                    </select>
+                                        onChange={(value) => setFormData({ ...formData, tipo: value })}
+                                        options={tiposVehiculo.map(t => t.nombre)}
+                                        placeholder="ESCRIBE O SELECCIONA UN TIPO"
+                                        required
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        SI EL TIPO NO EXISTE, SE CREARÁ AUTOMÁTICAMENTE AL GUARDAR
+                                    </p>
                                 </div>
                                 {/* No. Económico */}
                                 <div>

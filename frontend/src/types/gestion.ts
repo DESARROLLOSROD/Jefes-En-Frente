@@ -15,10 +15,17 @@ export interface Proyecto {
     };
 }
 
+export interface ITipoVehiculoCatalog {
+    _id: string;
+    nombre: string;
+    activo: boolean;
+    fechaCreacion: string;
+}
+
 export interface Vehiculo {
     _id: string;
     nombre: string;
-    tipo: 'Camioneta' | 'Camión' | 'Maquinaria' | 'Otro';
+    tipo: string;
     horometroInicial: number;
     horometroFinal?: number;
     horasOperacion: number;
