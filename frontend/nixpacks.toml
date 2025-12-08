@@ -5,7 +5,7 @@ nixPkgs = ['nodejs-20_x']
 cmds = ['npm ci']
 
 [phases.build]
-cmds = ['npx tsc']
+cmds = ['npx tsc', 'npx vite build']
 
 [start]
-cmd = 'node dist/server.js'
+cmd = 'npx serve -s dist -p $PORT'
