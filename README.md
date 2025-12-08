@@ -236,6 +236,7 @@ railway domain create
 **Documentación Railway:**
 - **[Guía Completa de Railway](DEPLOY_RAILWAY.md)** - Instrucciones paso a paso
 - **[Comandos Rápidos Railway](DEPLOY_RAILWAY_COMANDOS.md)** - Referencia rápida
+- **[Configuración Final](DEPLOY_RAILWAY_FINALIZADO.md)** - Variables de entorno y verificación ⭐
 
 ### Opción 2: Deploy en Vercel
 
