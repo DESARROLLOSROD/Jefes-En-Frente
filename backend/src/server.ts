@@ -83,10 +83,10 @@ app.get('/', (req, res) => {
 const PORT = Number(process.env.PORT) || 5000;
 
 // Iniciar el servidor (Railway y desarrollo)
-// IMPORTANTE: Escuchar en 0.0.0.0 para que Docker/Railway puedan mapear el puerto
-const server = app.listen(PORT, '0.0.0.0', () => {
+// IMPORTANTE: Usar '::' para permitir IPv6 e IPv4 (dual stack)
+const server = app.listen(PORT, '::', () => {
   const address = server.address();
-  console.log(`🎯 Servidor corriendo. Detalles de conexión:`, address);
+  console.log(`🎯 Servidor corriendo. Detalles (IPv6/Dual):`, address);
   console.log(`🏗️ Jefes en Frente - Sistema de Gestión Minera v2.0`);
   console.log(`🔐 Sistema de autenticación activo`);
   console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
