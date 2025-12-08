@@ -80,11 +80,12 @@ app.get('/', (req, res) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = Number(process.env.PORT) || 5000;
 
 // Iniciar el servidor (Railway y desarrollo)
-app.listen(PORT, () => {
-  console.log(`🎯 Servidor corriendo en puerto ${PORT}`);
+// IMPORTANTE: Escuchar en 0.0.0.0 para que Docker/Railway puedan mapear el puerto
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🎯 Servidor corriendo en puerto ${PORT} y host 0.0.0.0`);
   console.log(`🏗️ Jefes en Frente - Sistema de Gestión Minera v2.0`);
   console.log(`🔐 Sistema de autenticación activo`);
   console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
