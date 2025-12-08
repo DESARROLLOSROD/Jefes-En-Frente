@@ -7,7 +7,6 @@
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "vercel-build": "tsc",
     "seed": "tsc && node dist/scripts/seedData.js",
     "init": "tsx src/scripts/createInitialUsers.ts",
     "check": "tsc && node dist/scripts/checkData.js",
