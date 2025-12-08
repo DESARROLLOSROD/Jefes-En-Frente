@@ -2,7 +2,11 @@
   "permissions": {
     "allow": [
       "Bash(npm install:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npx create-expo-app@latest:*)",
+      "Bash(mv:*)",
+      "Bash(mkdir:*)",
+      "Bash(npx expo install:*)"
     ],
     "deny": [],
     "ask": []

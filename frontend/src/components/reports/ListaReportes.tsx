@@ -156,10 +156,10 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900 uppercase">
-                      {reporte.zonaTrabajo?.zonaNombre || reporte.zonaTrabajo || 'N/A'}
+                      {typeof reporte.zonaTrabajo === 'string' ? reporte.zonaTrabajo : (reporte.zonaTrabajo?.zonaNombre || 'N/A')}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900 uppercase">
-                      {reporte.seccionTrabajo?.seccionNombre || reporte.seccionTrabajo || 'N/A'}
+                      {typeof reporte.seccionTrabajo === 'string' ? reporte.seccionTrabajo : (reporte.seccionTrabajo?.seccionNombre || 'N/A')}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 uppercase">{reporte.jefeFrente}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -202,7 +202,7 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
           <div className="bg-white rounded-lg shadow-2xl p-6 max-w-md w-full mx-4">
             <h3 className="text-xl font-bold text-gray-800 mb-4">CONFIRMAR ELIMINACIÓN</h3>
             <p className="text-gray-600 mb-6">
-              ¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR EL REPORTE <strong>{reporteEliminar.zonaTrabajo}</strong>?
+              ¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR EL REPORTE DE <strong>{typeof reporteEliminar.zonaTrabajo === 'string' ? reporteEliminar.zonaTrabajo : (reporteEliminar.zonaTrabajo?.zonaNombre || 'N/A')}</strong>?
               <br />
               <span className="text-red-600 font-semibold">ESTA ACCIÓN ES PERMANENTE Y NO SE PUEDE DESHACER.</span>
             </p>

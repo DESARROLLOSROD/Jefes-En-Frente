@@ -3,12 +3,11 @@ import autoTable from "jspdf-autotable";
 import logo from "../logo.png"; // AJUSTA la ruta
 import { ReporteActividades } from "../types/reporte";
 
-// Función auxiliar para dibujar el mapa con el pin
-const dibujarMapaConPin = (
+// Función auxiliar para dibujar el mapa con pines
+const dibujarMapaConPines = (
     mapaBase64: string,
     mapaContentType: string,
-    pinX: number,
-    pinY: number
+    pines: Array<{ pinX: number; pinY: number; etiqueta?: string; color?: string }>
 ): Promise<string> => {
     return new Promise((resolve, reject) => {
         const canvas = document.createElement('canvas');
@@ -27,27 +26,42 @@ const dibujarMapaConPin = (
             // Dibujar el mapa
             ctx.drawImage(img, 0, 0);
 
-            // Calcular posición del pin en píxeles
-            const pinXPx = (pinX / 100) * img.width;
-            const pinYPx = (pinY / 100) * img.height;
+            // Tamaño base del pin
+            const pinSize = Math.max(img.width, img.height) * 0.03; // Reducido un poco para múltiples pines
 
-            // Dibujar el pin rojo
-            const pinSize = Math.max(img.width, img.height) * 0.05; // 5% del tamaño de la imagen
+            pines.forEach(pin => {
+                // Calcular posición del pin en píxeles
+                const pinXPx = (pin.pinX / 100) * img.width;
+                const pinYPx = (pin.pinY / 100) * img.height;
 
-            // Pin circular rojo con borde blanco
-            ctx.beginPath();
-            ctx.arc(pinXPx, pinYPx, pinSize, 0, Math.PI * 2);
-            ctx.fillStyle = '#EF4444';
-            ctx.fill();
-            ctx.strokeStyle = '#FFFFFF';
-            ctx.lineWidth = pinSize * 0.15;
-            ctx.stroke();
+                // Dibujar el pin
+                ctx.beginPath();
+                ctx.arc(pinXPx, pinYPx, pinSize, 0, Math.PI * 2);
+                ctx.fillStyle = pin.color || '#EF4444'; // Color personalizado o rojo por defecto
+                ctx.fill();
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.lineWidth = pinSize * 0.2;
+                ctx.stroke();
 
-            // Círculo blanco interior
-            ctx.beginPath();
-            ctx.arc(pinXPx, pinYPx, pinSize * 0.4, 0, Math.PI * 2);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fill();
+                // Círculo blanco interior
+                ctx.beginPath();
+                ctx.arc(pinXPx, pinYPx, pinSize * 0.4, 0, Math.PI * 2);
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fill();
+
+                // Dibujar etiqueta si existe
+                if (pin.etiqueta) {
+                    ctx.font = `bold ${pinSize}px Arial`;
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = pinSize * 0.1;
+                    ctx.textAlign = 'center';
+
+                    // Contorno del texto para legibilidad
+                    ctx.strokeText(pin.etiqueta, pinXPx, pinYPx - pinSize * 1.5);
+                    ctx.fillText(pin.etiqueta, pinXPx, pinYPx - pinSize * 1.5);
+                }
+            });
 
             // Convertir canvas a base64
             const resultado = canvas.toDataURL('image/png').split(',')[1];
@@ -149,8 +163,8 @@ export const generarPDFReporte = async (
 
     const infoItems = [
         ["Ubicación:", reporte.ubicacion],
-        ["Zona de Trabajo:", reporte.zonaTrabajo?.zonaNombre || reporte.zonaTrabajo || 'N/A'],
-        ["Sección de Trabajo:", reporte.seccionTrabajo?.seccionNombre || reporte.seccionTrabajo || 'N/A'],
+        ["Zona de Trabajo:", typeof reporte.zonaTrabajo === 'string' ? reporte.zonaTrabajo : (reporte.zonaTrabajo?.zonaNombre || 'N/A')],
+        ["Sección de Trabajo:", typeof reporte.seccionTrabajo === 'string' ? reporte.seccionTrabajo : (reporte.seccionTrabajo?.seccionNombre || 'N/A')],
         ["Jefe de Frente:", reporte.jefeFrente],
         ["Sobrestante:", reporte.sobrestante],
     ];
@@ -171,9 +185,21 @@ export const generarPDFReporte = async (
     yPosition += 5;
 
     // ------------------------------------------------
-    // SECCIÓN DE MAPA CON PIN (SI EXISTE)
+    // SECCIÓN DE MAPA CON PINES
     // ------------------------------------------------
-    if (proyectoMapa?.imagen?.data && reporte.ubicacionMapa?.colocado) {
+    // Determinar qué pines dibujar
+    let pinesParaDibujar: Array<{ pinX: number; pinY: number; etiqueta?: string; color?: string }> = [];
+
+    if (reporte.pinesMapa && reporte.pinesMapa.length > 0) {
+        pinesParaDibujar = reporte.pinesMapa;
+    } else if (reporte.ubicacionMapa?.colocado) {
+        pinesParaDibujar = [{
+            pinX: reporte.ubicacionMapa.pinX,
+            pinY: reporte.ubicacionMapa.pinY
+        }];
+    }
+
+    if (proyectoMapa?.imagen?.data && pinesParaDibujar.length > 0) {
         if (yPosition > 180) {
             doc.addPage();
             addFooter();
@@ -188,11 +214,10 @@ export const generarPDFReporte = async (
         yPosition += 5;
 
         try {
-            const mapaConPin = await dibujarMapaConPin(
+            const mapaConPines = await dibujarMapaConPines(
                 proyectoMapa.imagen.data,
                 proyectoMapa.imagen.contentType,
-                reporte.ubicacionMapa.pinX,
-                reporte.ubicacionMapa.pinY
+                pinesParaDibujar
             );
 
             // Calcular dimensiones para el PDF manteniendo el aspect ratio
@@ -208,7 +233,7 @@ export const generarPDFReporte = async (
                 imgWidth = imgHeight * aspectRatio;
             }
 
-            doc.addImage(mapaConPin, 'PNG', 15, yPosition, imgWidth, imgHeight);
+            doc.addImage(mapaConPines, 'PNG', 15, yPosition, imgWidth, imgHeight);
             yPosition += imgHeight + 5;
 
             // Agregar texto de zona y sección debajo del mapa
@@ -221,7 +246,7 @@ export const generarPDFReporte = async (
 
             yPosition += 10;
         } catch (error) {
-            console.error('Error al generar mapa con pin:', error);
+            console.error('Error al generar mapa con pines:', error);
         }
     }
 

@@ -85,11 +85,13 @@ export const generarPDFGeneral = (reportes: ReporteActividades[], proyectos: Pro
         // Tabla de reportes del proyecto
         const tableBody = reportesDelProyecto.map(reporte => {
             const fecha = new Date(reporte.fecha).toLocaleDateString('es-MX', { timeZone: 'UTC' });
+            const zonaTexto = typeof reporte.zonaTrabajo === 'string' ? reporte.zonaTrabajo : (reporte.zonaTrabajo?.zonaNombre || 'N/A');
+            const seccionTexto = typeof reporte.seccionTrabajo === 'string' ? reporte.seccionTrabajo : (reporte.seccionTrabajo?.seccionNombre || '-');
             return [
                 fecha,
                 reporte.turno === 'primer' ? '1ER' : '2DO',
-                (reporte.zonaTrabajo?.zonaNombre || reporte.zonaTrabajo || 'N/A').toUpperCase(),
-                (reporte.seccionTrabajo?.seccionNombre || reporte.seccionTrabajo || '-').toUpperCase(),
+                zonaTexto.toUpperCase(),
+                seccionTexto.toUpperCase(),
                 reporte.jefeFrente.toUpperCase(),
                 reporte.controlMaquinaria?.length || 0,
                 reporte.controlAcarreo?.length || 0,

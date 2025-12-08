@@ -160,7 +160,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const usuarioActualizado = {
             ...user,
             proyectos: user.proyectos.map(p =>
-              p._id === response.data._id ? response.data : p
+              p._id === response.data!._id ? response.data! : p
             )
           };
           setUser(usuarioActualizado);

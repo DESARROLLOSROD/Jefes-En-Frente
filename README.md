@@ -27,11 +27,19 @@ La aplicación permite a los operadores registrar actividades diarias y a los ad
 
 ## 🚀 Tecnologías Utilizadas
 
-### Frontend
+### Frontend Web
 - **Core**: [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vitejs.dev/)
 - **Estilos**: [TailwindCSS](https://tailwindcss.com/) para diseño utilitario y responsivo.
 - **PDFs**: `jspdf` y `jspdf-autotable` para generación de documentos en el cliente.
 - **HTTP Client**: `axios` para comunicación con el backend.
+
+### 📱 Aplicación Móvil (NUEVO)
+- **Framework**: [React Native](https://reactnative.dev/) + [Expo](https://expo.dev/)
+- **Lenguaje**: TypeScript
+- **Navegación**: React Navigation
+- **Plataformas**: Android + iOS
+- **HTTP Client**: `axios`
+- **Storage**: AsyncStorage
 
 ### Backend
 - **Runtime**: [Node.js](https://nodejs.org/)
@@ -117,15 +125,27 @@ Jefes-En-Frente/
 │   │   └── server.ts       # Punto de entrada del servidor
 │   └── ...
 │
-└── frontend/               # SPA con React/Vite
+├── frontend/               # SPA con React/Vite
+│   ├── src/
+│   │   ├── components/     # Componentes UI (Forms, Tables, Layouts)
+│   │   ├── contexts/       # Estado global (AuthContext)
+│   │   ├── services/       # Capa de servicio API (axios)
+│   │   ├── utils/          # Generadores de PDF, formateadores
+│   │   ├── pages/          # Vistas principales (Dashboard, Login)
+│   │   └── App.tsx         # Configuración de rutas
+│   └── ...
+│
+└── mobile/                 # 📱 Aplicación Móvil (Android/iOS)
     ├── src/
-    │   ├── components/     # Componentes UI (Forms, Tables, Layouts)
+    │   ├── screens/        # Pantallas de la aplicación
+    │   ├── navigation/     # Configuración de navegación
     │   ├── contexts/       # Estado global (AuthContext)
-    │   ├── services/       # Capa de servicio API (axios)
-    │   ├── utils/          # Generadores de PDF, formateadores
-    │   ├── pages/          # Vistas principales (Dashboard, Login)
-    │   └── App.tsx         # Configuración de rutas
-    └── ...
+    │   ├── services/       # API service (axios)
+    │   ├── types/          # Tipos TypeScript
+    │   └── constants/      # Configuración
+    ├── App.tsx             # Punto de entrada
+    ├── README.md           # Documentación móvil
+    └── GUIA_RAPIDA.md     # Guía de inicio rápido
 ```
 
 ## 🔌 API Overview
@@ -146,10 +166,73 @@ Principales grupos de endpoints disponibles en el backend:
 - `npm run start`: Inicia el servidor compilado (producción).
 - `npm run init`: Crea el usuario administrador inicial.
 
-### Frontend
+### Frontend Web
 - `npm run dev`: Inicia el servidor de desarrollo de Vite.
 - `npm run build`: Construye la aplicación para producción.
 - `npm run preview`: Vista previa local de la build de producción.
+
+### 📱 Aplicación Móvil
+- `npm start`: Inicia el servidor de desarrollo de Expo.
+- `npm run android`: Ejecuta la app en emulador/dispositivo Android.
+- `npm run ios`: Ejecuta la app en simulador iOS (solo macOS).
+- `npm run start:clear`: Inicia limpiando caché.
+
+**Ver documentación completa**: [mobile/README.md](mobile/README.md) o [mobile/GUIA_RAPIDA.md](mobile/GUIA_RAPIDA.md)
+
+---
+
+## 📱 Aplicación Móvil
+
+La aplicación móvil multiplataforma (Android/iOS) está completamente funcional e integrada con el backend.
+
+### Inicio Rápido
+
+```bash
+cd mobile
+npm install
+npm start
+```
+
+Luego usar Expo Go en tu celular o ejecutar en emulador:
+- **Android**: `npm run android`
+- **iOS**: `npm run ios` (solo macOS)
+
+### Documentación
+- [README Completo](mobile/README.md)
+- [Guía Rápida](mobile/GUIA_RAPIDA.md)
+- [Configuración Backend](CONFIGURACION_MOBILE.md)
+- [Resumen de la App](mobile/RESUMEN_APP.md)
+- [Mejoras Implementadas](mobile/MEJORAS_IMPLEMENTADAS.md)
+
+---
+
+## 🌐 Deploy en Producción
+
+El proyecto está configurado para ser desplegado en **Vercel**.
+
+### Inicio Rápido
+
+```bash
+# Instalar Vercel CLI
+npm install -g vercel
+
+# Deploy Backend
+cd backend
+vercel --prod
+
+# Deploy Frontend
+cd frontend
+vercel --prod
+```
+
+### Documentación de Deploy
+- **[Guía Completa de Deploy](DEPLOY_VERCEL.md)** - Instrucciones paso a paso
+- **[Comandos Rápidos](DEPLOY_COMANDOS_RAPIDOS.md)** - Referencia rápida
+
+### Configuración Necesaria
+- MongoDB Atlas (base de datos en la nube)
+- Variables de entorno en Vercel
+- CORS configurado para producción
 
 ---
 
