@@ -26,6 +26,11 @@ app.use(cors({
     // Permitir requests sin origin (mobile apps, postman, etc)
     if (!origin) return callback(null, true);
 
+    // En producción, permitir cualquier dominio de Railway
+    if (origin && origin.includes('.railway.app')) {
+      return callback(null, true);
+    }
+
     if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
       callback(null, true);
     } else {
