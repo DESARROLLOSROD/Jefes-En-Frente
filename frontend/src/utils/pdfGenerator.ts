@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import logo from "../logo.png"; // AJUSTA la ruta
+import logo from "../Logo.png"; // AJUSTA la ruta
 import { ReporteActividades } from "../types/reporte";
 
 // Función auxiliar para dibujar el mapa con pines

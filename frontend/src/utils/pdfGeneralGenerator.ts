@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import logo from '../logo.png'; // corporate logo
+import logo from '../Logo.png'; // corporate logo
 import { ReporteActividades } from '../types/reporte';
 import { Proyecto } from '../types/gestion';
 

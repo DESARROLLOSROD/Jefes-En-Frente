@@ -1,7 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Vehiculo } from '../types/gestion';
-import logo from "../logo.png"; // AJUSTA la ruta
+import logo from "../Logo.png"; // AJUSTA la ruta
 
 export const generarPDFVehiculos = (vehiculos: Vehiculo[]) => {
     const doc = new jsPDF();
