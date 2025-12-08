@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
-import TipoVehiculo from '../models/TipoVehiculo';
-import { authMiddleware } from '../middleware/auth';
+import TipoVehiculo from '../models/TipoVehiculo.js';
+import { authMiddleware } from '../middleware/auth.js';
 
 const router = Router();
 
