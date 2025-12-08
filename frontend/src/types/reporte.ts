@@ -5,6 +5,14 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
+export interface ICapacidadCatalog {
+  _id: string;
+  valor: string;
+  etiqueta?: string;
+  activo: boolean;
+  fechaCreacion: string;
+}
+
 export interface IMaterialCatalog {
   _id: string;
   nombre: string;
@@ -12,7 +20,6 @@ export interface IMaterialCatalog {
   activo: boolean;
   fechaCreacion: string;
 }
-
 
 export interface ControlAcarreo {
   material: string;

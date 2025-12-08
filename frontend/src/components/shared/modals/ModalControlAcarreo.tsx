@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ControlAcarreo } from '../../../types/reporte';
+import { ControlAcarreo, IMaterialCatalog, ICapacidadCatalog } from '../../../types/reporte';
 import AutocompleteInput from '../AutocompleteInput';
-import { MATERIALES, ORIGENES, DESTINOS, CAPACIDADES_CAMION } from '../../../constants/reporteConstants';
+import { ORIGENES, DESTINOS } from '../../../constants/reporteConstants';
 
 interface ModalControlAcarreoProps {
   isOpen: boolean;
@@ -9,6 +9,10 @@ interface ModalControlAcarreoProps {
   onSave: (acarreo: ControlAcarreo) => void;
   acarreoInicial?: ControlAcarreo | null;
   title?: string;
+  listaMateriales: IMaterialCatalog[];
+  onCrearMaterial: (nombre: string) => Promise<IMaterialCatalog | null>;
+  listaCapacidades: ICapacidadCatalog[];
+  onCrearCapacidad: (valor: string) => Promise<ICapacidadCatalog | null>;
 }
 
 const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
@@ -16,7 +20,11 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
   onClose,
   onSave,
   acarreoInicial,
-  title = 'AGREGAR CONTROL DE ACARREO'
+  title = 'AGREGAR CONTROL DE ACARREO',
+  listaMateriales,
+  onCrearMaterial,
+  listaCapacidades,
+  onCrearCapacidad
 }) => {
   const [formData, setFormData] = useState<ControlAcarreo>({
     material: '',
@@ -30,6 +38,7 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (acarreoInicial) {
@@ -96,21 +105,53 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     console.log('🔵 MODAL handleSubmit llamado');
-    console.log('📝 FormData del modal:', formData);
 
     if (validateForm()) {
-      console.log('✅ Validación pasada, llamando onSave');
-      onSave(formData);
-      console.log('🚪 Cerrando modal');
-      onClose();
+      setIsSubmitting(true);
+      try {
+        // Verificar si el material existe en la lista
+        const materialNombre = formData.material.trim().toUpperCase();
+        const existeMaterial = listaMateriales.some(m => m.nombre === materialNombre);
+
+        if (!existeMaterial) {
+          const confirmacion = window.confirm(`El material "${materialNombre}" no existe en el catálogo. ¿Desea agregarlo para futuros reportes?`);
+          if (confirmacion) {
+            await onCrearMaterial(materialNombre);
+          }
+        }
+
+        // Verificar si la capacidad existe
+        const capacidadValor = formData.capacidad.trim();
+        const existeCapacidad = listaCapacidades.some(c => c.valor === capacidadValor);
+
+        if (!existeCapacidad) {
+          const confirmacionCap = window.confirm(`La capacidad "${capacidadValor} M³" no existe en el catálogo. ¿Desea agregarla?`);
+          if (confirmacionCap) {
+            await onCrearCapacidad(capacidadValor);
+          }
+        }
+
+        console.log('✅ Validación pasada, llamando onSave');
+        onSave(formData);
+        console.log('🚪 Cerrando modal');
+        onClose();
+      } catch (error) {
+        console.error('Error al guardar acarreo:', error);
+        alert('Error al procesar el acarreo');
+      } finally {
+        setIsSubmitting(false);
+      }
     } else {
       console.log('❌ Validación falló');
     }
   };
 
   if (!isOpen) return null;
+
+  const opcionesMateriales = listaMateriales.map(m => m.nombre);
+  const opcionesCapacidades = listaCapacidades.map(c => c.valor);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -123,6 +164,7 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
               onClick={onClose}
               className="text-white hover:text-gray-200 transition-colors text-2xl font-bold"
               type="button"
+              disabled={isSubmitting}
             >
               ×
             </button>
@@ -138,10 +180,13 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
                 label="MATERIAL"
                 value={formData.material}
                 onChange={(value) => handleChange('material', value)}
-                options={MATERIALES}
+                options={opcionesMateriales}
                 placeholder="SELECCIONE O ESCRIBA EL MATERIAL..."
                 required
               />
+              <p className="text-xs text-gray-500 mt-1">
+                * Si el material no existe, se le preguntará si desea agregarlo.
+              </p>
               {errors.material && (
                 <p className="text-red-500 text-xs mt-1">{errors.material}</p>
               )}
@@ -171,10 +216,13 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
                 label="CAPACIDAD (M³)"
                 value={formData.capacidad}
                 onChange={(value) => handleChange('capacidad', value)}
-                options={CAPACIDADES_CAMION}
+                options={opcionesCapacidades}
                 placeholder="SELECCIONE CAPACIDAD..."
                 required
               />
+              <p className="text-xs text-gray-500 mt-1">
+                * Si la capacidad no existe, se le preguntará si desea agregarla.
+              </p>
               {errors.capacidad && (
                 <p className="text-red-500 text-xs mt-1">{errors.capacidad}</p>
               )}
@@ -262,15 +310,17 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
               type="button"
               onClick={onClose}
               className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-semibold"
+              disabled={isSubmitting}
             >
               CANCELAR
             </button>
             <button
               type="button"
               onClick={handleSubmit}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-md"
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-md disabled:opacity-50"
+              disabled={isSubmitting}
             >
-              GUARDAR
+              {isSubmitting ? 'GUARDANDO...' : 'GUARDAR'}
             </button>
           </div>
         </div>

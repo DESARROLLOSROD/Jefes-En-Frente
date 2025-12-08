@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
-import { ControlAcarreo } from '../../../types/reporte';
+import React, { useState, useEffect } from 'react';
+import { ControlAcarreo, IMaterialCatalog, ICapacidadCatalog } from '../../../types/reporte';
 import ModalControlAcarreo from '../../shared/modals/ModalControlAcarreo';
+import { materialService } from '../../../services/materialService';
+import { capacidadService } from '../../../services/capacidadService';
+// ... rest of the file content
+
 
 interface SeccionControlAcarreoProps {
   acarreos: ControlAcarreo[];
@@ -16,6 +20,61 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
     index: number;
     data: ControlAcarreo;
   } | null>(null);
+
+  const [listaMateriales, setListaMateriales] = useState<IMaterialCatalog[]>([]);
+  const [listaCapacidades, setListaCapacidades] = useState<ICapacidadCatalog[]>([]);
+
+  useEffect(() => {
+    cargarCatalogos();
+  }, []);
+
+  const cargarCatalogos = async () => {
+    try {
+      // Cargar Materiales
+      const responseMateriales = await materialService.obtenerMateriales();
+      if (responseMateriales.success && responseMateriales.data) {
+        setListaMateriales(responseMateriales.data);
+      }
+
+      // Cargar Capacidades
+      const responseCapacidades = await capacidadService.obtenerCapacidades();
+      if (responseCapacidades.success && responseCapacidades.data) {
+        setListaCapacidades(responseCapacidades.data);
+      }
+    } catch (error) {
+      console.error('Error al cargar catálogos:', error);
+    }
+  };
+
+  const handleCrearMaterial = async (nombre: string): Promise<IMaterialCatalog | null> => {
+    const response = await materialService.crearMaterial({ nombre });
+    if (response.success && response.data) {
+      setListaMateriales(prev => [...prev, response.data!].sort((a, b) => a.nombre.localeCompare(b.nombre)));
+      return response.data;
+    }
+    return null;
+  };
+
+  const handleCrearCapacidad = async (valor: string): Promise<ICapacidadCatalog | null> => {
+    // La etiqueta por defecto será "Valor M³"
+    const response = await capacidadService.crearCapacidad({ valor, etiqueta: `${valor} M³` });
+    if (response.success && response.data) {
+      setListaCapacidades(prev => {
+        const nuevaLista = [...prev, response.data!];
+        // Ordenar numéricamente si es posible
+        return nuevaLista.sort((a, b) => {
+          const valA = parseFloat(a.valor);
+          const valB = parseFloat(b.valor);
+          if (!isNaN(valA) && !isNaN(valB)) {
+            return valA - valB;
+          }
+          return a.valor.localeCompare(b.valor);
+        });
+      });
+      return response.data;
+    }
+    return null;
+  };
 
   const handleAgregarNuevo = () => {
     setAcarreoEditando(null);
@@ -149,6 +208,10 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
         onSave={handleGuardar}
         acarreoInicial={acarreoEditando?.data || null}
         title={acarreoEditando !== null ? 'EDITAR CONTROL DE ACARREO' : 'AGREGAR CONTROL DE ACARREO'}
+        listaMateriales={listaMateriales}
+        onCrearMaterial={handleCrearMaterial}
+        listaCapacidades={listaCapacidades}
+        onCrearCapacidad={handleCrearCapacidad}
       />
     </div>
   );

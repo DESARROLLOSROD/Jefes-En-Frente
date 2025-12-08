@@ -10,6 +10,7 @@ import { vehiculosRouter } from './routes/vehiculos.js';
 import { workZoneRouter } from './routes/workZone.routes.js';
 import bibliotecaMapaRouter from './routes/bibliotecaMapa.routes.js';
 import { materialesRouter } from './routes/materiales.js';
+import { capacidadesRouter } from './routes/capacidades.js';
 
 dotenv.config();
 
@@ -72,6 +73,7 @@ app.use('/api/vehiculos', vehiculosRouter);
 app.use('/api', workZoneRouter);
 app.use('/api/biblioteca-mapas', bibliotecaMapaRouter);
 app.use('/api/materiales', materialesRouter);
+app.use('/api/capacidades', capacidadesRouter);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
