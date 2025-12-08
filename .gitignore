@@ -47,8 +47,9 @@ coverage/
 *.lcov
 .nyc_output
 
-# Vercel
+# Deployment platforms
 .vercel
+.railway
 
 # Expo (Mobile)
 .expo/

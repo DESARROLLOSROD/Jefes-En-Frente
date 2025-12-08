@@ -14,9 +14,24 @@ dotenv.config();
 
 const app = express();
 
-// CORS más permisivo para desarrollo
+// CORS configurado para desarrollo y producción
+const allowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:5173',
+  process.env.FRONTEND_URL // URL del frontend en Railway
+].filter(Boolean);
+
 app.use(cors({
-  origin: 'http://localhost:3000', // URL exacta del frontend
+  origin: (origin, callback) => {
+    // Permitir requests sin origin (mobile apps, postman, etc)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
+      callback(null, true);
+    } else {
+      callback(new Error('No permitido por CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
@@ -60,14 +75,13 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-// Solo iniciar el servidor si no estamos en Vercel
-if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
-  app.listen(PORT, () => {
-    console.log(`🎯 Servidor corriendo en puerto ${PORT}`);
-    console.log(`🏗️ Jefes en Frente - Sistema de Gestión Minera v2.0`);
-    console.log(`🔐 Sistema de autenticación activo`);
-  });
-}
+// Iniciar el servidor (Railway y desarrollo)
+app.listen(PORT, () => {
+  console.log(`🎯 Servidor corriendo en puerto ${PORT}`);
+  console.log(`🏗️ Jefes en Frente - Sistema de Gestión Minera v2.0`);
+  console.log(`🔐 Sistema de autenticación activo`);
+  console.log(`🌍 Entorno: ${process.env.NODE_ENV || 'development'}`);
+});
 
-// Exportar la app para Vercel
+// Exportar la app
 export default app;

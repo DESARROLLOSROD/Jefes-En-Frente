@@ -208,9 +208,36 @@ Luego usar Expo Go en tu celular o ejecutar en emulador:
 
 ## 🌐 Deploy en Producción
 
-El proyecto está configurado para ser desplegado en **Vercel**.
+El proyecto está configurado para ser desplegado en **Vercel** o **Railway**.
 
-### Inicio Rápido
+### Opción 1: Deploy en Railway (Recomendado)
+
+```bash
+# Instalar Railway CLI
+npm install -g @railway/cli
+
+# Login
+railway login
+
+# Deploy Backend
+cd backend
+railway init
+railway up
+railway domain create
+
+# Deploy Frontend
+cd frontend
+railway link
+railway service create
+railway up
+railway domain create
+```
+
+**Documentación Railway:**
+- **[Guía Completa de Railway](DEPLOY_RAILWAY.md)** - Instrucciones paso a paso
+- **[Comandos Rápidos Railway](DEPLOY_RAILWAY_COMANDOS.md)** - Referencia rápida
+
+### Opción 2: Deploy en Vercel
 
 ```bash
 # Instalar Vercel CLI
@@ -225,13 +252,13 @@ cd frontend
 vercel --prod
 ```
 
-### Documentación de Deploy
-- **[Guía Completa de Deploy](DEPLOY_VERCEL.md)** - Instrucciones paso a paso
-- **[Comandos Rápidos](DEPLOY_COMANDOS_RAPIDOS.md)** - Referencia rápida
+**Documentación Vercel:**
+- **[Guía Completa de Vercel](DEPLOY_VERCEL.md)** - Instrucciones paso a paso
+- **[Comandos Rápidos Vercel](DEPLOY_COMANDOS_RAPIDOS.md)** - Referencia rápida
 
 ### Configuración Necesaria
 - MongoDB Atlas (base de datos en la nube)
-- Variables de entorno en Vercel
+- Variables de entorno en la plataforma elegida
 - CORS configurado para producción
 
 ---
