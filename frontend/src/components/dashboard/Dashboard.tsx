@@ -216,7 +216,7 @@ const Dashboard: React.FC = () => {
             }}
           />
         )}
-        {vistaActual === 'zonas' && proyecto && (
+        {vistaActual === 'zonas' && proyecto && proyecto._id && (
           <WorkZoneManager
             projectId={proyecto._id}
             isAdmin={user?.rol === 'admin' || user?.rol === 'supervisor'}

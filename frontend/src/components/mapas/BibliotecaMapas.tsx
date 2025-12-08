@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { bibliotecaMapaService, BibliotecaMapa } from '../../services/bibliotecaMapa.service';
-import { comprimirImagen, formatearTamano } from '../../utils/imageCompressor';
+import { comprimirImagen } from '../../utils/imageCompressor';
 
 interface BibliotecaMapasProps {
   onSeleccionarMapa?: (mapa: BibliotecaMapa) => void;
@@ -97,7 +97,12 @@ const BibliotecaMapas: React.FC<BibliotecaMapasProps> = ({ onSeleccionarMapa, mo
       return;
     }
 
-    const response = await bibliotecaMapaService.crearMapa(formData);
+    const mapaData = {
+      ...formData,
+      imagen: formData.imagen // TypeScript ahora sabe que no es null
+    };
+
+    const response = await bibliotecaMapaService.crearMapa(mapaData);
     if (response.success) {
       cargarMapas();
       cerrarModal();
