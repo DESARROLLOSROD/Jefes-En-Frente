@@ -27,13 +27,22 @@ console.log('🔧 CORS Config loaded:', {
   nodeEnv: process.env.NODE_ENV
 });
 
-// Configuración de CORS simplificada para solucionar el bloqueo
-app.use(cors({
-  origin: true, // Refleja el origin de la petición (permite cualquiera)
+// CORS Config with Logging
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Log para ver EXACTAMENTE qué llega
+    console.log('🔍 MODO PERMISIVO - Request Origin:', origin);
+
+    // Permitir todo (para debug)
+    callback(null, true);
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
-}));
+};
+
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions)); // Habilitar pre-flight explícitamente
 
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
