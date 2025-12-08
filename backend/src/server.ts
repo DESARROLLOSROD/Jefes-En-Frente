@@ -59,8 +59,15 @@ app.get('/', (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🎯 Servidor corriendo en puerto ${PORT}`);
-  console.log(`🏗️ Jefes en Frente - Sistema de Gestión Minera v2.0`);
-  console.log(`🔐 Sistema de autenticación activo`);
-});
+
+// Solo iniciar el servidor si no estamos en Vercel
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`🎯 Servidor corriendo en puerto ${PORT}`);
+    console.log(`🏗️ Jefes en Frente - Sistema de Gestión Minera v2.0`);
+    console.log(`🔐 Sistema de autenticación activo`);
+  });
+}
+
+// Exportar la app para Vercel
+export default app;

@@ -1,24 +1,15 @@
 {
   "version": 2,
-  "name": "jefes-en-frente-backend",
-  "buildCommand": "npm run build",
   "builds": [
     {
-      "src": "src/server.ts",
+      "src": "api/index.ts",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "/src/server.ts"
-    },
-    {
       "src": "/(.*)",
-      "dest": "/src/server.ts"
+      "dest": "/api/index.ts"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production"
-  }
+  ]
 }
