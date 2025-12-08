@@ -77,6 +77,13 @@ const reporteActividadesSchema = new Schema({
         pinY: Number,
         colocado: Boolean
     },
+    pinesMapa: [{
+            id: String,
+            pinX: Number,
+            pinY: Number,
+            etiqueta: String,
+            color: String
+        }],
     fechaCreacion: {
         type: Date,
         default: Date.now

@@ -26,6 +26,12 @@ proyectosRouter.get('/:id', async (req, res) => {
         if (!proyecto) {
             return res.status(404).json({ message: 'Proyecto no encontrado' });
         }
+        console.log('✅ Proyecto encontrado:', proyecto._id);
+        console.log('✅ Tiene mapa:', !!proyecto.mapa);
+        if (proyecto.mapa) {
+            console.log('✅ Mapa tiene imagen:', !!proyecto.mapa.imagen);
+            console.log('✅ Imagen tiene data:', !!proyecto.mapa.imagen?.data);
+        }
         res.json(proyecto);
     }
     catch (error) {
