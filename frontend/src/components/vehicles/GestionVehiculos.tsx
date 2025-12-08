@@ -284,13 +284,15 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
 
             {/* Modal */}
             {modalAbierto && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg shadow-2xl p-6 max-w-md w-full mx-4">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">
-                            {editando ? '✏️ EDITAR VEHÍCULO' : '➕ NUEVO VEHÍCULO'}
-                        </h3>
-                        <form onSubmit={handleSubmit}>
-                            <div className="space-y-4">
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+                    <div className="bg-white rounded-lg shadow-2xl max-w-md w-full mx-4 my-8 max-h-[90vh] flex flex-col">
+                        <div className="p-6 border-b">
+                            <h3 className="text-xl font-bold text-gray-800">
+                                {editando ? '✏️ EDITAR VEHÍCULO' : '➕ NUEVO VEHÍCULO'}
+                            </h3>
+                        </div>
+                        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+                            <div className="flex-1 overflow-y-auto p-6 space-y-4">
                                 {/* Nombre */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">NOMBRE *</label>
@@ -393,7 +395,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex justify-end space-x-3 mt-6">
+                            <div className="flex justify-end space-x-3 p-6 border-t bg-gray-50">
                                 <button
                                     type="button"
                                     onClick={cerrarModal}
