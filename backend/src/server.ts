@@ -27,26 +27,9 @@ console.log('🔧 CORS Config loaded:', {
   nodeEnv: process.env.NODE_ENV
 });
 
+// Configuración de CORS simplificada para solucionar el bloqueo
 app.use(cors({
-  origin: (origin, callback) => {
-    // Log para depuración en Railway
-    console.log('🔍 Incoming Request Origin:', origin);
-
-    // Permitir requests sin origin (mobile apps, postman, etc)
-    if (!origin) return callback(null, true);
-
-    // En producción, permitir cualquier dominio de Railway
-    if (origin.includes('.railway.app') || origin.includes('localhost')) {
-      return callback(null, true);
-    }
-
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
-      callback(null, true);
-    } else {
-      console.error(`❌ CORS Blocked: Origin ${origin} not in allowed list`);
-      callback(new Error('No permitido por CORS'));
-    }
-  },
+  origin: true, // Refleja el origin de la petición (permite cualquiera)
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
