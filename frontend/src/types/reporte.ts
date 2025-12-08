@@ -5,6 +5,15 @@ export interface ApiResponse<T> {
   message?: string;
 }
 
+export interface IMaterialCatalog {
+  _id: string;
+  nombre: string;
+  unidad?: string;
+  activo: boolean;
+  fechaCreacion: string;
+}
+
+
 export interface ControlAcarreo {
   material: string;
   noViaje: number;

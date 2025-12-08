@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { ControlMaterial } from '../../../types/reporte';
+import { ControlMaterial, IMaterialCatalog } from '../../../types/reporte';
 import AutocompleteInput from '../AutocompleteInput';
-import { MATERIALES, UNIDADES_MEDIDA } from '../../../constants/reporteConstants';
+import { UNIDADES_MEDIDA } from '../../../constants/reporteConstants';
 
 interface ModalControlMaterialProps {
   isOpen: boolean;
@@ -9,6 +9,8 @@ interface ModalControlMaterialProps {
   onSave: (material: ControlMaterial) => void;
   materialInicial?: ControlMaterial | null;
   title?: string;
+  listaMateriales: IMaterialCatalog[];
+  onCrearMaterial: (nombre: string, unidad: string) => Promise<IMaterialCatalog | null>;
 }
 
 const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
@@ -16,7 +18,9 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
   onClose,
   onSave,
   materialInicial,
-  title = 'AGREGAR CONTROL DE MATERIAL'
+  title = 'AGREGAR CONTROL DE MATERIAL',
+  listaMateriales,
+  onCrearMaterial
 }) => {
   const [formData, setFormData] = useState<ControlMaterial>({
     material: '',
@@ -27,6 +31,7 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (materialInicial) {
@@ -72,21 +77,41 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     console.log('🔵 MODAL MATERIAL handleSubmit llamado');
-    console.log('📝 FormData del modal:', formData);
 
     if (validateForm()) {
-      console.log('✅ Validación pasada, llamando onSave');
-      onSave(formData);
-      console.log('🚪 Cerrando modal');
-      onClose();
+      setIsSubmitting(true);
+      try {
+        // Verificar si el material existe en la lista
+        const materialNombre = formData.material.trim().toUpperCase();
+        const existe = listaMateriales.some(m => m.nombre === materialNombre);
+
+        if (!existe) {
+          const confirmacion = window.confirm(`El material "${materialNombre}" no existe en el catálogo. ¿Desea agregarlo para futuros reportes?`);
+          if (confirmacion) {
+            await onCrearMaterial(materialNombre, formData.unidad);
+          }
+        }
+
+        console.log('✅ Validación pasada, llamando onSave');
+        onSave(formData);
+        console.log('🚪 Cerrando modal');
+        onClose();
+      } catch (error) {
+        console.error('Error al guardar material:', error);
+        alert('Error al procesar el material');
+      } finally {
+        setIsSubmitting(false);
+      }
     } else {
       console.log('❌ Validación falló');
     }
   };
 
   if (!isOpen) return null;
+
+  const opcionesMateriales = listaMateriales.map(m => m.nombre);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -99,6 +124,7 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
               onClick={onClose}
               className="text-white hover:text-gray-200 transition-colors text-2xl font-bold"
               type="button"
+              disabled={isSubmitting}
             >
               ×
             </button>
@@ -114,10 +140,13 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
                 label="MATERIAL"
                 value={formData.material}
                 onChange={(value) => handleChange('material', value)}
-                options={MATERIALES}
+                options={opcionesMateriales}
                 placeholder="SELECCIONE O ESCRIBA EL MATERIAL..."
                 required
               />
+              <p className="text-xs text-gray-500 mt-1">
+                * Si el material no existe, se le preguntará si desea agregarlo al catálogo.
+              </p>
               {errors.material && (
                 <p className="text-red-500 text-xs mt-1">{errors.material}</p>
               )}
@@ -195,15 +224,17 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
               type="button"
               onClick={onClose}
               className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-semibold"
+              disabled={isSubmitting}
             >
               CANCELAR
             </button>
             <button
               type="button"
               onClick={handleSubmit}
-              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold shadow-md"
+              disabled={isSubmitting}
+              className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold shadow-md disabled:opacity-50"
             >
-              GUARDAR
+              {isSubmitting ? 'GUARDANDO...' : 'GUARDAR'}
             </button>
           </div>
         </div>

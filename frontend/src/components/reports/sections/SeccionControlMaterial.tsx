@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { ControlMaterial } from '../../../types/reporte';
+import React, { useState, useEffect } from 'react';
+import { ControlMaterial, IMaterialCatalog } from '../../../types/reporte';
 import ModalControlMaterial from '../../shared/modals/ModalControlMaterial';
+import { materialService } from '../../../services/materialService';
 
 interface SeccionControlMaterialProps {
   materiales: ControlMaterial[];
@@ -16,6 +17,32 @@ const SeccionControlMaterial: React.FC<SeccionControlMaterialProps> = ({
     index: number;
     data: ControlMaterial;
   } | null>(null);
+
+  const [listaMateriales, setListaMateriales] = useState<IMaterialCatalog[]>([]);
+
+  useEffect(() => {
+    cargarMateriales();
+  }, []);
+
+  const cargarMateriales = async () => {
+    try {
+      const response = await materialService.obtenerMateriales();
+      if (response.success && response.data) {
+        setListaMateriales(response.data);
+      }
+    } catch (error) {
+      console.error('Error al cargar materiales:', error);
+    }
+  };
+
+  const handleCrearMaterial = async (nombre: string, unidad: string): Promise<IMaterialCatalog | null> => {
+    const response = await materialService.crearMaterial({ nombre, unidad });
+    if (response.success && response.data) {
+      setListaMateriales(prev => [...prev, response.data!].sort((a, b) => a.nombre.localeCompare(b.nombre)));
+      return response.data;
+    }
+    return null;
+  };
 
   const handleAgregarNuevo = () => {
     setMaterialEditando(null);
@@ -124,6 +151,8 @@ const SeccionControlMaterial: React.FC<SeccionControlMaterialProps> = ({
         onSave={handleGuardar}
         materialInicial={materialEditando?.data || null}
         title={materialEditando !== null ? 'EDITAR CONTROL DE MATERIAL' : 'AGREGAR CONTROL DE MATERIAL'}
+        listaMateriales={listaMateriales}
+        onCrearMaterial={handleCrearMaterial}
       />
     </div>
   );

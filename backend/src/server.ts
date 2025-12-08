@@ -9,6 +9,7 @@ import { proyectosRouter } from './routes/proyectos.js';
 import { vehiculosRouter } from './routes/vehiculos.js';
 import { workZoneRouter } from './routes/workZone.routes.js';
 import bibliotecaMapaRouter from './routes/bibliotecaMapa.routes.js';
+import { materialesRouter } from './routes/materiales.js';
 
 dotenv.config();
 
@@ -70,6 +71,7 @@ app.use('/api/proyectos', proyectosRouter);
 app.use('/api/vehiculos', vehiculosRouter);
 app.use('/api', workZoneRouter);
 app.use('/api/biblioteca-mapas', bibliotecaMapaRouter);
+app.use('/api/materiales', materialesRouter);
 
 // Ruta de prueba
 app.get('/', (req, res) => {
