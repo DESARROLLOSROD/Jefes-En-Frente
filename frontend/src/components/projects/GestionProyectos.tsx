@@ -5,6 +5,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { comprimirImagen, formatearTamano, calcularReduccion } from '../../utils/imageCompressor';
 import BibliotecaMapas from '../mapas/BibliotecaMapas';
 import { BibliotecaMapa } from '../../services/bibliotecaMapa.service';
+import ModalConfirmacion from '../shared/modals/ModalConfirmacion';
 
 const GestionProyectos: React.FC = () => {
     const { actualizarProyecto } = useAuth();
@@ -66,15 +67,25 @@ const GestionProyectos: React.FC = () => {
         }
     };
 
-    const handleEliminar = async (id: string) => {
-        if (window.confirm('¿ESTÁS SEGURO DE ELIMINAR ESTE PROYECTO?')) {
-            const response = await proyectoService.eliminarProyecto(id);
-            if (response.success) {
-                cargarProyectos();
-            } else {
-                alert(response.error || 'ERROR AL ELIMINAR PROYECTO');
-            }
+    const [confirmacionOpen, setConfirmacionOpen] = useState(false);
+    const [proyectoEliminar, setProyectoEliminar] = useState<string | null>(null);
+
+    const handleEliminarClick = (id: string) => {
+        setProyectoEliminar(id);
+        setConfirmacionOpen(true);
+    };
+
+    const handleConfirmarEliminar = async () => {
+        if (!proyectoEliminar) return;
+
+        const response = await proyectoService.eliminarProyecto(proyectoEliminar);
+        if (response.success) {
+            cargarProyectos();
+        } else {
+            alert(response.error || 'ERROR AL ELIMINAR PROYECTO');
         }
+        setConfirmacionOpen(false);
+        setProyectoEliminar(null);
     };
 
     const abrirModal = (proyecto?: Proyecto) => {
@@ -215,7 +226,7 @@ const GestionProyectos: React.FC = () => {
                                 EDITAR
                             </button>
                             <button
-                                onClick={() => handleEliminar(proyecto._id)}
+                                onClick={() => handleEliminarClick(proyecto._id)}
                                 className="text-red-600 hover:text-red-800"
                             >
                                 ELIMINAR
@@ -360,6 +371,25 @@ const GestionProyectos: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            <ModalConfirmacion
+                isOpen={confirmacionOpen}
+                onClose={() => {
+                    setConfirmacionOpen(false);
+                    setProyectoEliminar(null);
+                }}
+                onConfirm={handleConfirmarEliminar}
+                title="CONFIRMAR ELIMINACIÓN DE PROYECTO"
+                mensaje={
+                    <span>
+                        ¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE PROYECTO?
+                        <br />
+                        <span className="text-red-600 font-semibold">ESTA ACCIÓN ES PERMANENTE Y PODRÍA AFECTAR A OTROS DATOS.</span>
+                    </span>
+                }
+                confirmText="ELIMINAR"
+                cancelText="CANCELAR"
+            />
         </div>
     );
 };

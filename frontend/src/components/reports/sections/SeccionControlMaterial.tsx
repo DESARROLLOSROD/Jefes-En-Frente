@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ControlMaterial, IMaterialCatalog } from '../../../types/reporte';
 import ModalControlMaterial from '../../shared/modals/ModalControlMaterial';
+import ModalConfirmacion from '../../shared/modals/ModalConfirmacion';
 import { materialService } from '../../../services/materialService';
 
 interface SeccionControlMaterialProps {
@@ -19,6 +20,10 @@ const SeccionControlMaterial: React.FC<SeccionControlMaterialProps> = ({
   } | null>(null);
 
   const [listaMateriales, setListaMateriales] = useState<IMaterialCatalog[]>([]);
+
+  // Estado para eliminación
+  const [confirmacionOpen, setConfirmacionOpen] = useState(false);
+  const [indiceEliminar, setIndiceEliminar] = useState<number | null>(null);
 
   useEffect(() => {
     cargarMateriales();
@@ -77,12 +82,20 @@ const SeccionControlMaterial: React.FC<SeccionControlMaterialProps> = ({
     }
   };
 
-  const handleEliminar = (index: number) => {
-    if (materiales.length > 1) {
-      const nuevosMateriales = materiales.filter((_, i) => i !== index);
-      onMaterialesChange(nuevosMateriales);
-    } else {
+  const handleEliminarClick = (index: number) => {
+    if (materiales.length <= 1) {
       alert('DEBE HABER AL MENOS UN REGISTRO');
+      return;
+    }
+    setIndiceEliminar(index);
+    setConfirmacionOpen(true);
+  };
+
+  const confirmarEliminacion = () => {
+    if (indiceEliminar !== null) {
+      const nuevosMateriales = materiales.filter((_, i) => i !== indiceEliminar);
+      onMaterialesChange(nuevosMateriales);
+      setIndiceEliminar(null);
     }
   };
 
@@ -129,7 +142,7 @@ const SeccionControlMaterial: React.FC<SeccionControlMaterialProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleEliminar(index)}
+                    onClick={() => handleEliminarClick(index)}
                     className="text-red-600 hover:text-red-800 font-semibold"
                     disabled={materiales.length === 1}
                   >
@@ -153,6 +166,25 @@ const SeccionControlMaterial: React.FC<SeccionControlMaterialProps> = ({
         title={materialEditando !== null ? 'EDITAR CONTROL DE MATERIAL' : 'AGREGAR CONTROL DE MATERIAL'}
         listaMateriales={listaMateriales}
         onCrearMaterial={handleCrearMaterial}
+      />
+
+      <ModalConfirmacion
+        isOpen={confirmacionOpen}
+        onClose={() => {
+          setConfirmacionOpen(false);
+          setIndiceEliminar(null);
+        }}
+        onConfirm={confirmarEliminacion}
+        title="CONFIRMAR ELIMINACIÓN"
+        mensaje={
+          <span>
+            ¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE REGISTRO DE MATERIAL?
+            <br />
+            <span className="text-red-600 font-semibold">ESTA ACCIÓN NO SE PUEDE DESHACER.</span>
+          </span>
+        }
+        confirmText="ELIMINAR"
+        cancelText="CANCELAR"
       />
     </div>
   );

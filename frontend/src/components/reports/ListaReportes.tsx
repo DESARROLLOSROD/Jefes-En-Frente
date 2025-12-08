@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { ReporteActividades } from '../../types/reporte';
 import { reporteService } from '../../services/api';
 import { generarPDFReporte } from '../../utils/pdfGenerator';
+import ModalConfirmacion from '../shared/modals/ModalConfirmacion';
 
 interface ListaReportesProps {
   onEditar: (reporte: ReporteActividades) => void;
@@ -197,35 +198,25 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
       </div>
 
       {/* Modal de Confirmación */}
-      {mostrarConfirmacion && reporteEliminar && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-2xl p-6 max-w-md w-full mx-4">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">CONFIRMAR ELIMINACIÓN</h3>
-            <p className="text-gray-600 mb-6">
-              ¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR EL REPORTE DE <strong>{typeof reporteEliminar.zonaTrabajo === 'string' ? reporteEliminar.zonaTrabajo : (reporteEliminar.zonaTrabajo?.zonaNombre || 'N/A')}</strong>?
-              <br />
-              <span className="text-red-600 font-semibold">ESTA ACCIÓN ES PERMANENTE Y NO SE PUEDE DESHACER.</span>
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => {
-                  setMostrarConfirmacion(false);
-                  setReporteEliminar(null);
-                }}
-                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-semibold"
-              >
-                CANCELAR
-              </button>
-              <button
-                onClick={handleConfirmarEliminar}
-                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold"
-              >
-                ELIMINAR
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Modal de Confirmación */}
+      <ModalConfirmacion
+        isOpen={mostrarConfirmacion}
+        onClose={() => {
+          setMostrarConfirmacion(false);
+          setReporteEliminar(null);
+        }}
+        onConfirm={handleConfirmarEliminar}
+        title="CONFIRMAR ELIMINACIÓN"
+        mensaje={
+          <span>
+            ¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR EL REPORTE DE <strong>{reporteEliminar ? (typeof reporteEliminar.zonaTrabajo === 'string' ? reporteEliminar.zonaTrabajo : (reporteEliminar.zonaTrabajo?.zonaNombre || 'N/A')) : ''}</strong>?
+            <br />
+            <span className="text-red-600 font-semibold">ESTA ACCIÓN ES PERMANENTE Y NO SE PUEDE DESHACER.</span>
+          </span>
+        }
+        confirmText="ELIMINAR"
+        cancelText="CANCELAR"
+      />
     </div>
   );
 };

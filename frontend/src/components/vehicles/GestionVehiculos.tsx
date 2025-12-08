@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { vehiculoService, proyectoService } from '../../services/api';
 import { Vehiculo, Proyecto } from '../../types/gestion';
 import { generarPDFVehiculos } from '../../utils/pdfVehiculosGenerator';
+import ModalConfirmacion from '../shared/modals/ModalConfirmacion';
 
 interface GestionVehiculosProps {
     userRol?: 'admin' | 'supervisor' | 'operador';
@@ -65,16 +66,26 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
         }
     };
 
-    const handleEliminar = async (id: string) => {
-        if (window.confirm('¿ESTÁS SEGURO DE ELIMINAR ESTE VEHÍCULO?')) {
-            const response = await vehiculoService.eliminarVehiculo(id);
-            if (response.success) {
-                mostrarMensaje('VEHÍCULO ELIMINADO CORRECTAMENTE');
-                cargarVehiculos();
-            } else {
-                mostrarMensaje(response.error || 'ERROR AL ELIMINAR VEHÍCULO');
-            }
+    const [confirmacionOpen, setConfirmacionOpen] = useState(false);
+    const [vehiculoEliminar, setVehiculoEliminar] = useState<string | null>(null);
+
+    const handleEliminarClick = (id: string) => {
+        setVehiculoEliminar(id);
+        setConfirmacionOpen(true);
+    };
+
+    const handleConfirmarEliminar = async () => {
+        if (!vehiculoEliminar) return;
+
+        const response = await vehiculoService.eliminarVehiculo(vehiculoEliminar);
+        if (response.success) {
+            mostrarMensaje('VEHÍCULO ELIMINADO CORRECTAMENTE');
+            cargarVehiculos();
+        } else {
+            mostrarMensaje(response.error || 'ERROR AL ELIMINAR VEHÍCULO');
         }
+        setConfirmacionOpen(false);
+        setVehiculoEliminar(null);
     };
 
     const abrirModal = (vehiculo?: Vehiculo) => {
@@ -218,7 +229,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                                         ✏️ EDITAR
                                                     </button>
                                                     <button
-                                                        onClick={() => handleEliminar(vehiculo._id)}
+                                                        onClick={() => handleEliminarClick(vehiculo._id)}
                                                         className="text-red-600 hover:text-red-900"
                                                     >
                                                         🗑️ ELIMINAR
@@ -368,6 +379,25 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                     </div>
                 </div>
             )}
+
+            <ModalConfirmacion
+                isOpen={confirmacionOpen}
+                onClose={() => {
+                    setConfirmacionOpen(false);
+                    setVehiculoEliminar(null);
+                }}
+                onConfirm={handleConfirmarEliminar}
+                title="CONFIRMAR ELIMINACIÓN DE VEHÍCULO"
+                mensaje={
+                    <span>
+                        ¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE VEHÍCULO?
+                        <br />
+                        <span className="text-red-600 font-semibold">ESTA ACCIÓN NO SE PUEDE DESHACER.</span>
+                    </span>
+                }
+                confirmText="ELIMINAR"
+                cancelText="CANCELAR"
+            />
         </div>
     );
 };

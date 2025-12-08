@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ControlAcarreo, IMaterialCatalog, ICapacidadCatalog } from '../../../types/reporte';
 import ModalControlAcarreo from '../../shared/modals/ModalControlAcarreo';
+import ModalConfirmacion from '../../shared/modals/ModalConfirmacion';
 import { materialService } from '../../../services/materialService';
 import { capacidadService } from '../../../services/capacidadService';
 // ... rest of the file content
@@ -23,6 +24,10 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
 
   const [listaMateriales, setListaMateriales] = useState<IMaterialCatalog[]>([]);
   const [listaCapacidades, setListaCapacidades] = useState<ICapacidadCatalog[]>([]);
+
+  // Estado para eliminación
+  const [confirmacionOpen, setConfirmacionOpen] = useState(false);
+  const [indiceEliminar, setIndiceEliminar] = useState<number | null>(null);
 
   useEffect(() => {
     cargarCatalogos();
@@ -111,12 +116,20 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
     }
   };
 
-  const handleEliminar = (index: number) => {
-    if (acarreos.length > 1) {
-      const nuevosAcarreos = acarreos.filter((_, i) => i !== index);
-      onAcarreosChange(nuevosAcarreos);
-    } else {
+  const handleEliminarClick = (index: number) => {
+    if (acarreos.length <= 1) {
       alert('DEBE HABER AL MENOS UN REGISTRO');
+      return;
+    }
+    setIndiceEliminar(index);
+    setConfirmacionOpen(true);
+  };
+
+  const confirmarEliminacion = () => {
+    if (indiceEliminar !== null) {
+      const nuevosAcarreos = acarreos.filter((_, i) => i !== indiceEliminar);
+      onAcarreosChange(nuevosAcarreos);
+      setIndiceEliminar(null);
     }
   };
 
@@ -174,7 +187,7 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => handleEliminar(index)}
+                    onClick={() => handleEliminarClick(index)}
                     className="text-red-600 hover:text-red-800 font-semibold"
                     disabled={acarreos.length === 1}
                   >
@@ -198,7 +211,7 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
         </table>
       </div>
 
-      {/* Modal */}
+      {/* Modal Acarreo */}
       <ModalControlAcarreo
         isOpen={modalOpen}
         onClose={() => {
@@ -212,6 +225,26 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
         onCrearMaterial={handleCrearMaterial}
         listaCapacidades={listaCapacidades}
         onCrearCapacidad={handleCrearCapacidad}
+      />
+
+      {/* Modal Confirmación */}
+      <ModalConfirmacion
+        isOpen={confirmacionOpen}
+        onClose={() => {
+          setConfirmacionOpen(false);
+          setIndiceEliminar(null);
+        }}
+        onConfirm={confirmarEliminacion}
+        title="CONFIRMAR ELIMINACIÓN"
+        mensaje={
+          <span>
+            ¿ESTÁS SEGURO DE QUE DESEAS ELIMINAR ESTE REGISTRO DE ACARREO?
+            <br />
+            <span className="text-red-600 font-semibold">ESTA ACCIÓN NO SE PUEDE DESHACER.</span>
+          </span>
+        }
+        confirmText="ELIMINAR"
+        cancelText="CANCELAR"
       />
     </div>
   );
