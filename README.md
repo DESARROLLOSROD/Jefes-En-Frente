@@ -109,6 +109,29 @@ npm run dev
 
 La aplicación estará disponible en `http://localhost:5173`.
 
+## Credenciales de Acceso
+
+Después de ejecutar el script de inicialización (`npm run init` en el backend), puedes usar las siguientes credenciales para acceder al sistema:
+
+### Usuarios de Prueba
+
+- **Administrador**:
+  - Email: `admin@jefesenfrente.com`
+  - Contraseña: `admin123`
+  - Acceso: Completo al sistema
+
+- **Supervisor**:
+  - Email: `supervisor@jefesenfrente.com`
+  - Contraseña: `supervisor123`
+  - Acceso: Supervisión y reportes
+
+- **Operador**:
+  - Email: `operador@jefesenfrente.com`
+  - Contraseña: `operador123`
+  - Acceso: Creación de reportes
+
+**Nota**: Estos usuarios se crean automáticamente al ejecutar `npm run init` o cuando la base de datos está vacía.
+
 ## Estructura del Proyecto
 
 ```

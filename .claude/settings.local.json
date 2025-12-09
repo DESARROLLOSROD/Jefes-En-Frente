@@ -17,7 +17,8 @@
       "Bash(timeout /t 10)",
       "Bash(eas build:configure:*)",
       "Bash(eas init:*)",
-      "Bash(eas project:init:*)"
+      "Bash(eas project:init:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
