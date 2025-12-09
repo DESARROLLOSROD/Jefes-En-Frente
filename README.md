@@ -1,59 +1,58 @@
 # Jefes-En-Frente
 
-## 📋 Descripción del Proyecto
+## Descripción
 
-**Jefes-En-Frente** es una plataforma web integral diseñada para la gestión y reporte de actividades en proyectos de minería y construcción. Su objetivo principal es optimizar el control de recursos (agua, material, acarreo) y facilitar la toma de decisiones mediante reportes detallados y accesibles.
+Plataforma web y móvil para la gestión y reporte de actividades en proyectos de minería y construcción. Optimiza el control de recursos (agua, material, acarreo) y facilita la toma de decisiones mediante reportes detallados y generación automática de documentación en PDF.
 
-La aplicación permite a los operadores registrar actividades diarias y a los administradores gestionar el sistema completo, asegurando la integridad de los datos y proporcionando herramientas para la generación de documentación formal en PDF.
+## Funcionalidades Principales
 
-## ✨ Funcionalidades Clave
+### Gestión Operativa
+- Reportes diarios de control de agua, material y acarreo
+- Administración de múltiples proyectos con configuraciones específicas
+- Registro y seguimiento de vehículos y maquinaria
 
-### 🛠️ Gestión Operativa
-- **Reportes Diarios**: Creación y edición de reportes de control de agua, material y acarreo.
-- **Gestión de Proyectos**: Administración de múltiples proyectos con sus respectivas configuraciones.
-- **Control de Flota**: Registro y seguimiento de vehículos y maquinaria.
+### Sistema de Roles
+- **Administrador**: Acceso completo al sistema, gestión de usuarios, proyectos y vehículos
+- **Operador (Jefe en Frente)**: Creación de reportes, visualización de historial y descarga de PDFs
 
-### 👥 Roles y Permisos
-- **Administrador**: Acceso total al sistema (Crear/Editar/Eliminar reportes, gestionar usuarios, proyectos y vehículos).
-- **Operador (Jefe en Frente)**: Permisos enfocados en la operación diaria (Crear reportes, visualizar historial, descargar PDFs).
+### Documentación y Reportes
+- Generación automática de PDFs con diseño corporativo
+- Reportes consolidados por proyecto
+- Exportación de datos y documentación formal
 
-### 📄 Documentación y Exportación
-- **Generación de PDFs**: Creación automática de reportes formales con diseño corporativo.
-- **Reportes Consolidados**: Capacidad de generar reportes generales que agrupan actividades por proyecto.
+### Interfaz de Usuario
+- Diseño responsivo con modo oscuro
+- Notificaciones y validaciones en tiempo real
+- Experiencia optimizada para web y móvil
 
-### 💻 Experiencia de Usuario
-- **Interfaz Moderna**: Diseño responsivo y amigable con modo oscuro y micro-animaciones.
-- **Feedback en Tiempo Real**: Notificaciones y validaciones para asegurar la calidad de los datos.
-
-## 🚀 Tecnologías Utilizadas
+## Stack Tecnológico
 
 ### Frontend Web
-- **Core**: [React](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vitejs.dev/)
-- **Estilos**: [TailwindCSS](https://tailwindcss.com/) para diseño utilitario y responsivo.
-- **PDFs**: `jspdf` y `jspdf-autotable` para generación de documentos en el cliente.
-- **HTTP Client**: `axios` para comunicación con el backend.
+- React + TypeScript + Vite
+- TailwindCSS para diseño responsivo
+- jsPDF y jspdf-autotable para generación de PDFs
+- Axios para comunicación HTTP
 
-### 📱 Aplicación Móvil (NUEVO)
-- **Framework**: [React Native](https://reactnative.dev/) + [Expo](https://expo.dev/)
-- **Lenguaje**: TypeScript
-- **Navegación**: React Navigation
-- **Plataformas**: Android + iOS
-- **HTTP Client**: `axios`
-- **Storage**: AsyncStorage
+### Aplicación Móvil
+- React Native + Expo
+- TypeScript
+- React Navigation
+- Soporte para Android e iOS
+- AsyncStorage para persistencia local
 
 ### Backend
-- **Runtime**: [Node.js](https://nodejs.org/)
-- **Framework**: [Express](https://expressjs.com/)
-- **Lenguaje**: TypeScript
-- **Base de Datos**: MongoDB (con `mongoose` como ODM).
-- **Autenticación**: JWT (JSON Web Tokens) y `bcryptjs`.
+- Node.js + Express
+- TypeScript
+- MongoDB con Mongoose ODM
+- JWT para autenticación
+- bcryptjs para encriptación
 
-## ⚙️ Requisitos Previos
+## Requisitos Previos
 
-- **Node.js**: v18 o superior.
-- **MongoDB**: Instancia local o conexión a MongoDB Atlas.
+- Node.js v18 o superior
+- MongoDB (local o MongoDB Atlas)
 
-## 📦 Instalación y Configuración
+## Instalación y Configuración
 
 ### 1. Clonar el repositorio
 
@@ -108,9 +107,9 @@ Inicia el servidor de desarrollo:
 npm run dev
 ```
 
-La aplicación estará disponible típicamente en `http://localhost:5173`.
+La aplicación estará disponible en `http://localhost:5173`.
 
-## 📂 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 Jefes-En-Frente/
@@ -135,7 +134,7 @@ Jefes-En-Frente/
 │   │   └── App.tsx         # Configuración de rutas
 │   └── ...
 │
-└── mobile/                 # 📱 Aplicación Móvil (Android/iOS)
+└── mobile/                 # Aplicación Móvil (Android/iOS)
     ├── src/
     │   ├── screens/        # Pantallas de la aplicación
     │   ├── navigation/     # Configuración de navegación
@@ -145,43 +144,43 @@ Jefes-En-Frente/
     │   └── constants/      # Configuración
     ├── App.tsx             # Punto de entrada
     ├── README.md           # Documentación móvil
-    └── GUIA_RAPIDA.md     # Guía de inicio rápido
+    └── GUIA_RAPIDA.md      # Guía de inicio rápido
 ```
 
-## 🔌 API Overview
+## API Endpoints
 
-Principales grupos de endpoints disponibles en el backend:
+Principales endpoints disponibles:
 
-- **Auth**: `/api/auth` (Login, Registro, Verificación de token)
-- **Reportes**: `/api/reportes` (CRUD de reportes diarios)
-- **Proyectos**: `/api/proyectos` (Gestión de proyectos mineros)
-- **Vehículos**: `/api/vehiculos` (Gestión de flota)
-- **Usuarios**: `/api/usuarios` (Administración de usuarios del sistema)
+- `/api/auth` - Login, registro y verificación de token
+- `/api/reportes` - CRUD de reportes diarios
+- `/api/proyectos` - Gestión de proyectos mineros
+- `/api/vehiculos` - Gestión de flota
+- `/api/usuarios` - Administración de usuarios
 
-## 📜 Scripts Disponibles
+## Scripts Disponibles
 
 ### Backend
-- `npm run dev`: Inicia el servidor en modo desarrollo con recarga automática.
-- `npm run build`: Compila el código TypeScript a JavaScript en `dist/`.
-- `npm run start`: Inicia el servidor compilado (producción).
-- `npm run init`: Crea el usuario administrador inicial.
+- `npm run dev` - Inicia el servidor en modo desarrollo con recarga automática
+- `npm run build` - Compila el código TypeScript a JavaScript
+- `npm run start` - Inicia el servidor compilado (producción)
+- `npm run init` - Crea el usuario administrador inicial
 
 ### Frontend Web
-- `npm run dev`: Inicia el servidor de desarrollo de Vite.
-- `npm run build`: Construye la aplicación para producción.
-- `npm run preview`: Vista previa local de la build de producción.
+- `npm run dev` - Inicia el servidor de desarrollo de Vite
+- `npm run build` - Construye la aplicación para producción
+- `npm run preview` - Vista previa local de la build de producción
 
-### 📱 Aplicación Móvil
-- `npm start`: Inicia el servidor de desarrollo de Expo.
-- `npm run android`: Ejecuta la app en emulador/dispositivo Android.
-- `npm run ios`: Ejecuta la app en simulador iOS (solo macOS).
-- `npm run start:clear`: Inicia limpiando caché.
+### Aplicación Móvil
+- `npm start` - Inicia el servidor de desarrollo de Expo
+- `npm run android` - Ejecuta la app en emulador/dispositivo Android
+- `npm run ios` - Ejecuta la app en simulador iOS (solo macOS)
+- `npm run start:clear` - Inicia limpiando caché
 
-**Ver documentación completa**: [mobile/README.md](mobile/README.md) o [mobile/GUIA_RAPIDA.md](mobile/GUIA_RAPIDA.md)
+Ver documentación completa: [mobile/README.md](mobile/README.md) | [mobile/GUIA_RAPIDA.md](mobile/GUIA_RAPIDA.md)
 
 ---
 
-## 📱 Aplicación Móvil
+## Aplicación Móvil
 
 La aplicación móvil multiplataforma (Android/iOS) está completamente funcional e integrada con el backend.
 
@@ -206,9 +205,9 @@ Luego usar Expo Go en tu celular o ejecutar en emulador:
 
 ---
 
-## 🌐 Deploy en Producción
+## Deploy en Producción
 
-El proyecto está configurado para ser desplegado en **Vercel** o **Railway**.
+El proyecto está configurado para ser desplegado en Vercel o Railway.
 
 ### Opción 1: Deploy en Railway (Recomendado)
 
@@ -234,9 +233,9 @@ railway domain create
 ```
 
 **Documentación Railway:**
-- **[Guía Completa de Railway](DEPLOY_RAILWAY.md)** - Instrucciones paso a paso
-- **[Comandos Rápidos Railway](DEPLOY_RAILWAY_COMANDOS.md)** - Referencia rápida
-- **[Configuración Final](DEPLOY_RAILWAY_FINALIZADO.md)** - Variables de entorno y verificación ⭐
+- [Guía Completa de Railway](DEPLOY_RAILWAY.md) - Instrucciones paso a paso
+- [Comandos Rápidos Railway](DEPLOY_RAILWAY_COMANDOS.md) - Referencia rápida
+- [Configuración Final](DEPLOY_RAILWAY_FINALIZADO.md) - Variables de entorno y verificación
 
 ### Opción 2: Deploy en Vercel
 
@@ -254,8 +253,8 @@ vercel --prod
 ```
 
 **Documentación Vercel:**
-- **[Guía Completa de Vercel](DEPLOY_VERCEL.md)** - Instrucciones paso a paso
-- **[Comandos Rápidos Vercel](DEPLOY_COMANDOS_RAPIDOS.md)** - Referencia rápida
+- [Guía Completa de Vercel](DEPLOY_VERCEL.md) - Instrucciones paso a paso
+- [Comandos Rápidos Vercel](DEPLOY_COMANDOS_RAPIDOS.md) - Referencia rápida
 
 ### Configuración Necesaria
 - MongoDB Atlas (base de datos en la nube)
@@ -264,4 +263,4 @@ vercel --prod
 
 ---
 
-> **Nota**: Este proyecto es propiedad privada y está diseñado para uso interno.
+**Nota**: Este proyecto es propiedad privada y está diseñado para uso interno.
