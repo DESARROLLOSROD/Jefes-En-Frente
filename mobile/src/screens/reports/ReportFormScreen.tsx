@@ -14,8 +14,20 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { useAuth } from '../../contexts/AuthContext';
 import ApiService from '../../services/api';
-import { ReporteActividades, WorkZone, Vehiculo } from '../../types';
+import {
+  ReporteActividades,
+  WorkZone,
+  Vehiculo,
+  ControlAcarreo,
+  ControlMaterial,
+  ControlAgua,
+  ControlMaquinaria,
+} from '../../types';
 import { COLORS, TURNOS } from '../../constants/config';
+import ControlAcarreoSection from '../../components/reports/ControlAcarreoSection';
+import ControlMaterialSection from '../../components/reports/ControlMaterialSection';
+import ControlAguaSection from '../../components/reports/ControlAguaSection';
+import ControlMaquinariaSection from '../../components/reports/ControlMaquinariaSection';
 
 type ReportFormNavigationProp = StackNavigationProp<RootStackParamList, 'ReportForm'>;
 type ReportFormRouteProp = RouteProp<RootStackParamList, 'ReportForm'>;
@@ -40,6 +52,12 @@ const ReportFormScreen = () => {
   const [observaciones, setObservaciones] = useState('');
   const [selectedZone, setSelectedZone] = useState<string>('');
   const [selectedSection, setSelectedSection] = useState<string>('');
+
+  // Estados para controles
+  const [controlAcarreo, setControlAcarreo] = useState<ControlAcarreo[]>([]);
+  const [controlMaterial, setControlMaterial] = useState<ControlMaterial[]>([]);
+  const [controlAgua, setControlAgua] = useState<ControlAgua[]>([]);
+  const [controlMaquinaria, setControlMaquinaria] = useState<ControlMaquinaria[]>([]);
 
   useEffect(() => {
     loadInitialData();
@@ -81,10 +99,10 @@ const ReportFormScreen = () => {
         jefeFrente,
         sobrestante,
         observaciones,
-        controlAcarreo: [],
-        controlMaterial: [],
-        controlAgua: [],
-        controlMaquinaria: [],
+        controlAcarreo,
+        controlMaterial,
+        controlAgua,
+        controlMaquinaria,
         pinesMapa: [],
       };
 
@@ -206,6 +224,15 @@ const ReportFormScreen = () => {
           />
         </View>
 
+        {/* Secciones de Control */}
+        <ControlAcarreoSection items={controlAcarreo} onChange={setControlAcarreo} />
+
+        <ControlMaterialSection items={controlMaterial} onChange={setControlMaterial} />
+
+        <ControlAguaSection items={controlAgua} onChange={setControlAgua} />
+
+        <ControlMaquinariaSection items={controlMaquinaria} onChange={setControlMaquinaria} />
+
         <Text style={styles.sectionTitle}>Observaciones</Text>
 
         <View style={styles.inputGroup}>
@@ -231,11 +258,6 @@ const ReportFormScreen = () => {
             <Text style={styles.submitButtonText}>Crear Reporte</Text>
           )}
         </TouchableOpacity>
-
-        <Text style={styles.note}>
-          Nota: Esta es una versión simplificada del formulario de reportes.
-          {'\n'}Los controles de acarreo, material, agua y maquinaria se pueden agregar después.
-        </Text>
       </View>
     </ScrollView>
   );
