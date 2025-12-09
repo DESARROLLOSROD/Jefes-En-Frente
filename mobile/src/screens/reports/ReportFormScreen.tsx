@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { useAuth } from '../../contexts/AuthContext';
 import ApiService from '../../services/api';
@@ -65,9 +64,6 @@ const ReportFormScreen = () => {
 
   // Estado para mapa
   const [mapPin, setMapPin] = useState<{ pinX: number; pinY: number } | null>(null);
-
-  // Estado para mostrar el DatePicker
-  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     loadInitialData();
@@ -183,10 +179,7 @@ const ReportFormScreen = () => {
         <View style={styles.row}>
           <View style={[styles.inputGroup, styles.flex1]}>
             <Text style={styles.label}>Fecha *</Text>
-            <TouchableOpacity
-              style={styles.dateButton}
-              onPress={() => setShowDatePicker(true)}
-            >
+            <View style={styles.dateDisplay}>
               <Text style={styles.dateText}>
                 {fecha.toLocaleDateString('es-ES', {
                   day: '2-digit',
@@ -194,7 +187,7 @@ const ReportFormScreen = () => {
                   year: 'numeric',
                 })}
               </Text>
-            </TouchableOpacity>
+            </View>
           </View>
 
           <View style={[styles.inputGroup, styles.flex1, styles.marginLeft]}>
@@ -222,18 +215,6 @@ const ReportFormScreen = () => {
             </View>
           </View>
         </View>
-
-        {showDatePicker && (
-          <DateTimePicker
-            value={fecha}
-            mode="date"
-            display="default"
-            onChange={(event, selectedDate) => {
-              setShowDatePicker(false);
-              if (selectedDate) setFecha(selectedDate);
-            }}
-          />
-        )}
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Ubicación *</Text>
@@ -434,7 +415,7 @@ const styles = StyleSheet.create({
   marginLeft: {
     marginLeft: 12,
   },
-  dateButton: {
+  dateDisplay: {
     backgroundColor: COLORS.white,
     borderWidth: 1,
     borderColor: COLORS.gray,

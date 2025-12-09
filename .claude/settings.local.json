@@ -21,7 +21,11 @@
       "Bash(curl:*)",
       "Bash(dir:*)",
       "Bash(npx expo start --clear)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(npx expo start:*)"
     ],
     "deny": [],
     "ask": []
