@@ -49,11 +49,18 @@ class ApiService {
 
   // Autenticación
   async login(email: string, password: string): Promise<LoginResponse> {
-    const response = await this.api.post<LoginResponse>('/auth/login', {
+    const response = await this.api.post<{ success: boolean; data: { token: string; user: any } }>('/auth/login', {
       email,
       password,
     });
-    return response.data;
+
+    // Transformar la respuesta de la API al formato esperado
+    const { data } = response.data;
+    return {
+      token: data.token,
+      usuario: data.user,
+      proyectos: data.user.proyectos || []
+    };
   }
 
   async getProyectosDisponibles(): Promise<Proyecto[]> {
