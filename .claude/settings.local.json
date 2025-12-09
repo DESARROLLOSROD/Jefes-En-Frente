@@ -11,7 +11,13 @@
       "Bash(git commit -m \"$(cat <<''EOF''\nfeat: Configure frontend environment variables for Vercel deployment\n\n- Add environment configuration system using Vite env variables\n- Update all services to use API_BASE_URL from env config\n- Create .env.example with documentation\n- Support dynamic API URL for development/production\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>\nEOF\n)\")",
       "Bash(git push:*)",
       "Bash(git commit:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(eas build:*)",
+      "Bash(eas whoami:*)",
+      "Bash(timeout /t 10)",
+      "Bash(eas build:configure:*)",
+      "Bash(eas init:*)",
+      "Bash(eas project:init:*)"
     ],
     "deny": [],
     "ask": []

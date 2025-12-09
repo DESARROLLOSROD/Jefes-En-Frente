@@ -14,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.jefesfrente.mobile"
+      "bundleIdentifier": "com.jefesfrente.mobile",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -33,7 +36,11 @@
       "favicon": "./assets/favicon.png"
     },
     "extra": {
-      "apiUrl": "http://10.0.2.2:5000/api"
-    }
+      "apiUrl": "https://jefes-backend-production.up.railway.app/api",
+      "eas": {
+        "projectId": "d6180a18-36e6-4a51-ba8e-b887c98fdb74"
+      }
+    },
+    "owner": "desarrollosrod"
   }
 }
