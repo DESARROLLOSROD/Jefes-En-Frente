@@ -20,7 +20,8 @@
       "Bash(eas project:init:*)",
       "Bash(curl:*)",
       "Bash(dir:*)",
-      "Bash(npx expo start --clear)"
+      "Bash(npx expo start --clear)",
+      "Bash(taskkill:*)"
     ],
     "deny": [],
     "ask": []

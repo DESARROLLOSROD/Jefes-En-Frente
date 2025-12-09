@@ -8,9 +8,11 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { useAuth } from '../../contexts/AuthContext';
 import ApiService from '../../services/api';
@@ -63,6 +65,9 @@ const ReportFormScreen = () => {
 
   // Estado para mapa
   const [mapPin, setMapPin] = useState<{ pinX: number; pinY: number } | null>(null);
+
+  // Estado para mostrar el DatePicker
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     loadInitialData();
@@ -162,7 +167,73 @@ const ReportFormScreen = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.sectionTitle}>Información General</Text>
+        {/* Header con nombre del proyecto */}
+        {selectedProject && (
+          <View style={styles.projectHeader}>
+            <Text style={styles.projectTitle}>REPORTE DE ACTIVIDADES</Text>
+            <Text style={styles.projectSubtitle}>GENERAL CONTRACTOR</Text>
+            <Text style={styles.projectLocation}>
+              UBICACIÓN: {selectedProject.ubicacion || selectedProject.nombre}
+            </Text>
+          </View>
+        )}
+
+        <Text style={styles.sectionTitle}>INFORMACIÓN GENERAL</Text>
+
+        <View style={styles.row}>
+          <View style={[styles.inputGroup, styles.flex1]}>
+            <Text style={styles.label}>Fecha *</Text>
+            <TouchableOpacity
+              style={styles.dateButton}
+              onPress={() => setShowDatePicker(true)}
+            >
+              <Text style={styles.dateText}>
+                {fecha.toLocaleDateString('es-ES', {
+                  day: '2-digit',
+                  month: '2-digit',
+                  year: 'numeric',
+                })}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={[styles.inputGroup, styles.flex1, styles.marginLeft]}>
+            <Text style={styles.label}>Turno *</Text>
+            <View style={styles.turnoButtonGroup}>
+              {TURNOS.map((t) => (
+                <TouchableOpacity
+                  key={t.value}
+                  style={[
+                    styles.turnoButton,
+                    turno === t.value && styles.turnoButtonSelected,
+                  ]}
+                  onPress={() => setTurno(t.value as any)}
+                >
+                  <Text
+                    style={[
+                      styles.turnoText,
+                      turno === t.value && styles.turnoTextSelected,
+                    ]}
+                  >
+                    {t.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </View>
+
+        {showDatePicker && (
+          <DateTimePicker
+            value={fecha}
+            mode="date"
+            display="default"
+            onChange={(event, selectedDate) => {
+              setShowDatePicker(false);
+              if (selectedDate) setFecha(selectedDate);
+            }}
+          />
+        )}
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Ubicación *</Text>
@@ -172,31 +243,6 @@ const ReportFormScreen = () => {
             onChangeText={setUbicacion}
             placeholder="Ej: Zona Norte"
           />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Turno *</Text>
-          <View style={styles.radioGroup}>
-            {TURNOS.map((t) => (
-              <TouchableOpacity
-                key={t.value}
-                style={[
-                  styles.radioButton,
-                  turno === t.value && styles.radioButtonSelected,
-                ]}
-                onPress={() => setTurno(t.value as any)}
-              >
-                <Text
-                  style={[
-                    styles.radioText,
-                    turno === t.value && styles.radioTextSelected,
-                  ]}
-                >
-                  {t.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
         </View>
 
         <View style={styles.row}>
@@ -223,29 +269,29 @@ const ReportFormScreen = () => {
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Personal</Text>
+        <View style={styles.row}>
+          <View style={[styles.inputGroup, styles.flex1]}>
+            <Text style={styles.label}>Jefe de Frente</Text>
+            <TextInput
+              style={styles.input}
+              value={jefeFrente}
+              onChangeText={setJefeFrente}
+              placeholder="Nombre del jefe"
+            />
+          </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Jefe de Frente</Text>
-          <TextInput
-            style={styles.input}
-            value={jefeFrente}
-            onChangeText={setJefeFrente}
-            placeholder="Nombre del jefe"
-          />
+          <View style={[styles.inputGroup, styles.flex1, styles.marginLeft]}>
+            <Text style={styles.label}>Sobrestante</Text>
+            <TextInput
+              style={styles.input}
+              value={sobrestante}
+              onChangeText={setSobrestante}
+              placeholder="Nombre del sobrestante"
+            />
+          </View>
         </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Sobrestante</Text>
-          <TextInput
-            style={styles.input}
-            value={sobrestante}
-            onChangeText={setSobrestante}
-            placeholder="Nombre del sobrestante"
-          />
-        </View>
-
-        <Text style={styles.sectionTitle}>Ubicación del Trabajo</Text>
+        <Text style={styles.sectionTitle}>ZONA DE TRABAJO</Text>
 
         {zones.length > 0 && (
           <Picker
@@ -290,7 +336,7 @@ const ReportFormScreen = () => {
           />
         )}
 
-        <Text style={styles.sectionTitle}>Observaciones</Text>
+        <Text style={styles.sectionTitle}>OBSERVACIONES</Text>
 
         <View style={styles.inputGroup}>
           <TextInput
@@ -328,12 +374,36 @@ const styles = StyleSheet.create({
   content: {
     padding: 16,
   },
+  projectHeader: {
+    backgroundColor: COLORS.dark,
+    padding: 20,
+    marginBottom: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  projectTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: COLORS.white,
+    letterSpacing: 1,
+  },
+  projectSubtitle: {
+    fontSize: 14,
+    color: COLORS.white,
+    marginTop: 4,
+  },
+  projectLocation: {
+    fontSize: 12,
+    color: COLORS.white,
+    marginTop: 8,
+  },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: COLORS.dark,
     marginTop: 16,
     marginBottom: 12,
+    letterSpacing: 0.5,
   },
   inputGroup: {
     marginBottom: 16,
@@ -363,6 +433,43 @@ const styles = StyleSheet.create({
   },
   marginLeft: {
     marginLeft: 12,
+  },
+  dateButton: {
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.gray,
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+  },
+  dateText: {
+    fontSize: 16,
+    color: COLORS.dark,
+  },
+  turnoButtonGroup: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  turnoButton: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: COLORS.gray,
+    borderRadius: 8,
+    padding: 10,
+    alignItems: 'center',
+    backgroundColor: COLORS.white,
+  },
+  turnoButtonSelected: {
+    backgroundColor: COLORS.primary,
+    borderColor: COLORS.primary,
+  },
+  turnoText: {
+    fontSize: 13,
+    color: COLORS.dark,
+  },
+  turnoTextSelected: {
+    color: COLORS.white,
+    fontWeight: '600',
   },
   radioGroup: {
     flexDirection: 'row',

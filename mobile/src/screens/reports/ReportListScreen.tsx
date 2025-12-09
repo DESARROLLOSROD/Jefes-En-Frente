@@ -31,10 +31,13 @@ const ReportListScreen = () => {
 
   const loadReportes = async () => {
     try {
+      console.log('📋 Cargando reportes para proyecto:', selectedProject?._id);
       const data = await ApiService.getReportes(selectedProject?._id);
+      console.log('✅ Reportes cargados:', data.length);
+      console.log('📊 Datos:', JSON.stringify(data, null, 2));
       setReportes(data);
     } catch (error) {
-      console.error('Error al cargar reportes:', error);
+      console.error('❌ Error al cargar reportes:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -85,7 +88,11 @@ const ReportListScreen = () => {
     <View style={styles.container}>
       {reportes.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No hay reportes disponibles</Text>
+          <Text style={styles.emptyText}>
+            {selectedProject
+              ? `No hay reportes para el proyecto "${selectedProject.nombre}"`
+              : 'No hay reportes disponibles'}
+          </Text>
           <TouchableOpacity
             style={styles.createButton}
             onPress={() => navigation.navigate('ReportForm', {})}

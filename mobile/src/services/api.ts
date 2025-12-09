@@ -83,23 +83,23 @@ class ApiService {
   // Reportes
   async getReportes(proyectoId?: string): Promise<ReporteActividades[]> {
     const params = proyectoId ? { proyectoId } : {};
-    const response = await this.api.get<ReporteActividades[]>('/reportes', { params });
-    return response.data;
+    const response = await this.api.get<{ success: boolean; data: ReporteActividades[] }>('/reportes', { params });
+    return response.data.data; // Extraer el array del objeto {success, data}
   }
 
   async getReporteById(id: string): Promise<ReporteActividades> {
-    const response = await this.api.get<ReporteActividades>(`/reportes/${id}`);
-    return response.data;
+    const response = await this.api.get<{ success: boolean; data: ReporteActividades }>(`/reportes/${id}`);
+    return response.data.data;
   }
 
   async createReporte(reporte: ReporteActividades): Promise<ReporteActividades> {
-    const response = await this.api.post<ReporteActividades>('/reportes', reporte);
-    return response.data;
+    const response = await this.api.post<{ success: boolean; data: ReporteActividades }>('/reportes', reporte);
+    return response.data.data;
   }
 
   async updateReporte(id: string, reporte: Partial<ReporteActividades>): Promise<ReporteActividades> {
-    const response = await this.api.put<ReporteActividades>(`/reportes/${id}`, reporte);
-    return response.data;
+    const response = await this.api.put<{ success: boolean; data: ReporteActividades }>(`/reportes/${id}`, reporte);
+    return response.data.data;
   }
 
   async deleteReporte(id: string): Promise<void> {
@@ -158,13 +158,13 @@ class ApiService {
 
   // Vehículos
   async getVehiculos(): Promise<Vehiculo[]> {
-    const response = await this.api.get<Vehiculo[]>('/vehiculos');
-    return response.data;
+    const response = await this.api.get<{ success: boolean; data: Vehiculo[] }>('/vehiculos');
+    return response.data.data || response.data;
   }
 
   async getVehiculosByProyecto(proyectoId: string): Promise<Vehiculo[]> {
-    const response = await this.api.get<Vehiculo[]>(`/vehiculos/proyecto/${proyectoId}`);
-    return response.data;
+    const response = await this.api.get<{ success: boolean; data: Vehiculo[] }>(`/vehiculos/proyecto/${proyectoId}`);
+    return response.data.data || response.data;
   }
 
   async createVehiculo(vehiculo: Partial<Vehiculo>): Promise<Vehiculo> {
@@ -183,13 +183,13 @@ class ApiService {
 
   // Zonas de trabajo
   async getZonesByProject(projectId: string): Promise<WorkZone[]> {
-    const response = await this.api.get<WorkZone[]>(`/projects/${projectId}/zones`);
-    return response.data;
+    const response = await this.api.get<{ success: boolean; data: WorkZone[] }>(`/projects/${projectId}/zones`);
+    return response.data.data || response.data;
   }
 
   async getZoneById(zoneId: string): Promise<WorkZone> {
-    const response = await this.api.get<WorkZone>(`/zones/${zoneId}`);
-    return response.data;
+    const response = await this.api.get<{ success: boolean; data: WorkZone }>(`/zones/${zoneId}`);
+    return response.data.data || response.data;
   }
 
   async createZone(zone: Partial<WorkZone>): Promise<WorkZone> {
