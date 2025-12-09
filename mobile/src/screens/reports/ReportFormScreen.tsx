@@ -29,6 +29,7 @@ import ControlMaterialSection from '../../components/reports/ControlMaterialSect
 import ControlAguaSection from '../../components/reports/ControlAguaSection';
 import ControlMaquinariaSection from '../../components/reports/ControlMaquinariaSection';
 import MapPinSelector from '../../components/maps/MapPinSelector';
+import Picker from '../../components/common/Picker';
 
 type ReportFormNavigationProp = StackNavigationProp<RootStackParamList, 'ReportForm'>;
 type ReportFormRouteProp = RouteProp<RootStackParamList, 'ReportForm'>;
@@ -68,18 +69,26 @@ const ReportFormScreen = () => {
   }, []);
 
   const loadInitialData = async () => {
-    if (!selectedProject) return;
+    if (!selectedProject) {
+      console.log('❌ No hay proyecto seleccionado');
+      return;
+    }
 
     try {
+      console.log('📡 Cargando datos para proyecto:', selectedProject.nombre);
       const [zonesData, vehiculosData] = await Promise.all([
         ApiService.getZonesByProject(selectedProject._id),
         ApiService.getVehiculosByProyecto(selectedProject._id),
       ]);
 
+      console.log('✅ Zonas cargadas:', zonesData.length);
+      console.log('✅ Vehículos cargados:', vehiculosData.length);
+      console.log('🗺️ Proyecto tiene mapa:', !!selectedProject.mapa);
+
       setZones(zonesData);
       setVehiculos(vehiculosData);
     } catch (error) {
-      console.error('Error al cargar datos:', error);
+      console.error('❌ Error al cargar datos:', error);
       Alert.alert('Error', 'No se pudieron cargar los datos iniciales');
     }
   };
@@ -235,6 +244,32 @@ const ReportFormScreen = () => {
             placeholder="Nombre del sobrestante"
           />
         </View>
+
+        <Text style={styles.sectionTitle}>Ubicación del Trabajo</Text>
+
+        {zones.length > 0 && (
+          <Picker
+            label="Zona de Trabajo"
+            value={selectedZone}
+            options={zones.map((z) => ({ label: z.name, value: z._id }))}
+            onChange={setSelectedZone}
+            placeholder="Seleccionar zona..."
+          />
+        )}
+
+        {selectedZone && zones.find((z) => z._id === selectedZone)?.sections.length > 0 && (
+          <Picker
+            label="Sección"
+            value={selectedSection}
+            options={
+              zones
+                .find((z) => z._id === selectedZone)
+                ?.sections.map((s) => ({ label: s.name, value: s.id })) || []
+            }
+            onChange={setSelectedSection}
+            placeholder="Seleccionar sección..."
+          />
+        )}
 
         {/* Secciones de Control */}
         <ControlAcarreoSection items={controlAcarreo} onChange={setControlAcarreo} />
