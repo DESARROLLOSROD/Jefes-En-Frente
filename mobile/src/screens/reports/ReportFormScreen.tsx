@@ -48,7 +48,7 @@ const ReportFormScreen = () => {
   const [ubicacion, setUbicacion] = useState('');
   const [turno, setTurno] = useState<'primer' | 'segundo'>('primer');
   const [inicioActividades, setInicioActividades] = useState('');
-  const [terminoActividades, setTermino Actividades] = useState('');
+  const [terminoActividades, setTerminoActividades] = useState('');
   const [jefeFrente, setJefeFrente] = useState(user?.nombre || '');
   const [sobrestante, setSobrestante] = useState('');
   const [observaciones, setObservaciones] = useState('');
