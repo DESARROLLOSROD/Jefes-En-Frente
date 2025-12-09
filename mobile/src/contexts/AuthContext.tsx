@@ -62,7 +62,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const login = async (email: string, password: string) => {
     try {
+      console.log('🔐 Intentando login con:', email);
+      console.log('🌐 URL de la API:', ApiService);
+
       const response = await ApiService.login(email, password);
+
+      console.log('✅ Login exitoso');
 
       setToken(response.token);
       setUser(response.usuario);
@@ -79,9 +84,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         selectProject(response.proyectos[0]);
       }
     } catch (error: any) {
-      console.error('Error en login:', error);
+      console.error('❌ Error en login:', error);
+      console.error('❌ Error completo:', JSON.stringify(error, null, 2));
+      console.error('❌ Error.message:', error.message);
+      console.error('❌ Error.response:', error.response);
+
       throw new Error(
-        error.response?.data?.message || 'Error al iniciar sesión'
+        error.response?.data?.message || error.message || 'Error al iniciar sesión'
       );
     }
   };

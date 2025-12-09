@@ -29,10 +29,9 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "INTERNET",
-        "ACCESS_NETWORK_STATE",
-        "INTERNET",
         "ACCESS_NETWORK_STATE"
-      ]
+      ],
+      "usesCleartextTraffic": true
     },
     "web": {
       "favicon": "./assets/favicon.png"

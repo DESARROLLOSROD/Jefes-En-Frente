@@ -18,7 +18,9 @@
       "Bash(eas build:configure:*)",
       "Bash(eas init:*)",
       "Bash(eas project:init:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(dir:*)",
+      "Bash(npx expo start --clear)"
     ],
     "deny": [],
     "ask": []

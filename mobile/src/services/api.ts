@@ -49,18 +49,30 @@ class ApiService {
 
   // Autenticación
   async login(email: string, password: string): Promise<LoginResponse> {
-    const response = await this.api.post<{ success: boolean; data: { token: string; user: any } }>('/auth/login', {
-      email,
-      password,
-    });
+    console.log('📡 Haciendo POST a:', `${API_URL}/auth/login`);
+    console.log('📤 Datos:', { email, password: '***' });
 
-    // Transformar la respuesta de la API al formato esperado
-    const { data } = response.data;
-    return {
-      token: data.token,
-      usuario: data.user,
-      proyectos: data.user.proyectos || []
-    };
+    try {
+      const response = await this.api.post<{ success: boolean; data: { token: string; user: any } }>('/auth/login', {
+        email,
+        password,
+      });
+
+      console.log('✅ Respuesta recibida:', response.status);
+
+      // Transformar la respuesta de la API al formato esperado
+      const { data } = response.data;
+      return {
+        token: data.token,
+        usuario: data.user,
+        proyectos: data.user.proyectos || []
+      };
+    } catch (error: any) {
+      console.error('❌ Error en ApiService.login:', error.message);
+      console.error('❌ Error.code:', error.code);
+      console.error('❌ Error.config:', error.config?.url);
+      throw error;
+    }
   }
 
   async getProyectosDisponibles(): Promise<Proyecto[]> {
