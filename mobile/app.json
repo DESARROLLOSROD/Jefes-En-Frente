@@ -29,6 +29,8 @@
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "INTERNET",
         "ACCESS_NETWORK_STATE"
       ]
     },
@@ -41,6 +43,12 @@
         "projectId": "d6180a18-36e6-4a51-ba8e-b887c98fdb74"
       }
     },
-    "owner": "desarrollosrod"
+    "owner": "desarrollosrod",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/d6180a18-36e6-4a51-ba8e-b887c98fdb74"
+    }
   }
 }
