@@ -1,8 +1,8 @@
 // Configuración de la API
 // Cambia esta URL según tu entorno
-export const API_URL = __DEV__
-  ? 'http://10.0.2.2:5000/api'  // Para emulador Android (desarrollo local)
-  : 'https://jefes-backend-production.up.railway.app/api'; // Railway production
+export const API_URL = 'https://jefes-backend-production.up.railway.app/api'; // Railway production
+// Para desarrollo local con emulador Android: 'http://10.0.2.2:5000/api'
+// Para desarrollo local con dispositivo físico: 'http://TU_IP_LOCAL:5000/api'
 
 // Timeout de inactividad (15 minutos en ms)
 export const INACTIVITY_TIMEOUT = 15 * 60 * 1000;
