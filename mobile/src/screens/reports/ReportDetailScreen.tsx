@@ -3,13 +3,16 @@ import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-nat
 import { useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import ApiService from '../../services/api';
-import { ReporteActividades } from '../../types';
+import { ReporteActividades, Proyecto } from '../../types';
 import { COLORS } from '../../constants/config';
+import MapPinSelector from '../../components/maps/MapPinSelector';
+import { useAuth } from '../../contexts/AuthContext';
 
 type ReportDetailRouteProp = RouteProp<RootStackParamList, 'ReportDetail'>;
 
 const ReportDetailScreen = () => {
   const route = useRoute<ReportDetailRouteProp>();
+  const { selectedProject } = useAuth();
   const [reporte, setReporte] = useState<ReporteActividades | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -59,6 +62,22 @@ const ReportDetailScreen = () => {
             <InfoRow label="Jefe de Frente" value={reporte.jefeFrente} />
             {reporte.sobrestante && <InfoRow label="Sobrestante" value={reporte.sobrestante} />}
           </>
+        )}
+
+        {/* Mapa con ubicación */}
+        {reporte.ubicacionMapa && selectedProject?.mapa && (
+          <View style={styles.mapSection}>
+            <MapPinSelector
+              mapaBase64={selectedProject.mapa.imagen.data}
+              pin={{
+                pinX: reporte.ubicacionMapa.pinX,
+                pinY: reporte.ubicacionMapa.pinY,
+              }}
+              onPinChange={() => {}}
+              onPinRemove={() => {}}
+              readOnly={true}
+            />
+          </View>
         )}
 
         {reporte.observaciones && (
@@ -122,6 +141,9 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
     padding: 12,
     borderRadius: 8,
+  },
+  mapSection: {
+    marginVertical: 8,
   },
   errorText: {
     fontSize: 16,

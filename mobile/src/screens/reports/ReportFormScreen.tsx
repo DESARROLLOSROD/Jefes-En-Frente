@@ -28,6 +28,7 @@ import ControlAcarreoSection from '../../components/reports/ControlAcarreoSectio
 import ControlMaterialSection from '../../components/reports/ControlMaterialSection';
 import ControlAguaSection from '../../components/reports/ControlAguaSection';
 import ControlMaquinariaSection from '../../components/reports/ControlMaquinariaSection';
+import MapPinSelector from '../../components/maps/MapPinSelector';
 
 type ReportFormNavigationProp = StackNavigationProp<RootStackParamList, 'ReportForm'>;
 type ReportFormRouteProp = RouteProp<RootStackParamList, 'ReportForm'>;
@@ -58,6 +59,9 @@ const ReportFormScreen = () => {
   const [controlMaterial, setControlMaterial] = useState<ControlMaterial[]>([]);
   const [controlAgua, setControlAgua] = useState<ControlAgua[]>([]);
   const [controlMaquinaria, setControlMaquinaria] = useState<ControlMaquinaria[]>([]);
+
+  // Estado para mapa
+  const [mapPin, setMapPin] = useState<{ pinX: number; pinY: number } | null>(null);
 
   useEffect(() => {
     loadInitialData();
@@ -105,6 +109,14 @@ const ReportFormScreen = () => {
         controlMaquinaria,
         pinesMapa: [],
       };
+
+      // Agregar ubicación del mapa si existe
+      if (mapPin) {
+        reporte.ubicacionMapa = {
+          pinX: mapPin.pinX,
+          pinY: mapPin.pinY,
+        };
+      }
 
       if (selectedZone) {
         const zone = zones.find((z) => z._id === selectedZone);
@@ -232,6 +244,16 @@ const ReportFormScreen = () => {
         <ControlAguaSection items={controlAgua} onChange={setControlAgua} />
 
         <ControlMaquinariaSection items={controlMaquinaria} onChange={setControlMaquinaria} />
+
+        {/* Mapa */}
+        {selectedProject?.mapa && (
+          <MapPinSelector
+            mapaBase64={selectedProject.mapa.imagen.data}
+            pin={mapPin || undefined}
+            onPinChange={(x, y) => setMapPin({ pinX: x, pinY: y })}
+            onPinRemove={() => setMapPin(null)}
+          />
+        )}
 
         <Text style={styles.sectionTitle}>Observaciones</Text>
 
