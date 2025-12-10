@@ -69,6 +69,15 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        // Validar capacidad para CAMIÓN y PIPA
+        const tipoUpper = formData.tipo.toUpperCase();
+        const esCamionOPipa = tipoUpper.includes('CAMION') || tipoUpper.includes('PIPA');
+
+        if (esCamionOPipa && !formData.capacidad.trim()) {
+            mostrarMensaje('LA CAPACIDAD ES OBLIGATORIA PARA VEHÍCULOS TIPO CAMIÓN O PIPA');
+            return;
+        }
+
         // Verificar si el tipo de vehículo existe
         let tipoFinal = formData.tipo;
         if (tipoFinal) {
@@ -334,11 +343,15 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                         placeholder="NO. ECONÓMICO"
                                     />
                                 </div>
-                                {/* Capacidad (opcional para CAMIÓN y PIPA) */}
+                                {/* Capacidad (obligatorio para CAMIÓN y PIPA) */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         CAPACIDAD (M³)
-                                        <span className="text-xs text-orange-500 ml-2">(OPCIONAL - REQUERIDO PARA CAMIÓN Y PIPA)</span>
+                                        {(formData.tipo.toUpperCase().includes('CAMION') || formData.tipo.toUpperCase().includes('PIPA')) ? (
+                                            <span className="text-red-500"> *</span>
+                                        ) : (
+                                            <span className="text-xs text-gray-500 ml-2">(OPCIONAL)</span>
+                                        )}
                                     </label>
                                     <input
                                         type="text"
@@ -349,7 +362,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                     />
                                     <p className="text-xs text-gray-500 mt-1">
                                         {(formData.tipo.toUpperCase().includes('CAMION') || formData.tipo.toUpperCase().includes('PIPA')) ? (
-                                            <span className="text-orange-600 font-semibold">✓ Este campo se usará en reportes de Control de Acarreo/Agua</span>
+                                            <span className="text-orange-600 font-semibold">⚠️ OBLIGATORIO - Se usará en reportes de Control de Acarreo/Agua</span>
                                         ) : (
                                             <span>Solo necesario para vehículos tipo CAMIÓN o PIPA</span>
                                         )}
