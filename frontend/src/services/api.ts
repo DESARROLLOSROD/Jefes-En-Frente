@@ -8,9 +8,10 @@ export const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // IMPORTANTE: Enviar cookies automáticamente
 });
 
-// Interceptor to add auth token automatically
+// Interceptor to add auth token automatically (fallback para compatibilidad)
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
@@ -19,16 +20,94 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Interceptor to handle authentication errors
+// Variable para evitar múltiples refreshes simultáneos
+let isRefreshing = false;
+let failedQueue: any[] = [];
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
+
+// Interceptor to handle authentication errors and auto-refresh
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
+  async (error) => {
+    const originalRequest = error.config;
+
+    // Si es error 401 y tiene código TOKEN_EXPIRED, intentar refresh
+    if (error.response?.status === 401 && error.response?.data?.code === 'TOKEN_EXPIRED' && !originalRequest._retry) {
+      if (isRefreshing) {
+        // Si ya se está refrescando, agregar a la cola
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            if (token) {
+              originalRequest.headers.Authorization = `Bearer ${token}`;
+            }
+            return axios(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
+      }
+
+      originalRequest._retry = true;
+      isRefreshing = true;
+
+      try {
+        // Intentar obtener nuevo access token con refresh token
+        const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {}, {
+          withCredentials: true
+        });
+
+        if (response.data.success && response.data.data.token) {
+          const newToken = response.data.data.token;
+
+          // Actualizar localStorage (compatibilidad)
+          localStorage.setItem('token', newToken);
+          if (response.data.data.user) {
+            localStorage.setItem('user', JSON.stringify(response.data.data.user));
+          }
+
+          // Actualizar header del request original
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+
+          processQueue(null, newToken);
+          isRefreshing = false;
+
+          // Reintentar el request original
+          return axios(originalRequest);
+        }
+      } catch (refreshError) {
+        processQueue(refreshError, null);
+        isRefreshing = false;
+
+        // Si falla el refresh, hacer logout
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('proyecto');
+        window.location.href = '/login';
+
+        return Promise.reject(refreshError);
+      }
+    }
+
+    // Para otros errores 401 (sin código TOKEN_EXPIRED), hacer logout directo
+    if (error.response?.status === 401 && error.response?.data?.code !== 'TOKEN_EXPIRED') {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       localStorage.removeItem('proyecto');
       window.location.href = '/login';
     }
+
     return Promise.reject(error);
   }
 );

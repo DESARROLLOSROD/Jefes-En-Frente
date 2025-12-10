@@ -2,21 +2,16 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import Usuario from '../models/Usuario.js';
 import Proyecto from '../models/Proyecto.js';
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken, revokeRefreshToken, setAuthCookies, clearAuthCookies } from '../middleware/auth.js';
+import { validateLogin } from '../middleware/validators.js';
+import { loginLimiter } from '../middleware/rateLimiter.js';
 const router = express.Router();
 const JWT_SECRET = process.env.JWT_SECRET || 'jefesenfrente_secret_2024';
-// Login con debug
-router.post('/login', async (req, res) => {
+// Login con soporte de cookies y refresh tokens
+router.post('/login', loginLimiter, validateLogin, async (req, res) => {
     try {
         const { email, password } = req.body;
         console.log('🔐 Intentando login para:', email);
-        if (!email || !password) {
-            console.log('❌ Campos faltantes');
-            const response = {
-                success: false,
-                error: 'Email y password son requeridos'
-            };
-            return res.status(400).json(response);
-        }
         // Buscar usuario con debug
         console.log('📋 Buscando usuario en la base de datos...');
         const usuario = await Usuario.findOne({ email, activo: true })
@@ -42,17 +37,23 @@ router.post('/login', async (req, res) => {
             return res.status(401).json(response);
         }
         console.log('✅ Password válido');
-        // Generar token
-        const token = jwt.sign({
-            userId: usuario._id,
+        // Generar tokens
+        const accessToken = generateAccessToken({
+            userId: usuario._id.toString(),
             email: usuario.email,
-            rol: usuario.rol
-        }, JWT_SECRET, { expiresIn: '24h' });
-        console.log('✅ Token generado para:', usuario.nombre);
+            rol: usuario.rol,
+            proyectos: usuario.proyectos.map((p) => p._id.toString())
+        });
+        // Obtener información del dispositivo
+        const deviceInfo = req.headers['user-agent'] || 'Unknown';
+        const refreshToken = await generateRefreshToken(usuario._id.toString(), deviceInfo);
+        console.log('✅ Tokens generados para:', usuario.nombre);
+        // Configurar cookies httpOnly
+        setAuthCookies(res, accessToken, refreshToken);
         const response = {
             success: true,
             data: {
-                token,
+                token: accessToken, // Mantener compatibilidad con clientes que usan headers
                 user: {
                     _id: usuario._id,
                     nombre: usuario.nombre,
@@ -72,6 +73,87 @@ router.post('/login', async (req, res) => {
             error: 'Error interno del servidor'
         };
         res.status(500).json(response);
+    }
+});
+// Endpoint para renovar access token usando refresh token
+router.post('/refresh', async (req, res) => {
+    try {
+        // Obtener refresh token desde cookie o body
+        const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
+        if (!refreshToken) {
+            return res.status(401).json({
+                success: false,
+                error: 'Refresh token requerido'
+            });
+        }
+        // Verificar refresh token
+        const tokenData = await verifyRefreshToken(refreshToken);
+        const usuario = await Usuario.findById(tokenData.userId)
+            .populate('proyectos', 'nombre ubicacion descripcion');
+        if (!usuario || !usuario.activo) {
+            return res.status(401).json({
+                success: false,
+                error: 'Usuario no válido'
+            });
+        }
+        // Generar nuevo access token
+        const accessToken = generateAccessToken({
+            userId: usuario._id.toString(),
+            email: usuario.email,
+            rol: usuario.rol,
+            proyectos: usuario.proyectos.map((p) => p._id.toString())
+        });
+        // Configurar cookie de access token
+        const isProduction = process.env.NODE_ENV === 'production';
+        res.cookie('accessToken', accessToken, {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: 'strict',
+            maxAge: 15 * 60 * 1000 // 15 minutos
+        });
+        res.json({
+            success: true,
+            data: {
+                token: accessToken,
+                user: {
+                    _id: usuario._id,
+                    nombre: usuario.nombre,
+                    email: usuario.email,
+                    rol: usuario.rol,
+                    proyectos: usuario.proyectos
+                }
+            }
+        });
+    }
+    catch (error) {
+        console.error('Error en /auth/refresh:', error);
+        res.status(401).json({
+            success: false,
+            error: 'Refresh token inválido o expirado'
+        });
+    }
+});
+// Endpoint para logout
+router.post('/logout', async (req, res) => {
+    try {
+        const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
+        if (refreshToken) {
+            // Revocar refresh token
+            await revokeRefreshToken(refreshToken);
+        }
+        // Limpiar cookies
+        clearAuthCookies(res);
+        res.json({
+            success: true,
+            message: 'Logout exitoso'
+        });
+    }
+    catch (error) {
+        console.error('Error en /auth/logout:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al hacer logout'
+        });
     }
 });
 // Obtener proyectos
