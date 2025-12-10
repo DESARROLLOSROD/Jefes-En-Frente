@@ -7,6 +7,7 @@ export interface IVehiculo extends Document {
     horometroFinal?: number;
     horasOperacion: number;
     noEconomico: string;
+    capacidad?: string; // Capacidad en M³ para CAMIÓN y PIPA
     proyectos: Schema.Types.ObjectId[];
     activo: boolean;
     fechaCreacion: Date;
@@ -43,6 +44,10 @@ const vehiculoSchema = new Schema<IVehiculo>({
         unique: true,
         trim: true,
         uppercase: true
+    },
+    capacidad: {
+        type: String,
+        trim: true
     },
     proyectos: {
         type: [Schema.Types.ObjectId],

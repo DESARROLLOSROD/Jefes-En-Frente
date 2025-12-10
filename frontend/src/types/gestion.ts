@@ -30,6 +30,7 @@ export interface Vehiculo {
     horometroFinal?: number;
     horasOperacion: number;
     noEconomico: string;
+    capacidad?: string; // ✨ NUEVO - Capacidad en M³ para CAMIÓN y PIPA
     proyectos: string[] | Proyecto[]; // ✨ NUEVO
     activo: boolean;
     fechaCreacion: string;

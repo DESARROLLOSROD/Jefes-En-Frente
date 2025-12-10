@@ -31,6 +31,10 @@ const vehiculoSchema = new Schema({
         trim: true,
         uppercase: true
     },
+    capacidad: {
+        type: String,
+        trim: true
+    },
     proyectos: {
         type: [Schema.Types.ObjectId],
         ref: 'Proyecto',

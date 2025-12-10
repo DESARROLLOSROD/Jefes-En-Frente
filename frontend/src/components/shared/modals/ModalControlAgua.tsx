@@ -114,9 +114,8 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
     if (vehiculo) {
       setVehiculoSeleccionado(vehiculo);
 
-      // Buscar la capacidad del vehículo (si está definida)
-      // Si no tiene, dejar que el usuario la ingrese manualmente
-      const capacidad = vehiculo.nombre.match(/(\d+)\s*M³/i)?.[1] || '';
+      // Usar la capacidad del vehículo directamente si está definida, o extraerla del nombre como fallback
+      const capacidad = vehiculo.capacidad || vehiculo.nombre.match(/(\d+)\s*M³/i)?.[1] || '';
 
       setFormData(prev => ({
         ...prev,

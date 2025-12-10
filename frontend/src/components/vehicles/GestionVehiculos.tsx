@@ -28,6 +28,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
         horometroFinal: 0,
         horasOperacion: 0,
         noEconomico: '',
+        capacidad: '' as string,
         proyectos: [] as string[],
     });
 
@@ -133,6 +134,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                 horometroFinal: vehiculo.horometroFinal || 0,
                 horasOperacion: vehiculo.horasOperacion || 0,
                 noEconomico: vehiculo.noEconomico,
+                capacidad: vehiculo.capacidad || '',
                 proyectos: Array.isArray(vehiculo.proyectos) ? vehiculo.proyectos.map(p => typeof p === 'string' ? p : p._id) : [],
             });
         } else {
@@ -145,6 +147,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                 horometroFinal: 0,
                 horasOperacion: 0,
                 noEconomico: '',
+                capacidad: '',
                 proyectos: [],
             });
         }
@@ -331,6 +334,25 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                         placeholder="NO. ECONÓMICO"
                                     />
                                 </div>
+                                {/* Capacidad (solo para CAMIÓN y PIPA) */}
+                                {(formData.tipo.toUpperCase().includes('CAMION') || formData.tipo.toUpperCase().includes('PIPA')) && (
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                                            CAPACIDAD (M³)
+                                            <span className="text-xs text-gray-500 ml-2">(PARA CAMIÓN Y PIPA)</span>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={formData.capacidad}
+                                            onChange={e => setFormData({ ...formData, capacidad: e.target.value })}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                                            placeholder="EJ: 7, 10, 14"
+                                        />
+                                        <p className="text-xs text-gray-500 mt-1">
+                                            SE USARÁ EN REPORTES DE CONTROL DE ACARREO Y AGUA
+                                        </p>
+                                    </div>
+                                )}
                                 {/* Horómetro Inicial */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">

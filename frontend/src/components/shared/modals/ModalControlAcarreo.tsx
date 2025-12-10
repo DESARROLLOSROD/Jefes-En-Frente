@@ -129,8 +129,8 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
     if (vehiculo) {
       setVehiculoSeleccionado(vehiculo);
 
-      // Buscar la capacidad del vehículo (si está definida)
-      const capacidad = vehiculo.nombre.match(/(\d+)\s*M³/i)?.[1] || '';
+      // Usar la capacidad del vehículo directamente si está definida, o extraerla del nombre como fallback
+      const capacidad = vehiculo.capacidad || vehiculo.nombre.match(/(\d+)\s*M³/i)?.[1] || '';
 
       setFormData(prev => ({
         ...prev,
