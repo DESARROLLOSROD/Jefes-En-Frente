@@ -163,7 +163,6 @@ const ReportFormScreen = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        {/* Header con nombre del proyecto */}
         {selectedProject && (
           <View style={styles.projectHeader}>
             <Text style={styles.projectTitle}>REPORTE DE ACTIVIDADES</Text>
