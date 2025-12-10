@@ -334,25 +334,27 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                         placeholder="NO. ECONÓMICO"
                                     />
                                 </div>
-                                {/* Capacidad (solo para CAMIÓN y PIPA) */}
-                                {(formData.tipo.toUpperCase().includes('CAMION') || formData.tipo.toUpperCase().includes('PIPA')) && (
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            CAPACIDAD (M³)
-                                            <span className="text-xs text-gray-500 ml-2">(PARA CAMIÓN Y PIPA)</span>
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={formData.capacidad}
-                                            onChange={e => setFormData({ ...formData, capacidad: e.target.value })}
-                                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
-                                            placeholder="EJ: 7, 10, 14"
-                                        />
-                                        <p className="text-xs text-gray-500 mt-1">
-                                            SE USARÁ EN REPORTES DE CONTROL DE ACARREO Y AGUA
-                                        </p>
-                                    </div>
-                                )}
+                                {/* Capacidad (opcional para CAMIÓN y PIPA) */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        CAPACIDAD (M³)
+                                        <span className="text-xs text-orange-500 ml-2">(OPCIONAL - REQUERIDO PARA CAMIÓN Y PIPA)</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.capacidad}
+                                        onChange={e => setFormData({ ...formData, capacidad: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                                        placeholder="EJ: 7, 10, 14"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        {(formData.tipo.toUpperCase().includes('CAMION') || formData.tipo.toUpperCase().includes('PIPA')) ? (
+                                            <span className="text-orange-600 font-semibold">✓ Este campo se usará en reportes de Control de Acarreo/Agua</span>
+                                        ) : (
+                                            <span>Solo necesario para vehículos tipo CAMIÓN o PIPA</span>
+                                        )}
+                                    </p>
+                                </div>
                                 {/* Horómetro Inicial */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
