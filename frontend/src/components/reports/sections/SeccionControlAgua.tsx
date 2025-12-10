@@ -5,11 +5,13 @@ import ModalControlAgua from '../../shared/modals/ModalControlAgua';
 interface SeccionControlAguaProps {
   aguas: ControlAgua[];
   onAguasChange: (aguas: ControlAgua[]) => void;
+  proyectoId?: string;
 }
 
 const SeccionControlAgua: React.FC<SeccionControlAguaProps> = ({
   aguas,
-  onAguasChange
+  onAguasChange,
+  proyectoId
 }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [aguaEditando, setAguaEditando] = useState<{
@@ -145,6 +147,7 @@ const SeccionControlAgua: React.FC<SeccionControlAguaProps> = ({
         onSave={handleGuardar}
         aguaInicial={aguaEditando?.data || null}
         title={aguaEditando !== null ? 'EDITAR CONTROL DE AGUA' : 'AGREGAR CONTROL DE AGUA'}
+        proyectoId={proyectoId}
       />
     </div>
   );

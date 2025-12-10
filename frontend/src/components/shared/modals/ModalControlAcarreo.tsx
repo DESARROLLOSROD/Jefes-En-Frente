@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ControlAcarreo, IMaterialCatalog, ICapacidadCatalog } from '../../../types/reporte';
+import { Vehiculo } from '../../../types/gestion';
 import AutocompleteInput from '../AutocompleteInput';
 import { ORIGENES, DESTINOS } from '../../../constants/reporteConstants';
+import { vehiculoService } from '../../../services/api';
 
 interface ModalControlAcarreoProps {
   isOpen: boolean;
@@ -13,6 +15,7 @@ interface ModalControlAcarreoProps {
   onCrearMaterial: (nombre: string) => Promise<IMaterialCatalog | null>;
   listaCapacidades: ICapacidadCatalog[];
   onCrearCapacidad: (valor: string) => Promise<ICapacidadCatalog | null>;
+  proyectoId?: string;
 }
 
 const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
@@ -24,7 +27,8 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
   listaMateriales,
   onCrearMaterial,
   listaCapacidades,
-  onCrearCapacidad
+  onCrearCapacidad,
+  proyectoId
 }) => {
   const [formData, setFormData] = useState<ControlAcarreo>({
     material: '',
@@ -39,10 +43,41 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [vehiculosCamion, setVehiculosCamion] = useState<Vehiculo[]>([]);
+  const [loadingVehiculos, setLoadingVehiculos] = useState(false);
+  const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState<Vehiculo | null>(null);
+
+  // Cargar vehículos tipo CAMIÓN cuando se abre el modal
+  useEffect(() => {
+    const cargarVehiculos = async () => {
+      if (isOpen && proyectoId) {
+        setLoadingVehiculos(true);
+        try {
+          const response = await vehiculoService.obtenerVehiculosPorProyecto(proyectoId);
+          if (response.success && response.data) {
+            // Filtrar solo vehículos tipo "CAMIÓN" o que contengan "CAMION" en el tipo
+            const camiones = response.data.filter(v =>
+              v.tipo.toUpperCase().includes('CAMION') && v.activo
+            );
+            setVehiculosCamion(camiones);
+          }
+        } catch (error) {
+          console.error('Error al cargar vehículos:', error);
+        } finally {
+          setLoadingVehiculos(false);
+        }
+      }
+    };
+
+    cargarVehiculos();
+  }, [isOpen, proyectoId]);
 
   useEffect(() => {
     if (acarreoInicial) {
       setFormData(acarreoInicial);
+      // Buscar el vehículo seleccionado si existe
+      const vehiculo = vehiculosCamion.find(v => v.noEconomico === acarreoInicial.capaNo);
+      setVehiculoSeleccionado(vehiculo || null);
     } else {
       // Reset form when modal opens without initial data
       setFormData({
@@ -55,9 +90,10 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
         capaOrigen: '',
         destino: ''
       });
+      setVehiculoSeleccionado(null);
     }
     setErrors({});
-  }, [acarreoInicial, isOpen]);
+  }, [acarreoInicial, isOpen, vehiculosCamion]);
 
   // Cálculo automático reactivo: No. Viajes × Capacidad = Volumen Suelto
   useEffect(() => {
@@ -79,6 +115,33 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
     // Limpiar error del campo al modificarlo
     if (errors[campo]) {
       setErrors(prev => ({ ...prev, [campo]: '' }));
+    }
+  };
+
+  const handleVehiculoChange = (vehiculoId: string) => {
+    if (!vehiculoId) {
+      setVehiculoSeleccionado(null);
+      setFormData(prev => ({ ...prev, capaNo: '', capacidad: '' }));
+      return;
+    }
+
+    const vehiculo = vehiculosCamion.find(v => v._id === vehiculoId);
+    if (vehiculo) {
+      setVehiculoSeleccionado(vehiculo);
+
+      // Buscar la capacidad del vehículo (si está definida)
+      const capacidad = vehiculo.nombre.match(/(\d+)\s*M³/i)?.[1] || '';
+
+      setFormData(prev => ({
+        ...prev,
+        capaNo: vehiculo.noEconomico,
+        capacidad: capacidad
+      }));
+
+      // Limpiar errores
+      if (errors.capaNo) {
+        setErrors(prev => ({ ...prev, capaNo: '' }));
+      }
     }
   };
 
@@ -245,18 +308,48 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
               </p>
             </div>
 
-            {/* Capa No. */}
-            <div>
+            {/* Vehículo (Camión) */}
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                CAPA NO.
+                VEHÍCULO (CAMIÓN)
               </label>
-              <input
-                type="text"
-                value={formData.capaNo}
-                onChange={(e) => handleChange('capaNo', e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
-                placeholder="EJ: CAPA 1, CAPA 2..."
-              />
+              {loadingVehiculos ? (
+                <div className="w-full border border-gray-300 rounded px-3 py-2 bg-gray-50 text-gray-500">
+                  Cargando vehículos...
+                </div>
+              ) : vehiculosCamion.length === 0 ? (
+                <div className="w-full border border-yellow-300 bg-yellow-50 rounded px-3 py-2 text-yellow-700">
+                  ⚠️ No hay vehículos tipo CAMIÓN registrados en este proyecto.
+                  <br />
+                  <span className="text-xs">Puede agregar vehículos desde la sección de Gestión de Vehículos.</span>
+                </div>
+              ) : (
+                <select
+                  value={vehiculoSeleccionado?._id || ''}
+                  onChange={(e) => handleVehiculoChange(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">SELECCIONE UN VEHÍCULO...</option>
+                  {vehiculosCamion.map(vehiculo => (
+                    <option key={vehiculo._id} value={vehiculo._id}>
+                      {vehiculo.noEconomico} - {vehiculo.nombre} ({vehiculo.tipo})
+                    </option>
+                  ))}
+                </select>
+              )}
+              {vehiculoSeleccionado && (
+                <div className="mt-2 p-3 bg-blue-50 border border-blue-200 rounded">
+                  <p className="text-sm text-gray-700">
+                    <span className="font-semibold">Vehículo seleccionado:</span> {vehiculoSeleccionado.nombre}
+                  </p>
+                  <p className="text-sm text-gray-700">
+                    <span className="font-semibold">No. Económico:</span> {vehiculoSeleccionado.noEconomico}
+                  </p>
+                  <p className="text-sm text-gray-700">
+                    <span className="font-semibold">Tipo:</span> {vehiculoSeleccionado.tipo}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Elevación Ariza */}

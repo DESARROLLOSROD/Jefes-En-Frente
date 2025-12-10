@@ -10,11 +10,13 @@ import { capacidadService } from '../../../services/capacidadService';
 interface SeccionControlAcarreoProps {
   acarreos: ControlAcarreo[];
   onAcarreosChange: (acarreos: ControlAcarreo[]) => void;
+  proyectoId?: string;
 }
 
 const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
   acarreos,
-  onAcarreosChange
+  onAcarreosChange,
+  proyectoId
 }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [acarreoEditando, setAcarreoEditando] = useState<{
@@ -225,6 +227,7 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
         onCrearMaterial={handleCrearMaterial}
         listaCapacidades={listaCapacidades}
         onCrearCapacidad={handleCrearCapacidad}
+        proyectoId={proyectoId}
       />
 
       {/* Modal Confirmación */}

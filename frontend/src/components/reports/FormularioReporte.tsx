@@ -533,6 +533,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
         <SeccionControlAcarreo
           acarreos={formData.controlAcarreo}
           onAcarreosChange={(acarreos) => setFormData(prev => ({ ...prev, controlAcarreo: acarreos }))}
+          proyectoId={proyecto?._id}
         />
 
         {/* SECCIÓN 3: CONTROL DE MATERIAL (NUEVO COMPONENTE MODULAR) */}
@@ -545,6 +546,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
         <SeccionControlAgua
           aguas={formData.controlAgua}
           onAguasChange={(aguas) => setFormData(prev => ({ ...prev, controlAgua: aguas }))}
+          proyectoId={proyecto?._id}
         />
 
         {/* SECCIÓN 5: CONTROL DE MAQUINARIA */}

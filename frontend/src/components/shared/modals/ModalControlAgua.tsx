@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ControlAgua } from '../../../types/reporte';
+import { Vehiculo } from '../../../types/gestion';
 import AutocompleteInput from '../AutocompleteInput';
-import { ORIGENES, DESTINOS, CAPACIDADES_CAMION } from '../../../constants/reporteConstants';
+import { ORIGENES, DESTINOS } from '../../../constants/reporteConstants';
+import { vehiculoService } from '../../../services/api';
 
 interface ModalControlAguaProps {
   isOpen: boolean;
@@ -9,6 +11,7 @@ interface ModalControlAguaProps {
   onSave: (agua: ControlAgua) => void;
   aguaInicial?: ControlAgua | null;
   title?: string;
+  proyectoId?: string;
 }
 
 const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
@@ -16,7 +19,8 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
   onClose,
   onSave,
   aguaInicial,
-  title = 'AGREGAR CONTROL DE AGUA'
+  title = 'AGREGAR CONTROL DE AGUA',
+  proyectoId
 }) => {
   const [formData, setFormData] = useState<ControlAgua>({
     noEconomico: '',
@@ -28,10 +32,41 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [vehiculosPipa, setVehiculosPipa] = useState<Vehiculo[]>([]);
+  const [loadingVehiculos, setLoadingVehiculos] = useState(false);
+  const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState<Vehiculo | null>(null);
+
+  // Cargar vehículos tipo Pipa cuando se abre el modal
+  useEffect(() => {
+    const cargarVehiculos = async () => {
+      if (isOpen && proyectoId) {
+        setLoadingVehiculos(true);
+        try {
+          const response = await vehiculoService.obtenerVehiculosPorProyecto(proyectoId);
+          if (response.success && response.data) {
+            // Filtrar solo vehículos tipo "PIPA" o que contengan "PIPA" en el tipo
+            const pipas = response.data.filter(v =>
+              v.tipo.toUpperCase().includes('PIPA') && v.activo
+            );
+            setVehiculosPipa(pipas);
+          }
+        } catch (error) {
+          console.error('Error al cargar vehículos:', error);
+        } finally {
+          setLoadingVehiculos(false);
+        }
+      }
+    };
+
+    cargarVehiculos();
+  }, [isOpen, proyectoId]);
 
   useEffect(() => {
     if (aguaInicial) {
       setFormData(aguaInicial);
+      // Buscar el vehículo seleccionado si existe
+      const vehiculo = vehiculosPipa.find(v => v.noEconomico === aguaInicial.noEconomico);
+      setVehiculoSeleccionado(vehiculo || null);
     } else {
       setFormData({
         noEconomico: '',
@@ -41,9 +76,10 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
         origen: '',
         destino: ''
       });
+      setVehiculoSeleccionado(null);
     }
     setErrors({});
-  }, [aguaInicial, isOpen]);
+  }, [aguaInicial, isOpen, vehiculosPipa]);
 
   // Cálculo automático reactivo: Viajes × Capacidad = Volumen
   useEffect(() => {
@@ -64,6 +100,34 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
     setFormData(prev => ({ ...prev, [campo]: valorFinal }));
     if (errors[campo]) {
       setErrors(prev => ({ ...prev, [campo]: '' }));
+    }
+  };
+
+  const handleVehiculoChange = (vehiculoId: string) => {
+    if (!vehiculoId) {
+      setVehiculoSeleccionado(null);
+      setFormData(prev => ({ ...prev, noEconomico: '', capacidad: '' }));
+      return;
+    }
+
+    const vehiculo = vehiculosPipa.find(v => v._id === vehiculoId);
+    if (vehiculo) {
+      setVehiculoSeleccionado(vehiculo);
+
+      // Buscar la capacidad del vehículo (si está definida)
+      // Si no tiene, dejar que el usuario la ingrese manualmente
+      const capacidad = vehiculo.nombre.match(/(\d+)\s*M³/i)?.[1] || '';
+
+      setFormData(prev => ({
+        ...prev,
+        noEconomico: vehiculo.noEconomico,
+        capacidad: capacidad
+      }));
+
+      // Limpiar errores
+      if (errors.noEconomico) {
+        setErrors(prev => ({ ...prev, noEconomico: '' }));
+      }
     }
   };
 
@@ -126,20 +190,50 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
         {/* Body */}
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* No. Económico */}
-            <div>
+            {/* Selección de Vehículo (Pipa) */}
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                NO. ECONÓMICO <span className="text-red-500">*</span>
+                VEHÍCULO (PIPA) <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                value={formData.noEconomico}
-                onChange={(e) => handleChange('noEconomico', e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500 uppercase"
-                placeholder="EJ: 001, A-123..."
-              />
+              {loadingVehiculos ? (
+                <div className="w-full border border-gray-300 rounded px-3 py-2 bg-gray-50 text-gray-500">
+                  Cargando vehículos...
+                </div>
+              ) : vehiculosPipa.length === 0 ? (
+                <div className="w-full border border-yellow-300 bg-yellow-50 rounded px-3 py-2 text-yellow-700">
+                  ⚠️ No hay vehículos tipo PIPA registrados en este proyecto.
+                  <br />
+                  <span className="text-xs">Puede agregar vehículos desde la sección de Gestión de Vehículos.</span>
+                </div>
+              ) : (
+                <select
+                  value={vehiculoSeleccionado?._id || ''}
+                  onChange={(e) => handleVehiculoChange(e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                >
+                  <option value="">SELECCIONE UN VEHÍCULO...</option>
+                  {vehiculosPipa.map(vehiculo => (
+                    <option key={vehiculo._id} value={vehiculo._id}>
+                      {vehiculo.noEconomico} - {vehiculo.nombre} ({vehiculo.tipo})
+                    </option>
+                  ))}
+                </select>
+              )}
               {errors.noEconomico && (
                 <p className="text-red-500 text-xs mt-1">{errors.noEconomico}</p>
+              )}
+              {vehiculoSeleccionado && (
+                <div className="mt-2 p-3 bg-cyan-50 border border-cyan-200 rounded">
+                  <p className="text-sm text-gray-700">
+                    <span className="font-semibold">Vehículo seleccionado:</span> {vehiculoSeleccionado.nombre}
+                  </p>
+                  <p className="text-sm text-gray-700">
+                    <span className="font-semibold">No. Económico:</span> {vehiculoSeleccionado.noEconomico}
+                  </p>
+                  <p className="text-sm text-gray-700">
+                    <span className="font-semibold">Tipo:</span> {vehiculoSeleccionado.tipo}
+                  </p>
+                </div>
               )}
             </div>
 
@@ -163,17 +257,24 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
 
             {/* Capacidad */}
             <div>
-              <AutocompleteInput
-                label="CAPACIDAD (M³)"
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                CAPACIDAD (M³) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="number"
                 value={formData.capacidad}
-                onChange={(value) => handleChange('capacidad', value)}
-                options={CAPACIDADES_CAMION}
-                placeholder="SELECCIONE CAPACIDAD..."
-                required
+                onChange={(e) => handleChange('capacidad', e.target.value)}
+                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                placeholder="0"
+                min="0"
+                step="0.01"
               />
               {errors.capacidad && (
                 <p className="text-red-500 text-xs mt-1">{errors.capacidad}</p>
               )}
+              <p className="text-xs text-gray-500 mt-1">
+                Se llena automáticamente del vehículo o puede editarlo manualmente
+              </p>
             </div>
 
             {/* Volumen (Calculado automáticamente) */}
