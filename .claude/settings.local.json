@@ -25,7 +25,8 @@
       "Bash(npm uninstall:*)",
       "Bash(netstat:*)",
       "Bash(findstr:*)",
-      "Bash(npx expo start:*)"
+      "Bash(npx expo start:*)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []

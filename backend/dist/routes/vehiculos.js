@@ -33,7 +33,7 @@ vehiculosRouter.get('/proyecto/:proyectoId', verificarAdminOSupervisor, async (r
 // Crear nuevo vehículo (admin o supervisor)
 vehiculosRouter.post('/', verificarAdminOSupervisor, async (req, res) => {
     try {
-        const { nombre, tipo, horometroInicial, horometroFinal, noEconomico, proyectos } = req.body;
+        const { nombre, tipo, horometroInicial, horometroFinal, noEconomico, capacidad, proyectos } = req.body;
         // Verificar si ya existe el número económico
         const vehiculoExistente = await Vehiculo.findOne({ noEconomico });
         if (vehiculoExistente) {
@@ -45,6 +45,7 @@ vehiculosRouter.post('/', verificarAdminOSupervisor, async (req, res) => {
             horometroInicial,
             horometroFinal,
             noEconomico,
+            capacidad,
             proyectos: proyectos || []
         });
         await nuevoVehiculo.save();
@@ -63,8 +64,8 @@ vehiculosRouter.post('/', verificarAdminOSupervisor, async (req, res) => {
 // Actualizar vehículo (solo admin)
 vehiculosRouter.put('/:id', verificarAdmin, async (req, res) => {
     try {
-        const { nombre, tipo, horometroInicial, horometroFinal, noEconomico, proyectos, activo } = req.body;
-        const vehiculoActualizado = await Vehiculo.findByIdAndUpdate(req.params.id, { nombre, tipo, horometroInicial, horometroFinal, noEconomico, proyectos, activo }, { new: true }).populate('proyectos', 'nombre ubicacion');
+        const { nombre, tipo, horometroInicial, horometroFinal, noEconomico, capacidad, proyectos, activo } = req.body;
+        const vehiculoActualizado = await Vehiculo.findByIdAndUpdate(req.params.id, { nombre, tipo, horometroInicial, horometroFinal, noEconomico, capacidad, proyectos, activo }, { new: true }).populate('proyectos', 'nombre ubicacion');
         if (!vehiculoActualizado) {
             return res.status(404).json({ message: 'Vehículo no encontrado' });
         }
