@@ -224,13 +224,13 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
               {vehiculoSeleccionado && (
                 <div className="mt-2 p-3 bg-cyan-50 border border-cyan-200 rounded">
                   <p className="text-sm text-gray-700">
-                    <span className="font-semibold">Vehículo seleccionado:</span> {vehiculoSeleccionado.nombre}
+                    <span className="font-semibold">Vehículo seleccionado:</span> {vehiculoSeleccionado.nombre.toUpperCase()}
                   </p>
                   <p className="text-sm text-gray-700">
-                    <span className="font-semibold">No. Económico:</span> {vehiculoSeleccionado.noEconomico}
+                    <span className="font-semibold">No. Económico:</span> {vehiculoSeleccionado.noEconomico.toUpperCase()}
                   </p>
                   <p className="text-sm text-gray-700">
-                    <span className="font-semibold">Tipo:</span> {vehiculoSeleccionado.tipo}
+                    <span className="font-semibold">Tipo:</span> {vehiculoSeleccionado.tipo.toUpperCase()}
                   </p>
                 </div>
               )}
