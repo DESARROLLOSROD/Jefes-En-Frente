@@ -132,6 +132,7 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">CAPACIDAD</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">VOL. SUELTO</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">CAPA</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">ELEVACION</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">ORIGEN</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">DESTINO</th>
               <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">ACCIONES</th>
@@ -147,6 +148,7 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
                   {acarreo.volSuelto || '0.00'} M³
                 </td>
                 <td className="px-4 py-3 text-sm text-gray-900">{acarreo.capaNo || '-'}</td>
+                <td className="px-4 py-3 text-sm text-gray-900">{acarreo.elevacionAriza || '-'}</td>
                 <td className="px-4 py-3 text-sm text-gray-900">{acarreo.capaOrigen || '-'}</td>
                 <td className="px-4 py-3 text-sm text-gray-900">{acarreo.destino || '-'}</td>
                 <td className="px-4 py-3 text-sm text-center">
