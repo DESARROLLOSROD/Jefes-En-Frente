@@ -243,10 +243,10 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
                 value={formData.capaNo}
                 onChange={(e) => handleChange('capaNo', e.target.value)}
                 className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
-                placeholder="INGRESE LA CAPA DEL VEHÍCULO..."
+                placeholder="INGRESE LA CAPA..."
               />
               <p className="text-xs text-gray-500 mt-1">
-                * Ingrese la capa del camión
+                * Ingrese la capa
               </p>
             </div>
 
