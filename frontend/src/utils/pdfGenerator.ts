@@ -319,7 +319,7 @@ export const generarPDFReporte = async (
 
         renderTable(
             "CONTROL DE ACARREOS",
-            [["Material", "No. Viaje", "Capacidad", "Vol. Suelto", "Capa", "Elevación", "Origen", "Destino"]],
+            [["Material", "No. Viaje", "Capacidad", "Vol. Suelto", "No.Economico", "Elevación", "Origen", "Destino"]],
             bodyAcarreo
         );
     }
