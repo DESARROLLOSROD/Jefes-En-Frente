@@ -275,17 +275,36 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
 
             {/* Capacidad */}
             <div>
-              <AutocompleteInput
-                label="CAPACIDAD (M³)"
-                value={formData.capacidad}
-                onChange={(value) => handleChange('capacidad', value)}
-                options={opcionesCapacidades}
-                placeholder="SELECCIONE CAPACIDAD..."
-                required
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                * Si la capacidad no existe, se le preguntará si desea agregarla.
-              </p>
+              {vehiculoSeleccionado && vehiculoSeleccionado.capacidad ? (
+                <>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    CAPACIDAD (M³) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.capacidad}
+                    readOnly
+                    className="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed font-semibold text-blue-600"
+                  />
+                  <p className="text-xs text-green-600 mt-1 font-semibold">
+                    ✓ Capacidad obtenida del vehículo seleccionado
+                  </p>
+                </>
+              ) : (
+                <>
+                  <AutocompleteInput
+                    label="CAPACIDAD (M³)"
+                    value={formData.capacidad}
+                    onChange={(value) => handleChange('capacidad', value)}
+                    options={opcionesCapacidades}
+                    placeholder="SELECCIONE CAPACIDAD..."
+                    required
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    * Si la capacidad no existe, se le preguntará si desea agregarla.
+                  </p>
+                </>
+              )}
               {errors.capacidad && (
                 <p className="text-red-500 text-xs mt-1">{errors.capacidad}</p>
               )}

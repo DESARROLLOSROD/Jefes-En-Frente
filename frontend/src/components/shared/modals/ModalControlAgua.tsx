@@ -259,15 +259,29 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 CAPACIDAD (M³) <span className="text-red-500">*</span>
               </label>
-              <input
-                type="number"
-                value={formData.capacidad}
-                onChange={(e) => handleChange('capacidad', e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
-                placeholder="0"
-                min="0"
-                step="0.01"
-              />
+              {vehiculoSeleccionado && vehiculoSeleccionado.capacidad ? (
+                <>
+                  <input
+                    type="text"
+                    value={formData.capacidad}
+                    readOnly
+                    className="w-full border border-gray-300 rounded px-3 py-2 bg-gray-100 cursor-not-allowed font-semibold text-cyan-600"
+                  />
+                  <p className="text-xs text-green-600 mt-1 font-semibold">
+                    ✓ Capacidad obtenida del vehículo seleccionado
+                  </p>
+                </>
+              ) : (
+                <input
+                  type="number"
+                  value={formData.capacidad}
+                  onChange={(e) => handleChange('capacidad', e.target.value)}
+                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  placeholder="0"
+                  min="0"
+                  step="0.01"
+                />
+              )}
               {errors.capacidad && (
                 <p className="text-red-500 text-xs mt-1">{errors.capacidad}</p>
               )}
