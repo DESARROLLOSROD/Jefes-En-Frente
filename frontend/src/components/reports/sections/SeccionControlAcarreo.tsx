@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { ControlAcarreo, IMaterialCatalog } from '../../../types/reporte';
+import { ControlAcarreo, IMaterialCatalog, ICapacidadCatalog } from '../../../types/reporte';
 import ModalControlAcarreo from '../../shared/modals/ModalControlAcarreo';
 import ModalConfirmacion from '../../shared/modals/ModalConfirmacion';
 import { materialService } from '../../../services/materialService';
+import { capacidadService } from '../../../services/capacidadService';
 
 
 interface SeccionControlAcarreoProps {
@@ -21,6 +22,7 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
   } | null>(null);
 
   const [listaMateriales, setListaMateriales] = useState<IMaterialCatalog[]>([]);
+  const [listaCapacidades, setListaCapacidades] = useState<ICapacidadCatalog[]>([]);
 
   // Estado para eliminación
   const [confirmacionOpen, setConfirmacionOpen] = useState(false);
@@ -37,6 +39,12 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
       if (responseMateriales.success && responseMateriales.data) {
         setListaMateriales(responseMateriales.data);
       }
+
+      // Cargar Capacidades
+      const responseCapacidades = await capacidadService.obtenerCapacidades();
+      if (responseCapacidades.success && responseCapacidades.data) {
+        setListaCapacidades(responseCapacidades.data);
+      }
     } catch (error) {
       console.error('Error al cargar catálogos:', error);
     }
@@ -46,6 +54,26 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
     const response = await materialService.crearMaterial({ nombre });
     if (response.success && response.data) {
       setListaMateriales(prev => [...prev, response.data!].sort((a, b) => a.nombre.localeCompare(b.nombre)));
+      return response.data;
+    }
+    return null;
+  };
+
+  const handleCrearCapacidad = async (valor: string): Promise<ICapacidadCatalog | null> => {
+    const response = await capacidadService.crearCapacidad({ valor });
+    if (response.success && response.data) {
+      setListaCapacidades(prev => {
+        const nuevaLista = [...prev, response.data!];
+        // Ordenar numéricamente
+        return nuevaLista.sort((a, b) => {
+          const valA = parseFloat(a.valor);
+          const valB = parseFloat(b.valor);
+          if (!isNaN(valA) && !isNaN(valB)) {
+            return valA - valB;
+          }
+          return a.valor.localeCompare(b.valor);
+        });
+      });
       return response.data;
     }
     return null;
@@ -197,6 +225,8 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
         title={acarreoEditando !== null ? 'EDITAR CONTROL DE ACARREO' : 'AGREGAR CONTROL DE ACARREO'}
         listaMateriales={listaMateriales}
         onCrearMaterial={handleCrearMaterial}
+        listaCapacidades={listaCapacidades}
+        onCrearCapacidad={handleCrearCapacidad}
       />
 
       {/* Modal Confirmación */}

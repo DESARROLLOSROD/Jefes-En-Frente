@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ControlAcarreo, IMaterialCatalog } from '../../../types/reporte';
+import { ControlAcarreo, IMaterialCatalog, ICapacidadCatalog } from '../../../types/reporte';
 import AutocompleteInput from '../AutocompleteInput';
 import { ORIGENES, DESTINOS } from '../../../constants/reporteConstants';
 
@@ -11,6 +11,8 @@ interface ModalControlAcarreoProps {
   title?: string;
   listaMateriales: IMaterialCatalog[];
   onCrearMaterial: (nombre: string) => Promise<IMaterialCatalog | null>;
+  listaCapacidades: ICapacidadCatalog[];
+  onCrearCapacidad: (valor: string) => Promise<ICapacidadCatalog | null>;
 }
 
 const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
@@ -20,7 +22,9 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
   acarreoInicial,
   title = 'AGREGAR CONTROL DE ACARREO',
   listaMateriales,
-  onCrearMaterial
+  onCrearMaterial,
+  listaCapacidades,
+  onCrearCapacidad
 }) => {
   const [formData, setFormData] = useState<ControlAcarreo>({
     material: '',
@@ -118,6 +122,17 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
           }
         }
 
+        // Verificar si la capacidad existe en la lista
+        const capacidadValor = formData.capacidad.trim();
+        const existeCapacidad = listaCapacidades.some(c => c.valor === capacidadValor);
+
+        if (!existeCapacidad && capacidadValor) {
+          const confirmacion = window.confirm(`La capacidad "${capacidadValor}" no existe en el catálogo. ¿Desea agregarla para futuros reportes?`);
+          if (confirmacion) {
+            await onCrearCapacidad(capacidadValor);
+          }
+        }
+
         console.log('✅ Validación pasada, llamando onSave');
         onSave(formData);
         console.log('🚪 Cerrando modal');
@@ -136,6 +151,7 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
   if (!isOpen) return null;
 
   const opcionesMateriales = listaMateriales.map(m => m.nombre);
+  const opcionesCapacidades = listaCapacidades.map(c => c.valor);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -194,22 +210,18 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
               )}
             </div>
 
-            {/* Capacidad (Campo Libre) */}
+            {/* Capacidad (Autocompletable) */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                CAPACIDAD (M³) <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="number"
-                step="0.01"
+              <AutocompleteInput
+                label="CAPACIDAD (M³)"
                 value={formData.capacidad}
-                onChange={(e) => handleChange('capacidad', e.target.value)}
-                className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="INGRESE LA CAPACIDAD..."
-                min="0"
+                onChange={(value) => handleChange('capacidad', value)}
+                options={opcionesCapacidades}
+                placeholder="SELECCIONE O INGRESE LA CAPACIDAD..."
+                required
               />
               <p className="text-xs text-gray-500 mt-1">
-                * Ingrese la capacidad en metros cúbicos (M³)
+                * Si la capacidad no existe, se le preguntará si desea agregarla.
               </p>
               {errors.capacidad && (
                 <p className="text-red-500 text-xs mt-1">{errors.capacidad}</p>
