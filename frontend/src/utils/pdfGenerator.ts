@@ -299,7 +299,8 @@ export const generarPDFReporte = async (
             .reduce((sum, item) => sum + (parseFloat(item.volSuelto) || 0), 0)
             .toFixed(2);
 
-        const bodyAcarreo: any[] = reporte.controlAcarreo.map((i) => [
+        const bodyAcarreo: any[] = reporte.controlAcarreo.map((i, index) => [
+            (index + 1).toString(),
             i.material,
             i.noViaje.toString(),
             `${i.capacidad} m³`,
@@ -312,6 +313,7 @@ export const generarPDFReporte = async (
 
         // Agregar fila de total
         bodyAcarreo.push([
+            '',
             { content: 'TOTAL VOLUMEN:', colSpan: 3, styles: { fontStyle: 'bold', halign: 'right' } },
             { content: `${totalVolumenAcarreo} m³`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220] } },
             '', '', '', ''
@@ -319,7 +321,7 @@ export const generarPDFReporte = async (
 
         renderTable(
             "CONTROL DE ACARREOS",
-            [["Material", "No. Viaje", "Capacidad", "Vol. Suelto", "No.Economico", "Elevación", "Origen", "Destino"]],
+            [["#", "Material", "No. Viaje", "Capacidad", "Vol. Suelto", "No.Economico", "Elevación", "Origen", "Destino"]],
             bodyAcarreo
         );
     }
