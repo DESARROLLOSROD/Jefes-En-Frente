@@ -1,22 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { ControlAcarreo, IMaterialCatalog, ICapacidadCatalog } from '../../../types/reporte';
+import { ControlAcarreo, IMaterialCatalog } from '../../../types/reporte';
 import ModalControlAcarreo from '../../shared/modals/ModalControlAcarreo';
 import ModalConfirmacion from '../../shared/modals/ModalConfirmacion';
 import { materialService } from '../../../services/materialService';
-import { capacidadService } from '../../../services/capacidadService';
-// ... rest of the file content
 
 
 interface SeccionControlAcarreoProps {
   acarreos: ControlAcarreo[];
   onAcarreosChange: (acarreos: ControlAcarreo[]) => void;
-  proyectoId?: string;
 }
 
 const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
   acarreos,
-  onAcarreosChange,
-  proyectoId
+  onAcarreosChange
 }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [acarreoEditando, setAcarreoEditando] = useState<{
@@ -25,7 +21,6 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
   } | null>(null);
 
   const [listaMateriales, setListaMateriales] = useState<IMaterialCatalog[]>([]);
-  const [listaCapacidades, setListaCapacidades] = useState<ICapacidadCatalog[]>([]);
 
   // Estado para eliminación
   const [confirmacionOpen, setConfirmacionOpen] = useState(false);
@@ -42,12 +37,6 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
       if (responseMateriales.success && responseMateriales.data) {
         setListaMateriales(responseMateriales.data);
       }
-
-      // Cargar Capacidades
-      const responseCapacidades = await capacidadService.obtenerCapacidades();
-      if (responseCapacidades.success && responseCapacidades.data) {
-        setListaCapacidades(responseCapacidades.data);
-      }
     } catch (error) {
       console.error('Error al cargar catálogos:', error);
     }
@@ -57,27 +46,6 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
     const response = await materialService.crearMaterial({ nombre });
     if (response.success && response.data) {
       setListaMateriales(prev => [...prev, response.data!].sort((a, b) => a.nombre.localeCompare(b.nombre)));
-      return response.data;
-    }
-    return null;
-  };
-
-  const handleCrearCapacidad = async (valor: string): Promise<ICapacidadCatalog | null> => {
-    // La etiqueta por defecto será "Valor M³"
-    const response = await capacidadService.crearCapacidad({ valor, etiqueta: `${valor} M³` });
-    if (response.success && response.data) {
-      setListaCapacidades(prev => {
-        const nuevaLista = [...prev, response.data!];
-        // Ordenar numéricamente si es posible
-        return nuevaLista.sort((a, b) => {
-          const valA = parseFloat(a.valor);
-          const valB = parseFloat(b.valor);
-          if (!isNaN(valA) && !isNaN(valB)) {
-            return valA - valB;
-          }
-          return a.valor.localeCompare(b.valor);
-        });
-      });
       return response.data;
     }
     return null;
@@ -163,6 +131,7 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">NO. VIAJES</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">CAPACIDAD</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">VOL. SUELTO</th>
+              <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">CAPA</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">ORIGEN</th>
               <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase">DESTINO</th>
               <th className="px-4 py-3 text-center text-xs font-semibold text-gray-700 uppercase">ACCIONES</th>
@@ -177,6 +146,7 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
                 <td className="px-4 py-3 text-sm font-bold text-blue-600">
                   {acarreo.volSuelto || '0.00'} M³
                 </td>
+                <td className="px-4 py-3 text-sm text-gray-900">{acarreo.capaNo || '-'}</td>
                 <td className="px-4 py-3 text-sm text-gray-900">{acarreo.capaOrigen || '-'}</td>
                 <td className="px-4 py-3 text-sm text-gray-900">{acarreo.destino || '-'}</td>
                 <td className="px-4 py-3 text-sm text-center">
@@ -207,7 +177,7 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
               <td className="px-4 py-3 text-sm font-bold text-blue-700">
                 {calcularTotalVolumen()} M³
               </td>
-              <td colSpan={3}></td>
+              <td colSpan={4}></td>
             </tr>
           </tfoot>
         </table>
@@ -225,9 +195,6 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
         title={acarreoEditando !== null ? 'EDITAR CONTROL DE ACARREO' : 'AGREGAR CONTROL DE ACARREO'}
         listaMateriales={listaMateriales}
         onCrearMaterial={handleCrearMaterial}
-        listaCapacidades={listaCapacidades}
-        onCrearCapacidad={handleCrearCapacidad}
-        proyectoId={proyectoId}
       />
 
       {/* Modal Confirmación */}

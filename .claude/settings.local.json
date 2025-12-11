@@ -26,7 +26,8 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(npx expo start:*)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "ask": []
