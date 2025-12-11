@@ -533,7 +533,6 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
         <SeccionControlAcarreo
           acarreos={formData.controlAcarreo}
           onAcarreosChange={(acarreos) => setFormData(prev => ({ ...prev, controlAcarreo: acarreos }))}
-          proyectoId={proyecto?._id}
         />
 
         {/* SECCIÓN 3: CONTROL DE MATERIAL (NUEVO COMPONENTE MODULAR) */}
