@@ -356,9 +356,13 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                     <input
                                         type="text"
                                         value={formData.capacidad}
-                                        onChange={e => setFormData({ ...formData, capacidad: e.target.value })}
+                                        onChange={e => {
+                                            console.log('Capacidad cambiando a:', e.target.value);
+                                            setFormData({ ...formData, capacidad: e.target.value });
+                                        }}
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
                                         placeholder="EJ: 7, 10, 14"
+                                        disabled={false}
                                     />
                                     <p className="text-xs text-gray-500 mt-1">
                                         {(formData.tipo.toUpperCase().includes('CAMION') || formData.tipo.toUpperCase().includes('PIPA')) ? (
