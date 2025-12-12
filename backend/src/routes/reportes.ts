@@ -307,7 +307,7 @@ router.get('/estadisticas', async (req: AuthRequest, res) => {
     const vehiculosMap = new Map<string, { nombre: string; noEconomico: string; horas: number }>();
     reportes.forEach(reporte => {
       reporte.controlMaquinaria?.forEach(item => {
-        const horas = parseFloat(item.horasOperacion) || 0;
+        const horas = item.horasOperacion || 0;
         const key = item.tipo + '_' + (item.vehiculoId || 'sin_id'); // Usar tipo + vehiculoId como clave
         const actual = vehiculosMap.get(key);
         if (actual) {
