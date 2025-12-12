@@ -8,6 +8,15 @@ interface Props {
 
 const COLORS = ['#4C4EC9', '#6B6EC9', '#8B8EC9', '#ABABC9', '#CBCBC9'];
 
+// Helper function para formatear fechas
+const formatDate = (date: string): string => {
+    return new Date(date).toLocaleDateString('es-MX', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+};
+
 export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
     return (
         <div className="space-y-8">
@@ -20,7 +29,7 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                     <div className="bg-blue-50 p-4 rounded-lg">
                         <p className="text-sm text-gray-600">Período</p>
                         <p className="text-lg font-semibold text-gray-800">
-                            {new Date(estadisticas.rangoFechas.inicio).toLocaleDateString('es-MX')} - {new Date(estadisticas.rangoFechas.fin).toLocaleDateString('es-MX')}
+                            {formatDate(estadisticas.rangoFechas.inicio)} - {formatDate(estadisticas.rangoFechas.fin)}
                         </p>
                     </div>
                     <div className="bg-green-50 p-4 rounded-lg">
@@ -38,7 +47,7 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
             {estadisticas.acarreo.materiales.length > 0 && (
                 <div className="bg-white rounded-lg shadow-md p-6">
                     <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <span className="mr-2">📦</span> CONTROL DE ACARREO
+                        <span className="mr-2" role="img" aria-label="Paquete">📦</span> CONTROL DE ACARREO
                     </h3>
                     <div className="mb-4">
                         <p className="text-sm text-gray-600">Total Volumen: <span className="font-bold text-lg text-blue-600">{estadisticas.acarreo.totalVolumen.toLocaleString()} m³</span></p>
@@ -58,6 +67,7 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                     {/* Tabla de datos */}
                     <div className="mt-6 overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
+                            <caption className="sr-only">Detalle de materiales de acarreo por volumen</caption>
                             <thead className="bg-gray-50">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Material</th>
@@ -66,8 +76,8 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {estadisticas.acarreo.materiales.map((material, index) => (
-                                    <tr key={index}>
+                                {estadisticas.acarreo.materiales.map((material) => (
+                                    <tr key={`acarreo-${material.nombre}`}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{material.nombre}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{material.volumen.toLocaleString()}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{material.porcentaje}%</td>
@@ -83,7 +93,7 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
             {estadisticas.material.materiales.length > 0 && (
                 <div className="bg-white rounded-lg shadow-md p-6">
                     <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <span className="mr-2">🏗️</span> CONTROL DE MATERIAL
+                        <span className="mr-2" role="img" aria-label="Construcción">🏗️</span> CONTROL DE MATERIAL
                     </h3>
                     <div className="mb-4">
                         <p className="text-sm text-gray-600">Material más utilizado: <span className="font-semibold">{estadisticas.material.materialMasUtilizado}</span></p>
@@ -102,6 +112,7 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                     {/* Tabla de datos */}
                     <div className="mt-6 overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
+                            <caption className="sr-only">Detalle de materiales utilizados con cantidades</caption>
                             <thead className="bg-gray-50">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Material</th>
@@ -110,8 +121,8 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {estadisticas.material.materiales.map((material, index) => (
-                                    <tr key={index}>
+                                {estadisticas.material.materiales.map((material) => (
+                                    <tr key={`material-${material.nombre}`}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{material.nombre}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{material.cantidad.toLocaleString()}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{material.unidad}</td>
@@ -127,7 +138,7 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
             {estadisticas.agua.porOrigen.length > 0 && (
                 <div className="bg-white rounded-lg shadow-md p-6">
                     <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <span className="mr-2">💧</span> CONTROL DE AGUA
+                        <span className="mr-2" role="img" aria-label="Agua">💧</span> CONTROL DE AGUA
                     </h3>
                     <div className="mb-4">
                         <p className="text-sm text-gray-600">Total Volumen: <span className="font-bold text-lg text-blue-600">{estadisticas.agua.volumenTotal.toLocaleString()} m³</span></p>
@@ -157,13 +168,14 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                                     cx="50%"
                                     cy="50%"
                                     outerRadius={80}
-
+                                    label
                                 >
-                                    {estadisticas.agua.porOrigen.map((_, index) => (
-                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    {estadisticas.agua.porOrigen.map((origen, index) => (
+                                        <Cell key={`cell-${origen.origen}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
                                 <Tooltip formatter={(value: number) => `${value.toLocaleString()} m³`} />
+                                <Legend />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
@@ -171,6 +183,7 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                     {/* Tabla de datos */}
                     <div className="mt-6 overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
+                            <caption className="sr-only">Detalle de volumen de agua por origen</caption>
                             <thead className="bg-gray-50">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Origen</th>
@@ -179,8 +192,8 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {estadisticas.agua.porOrigen.map((origen, index) => (
-                                    <tr key={index}>
+                                {estadisticas.agua.porOrigen.map((origen) => (
+                                    <tr key={`agua-${origen.origen}`}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{origen.origen}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{origen.volumen.toLocaleString()}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{origen.porcentaje}%</td>
@@ -196,7 +209,7 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
             {estadisticas.vehiculos.vehiculos.length > 0 && (
                 <div className="bg-white rounded-lg shadow-md p-6">
                     <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                        <span className="mr-2">🚜</span> VEHÍCULOS
+                        <span className="mr-2" role="img" aria-label="Tractor">🚜</span> VEHÍCULOS
                     </h3>
                     <div className="mb-4">
                         <p className="text-sm text-gray-600">Total Horas: <span className="font-bold text-lg text-blue-600">{estadisticas.vehiculos.totalHoras.toLocaleString()} hrs</span></p>
@@ -216,6 +229,7 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                     {/* Tabla de datos */}
                     <div className="mt-6 overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
+                            <caption className="sr-only">Detalle de horas de operación por vehículo</caption>
                             <thead className="bg-gray-50">
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vehículo</th>
@@ -225,8 +239,8 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
-                                {estadisticas.vehiculos.vehiculos.map((vehiculo, index) => (
-                                    <tr key={index}>
+                                {estadisticas.vehiculos.vehiculos.map((vehiculo) => (
+                                    <tr key={`vehiculo-${vehiculo.noEconomico}`}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{vehiculo.nombre}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{vehiculo.noEconomico}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{vehiculo.horasOperacion.toLocaleString()}</td>
