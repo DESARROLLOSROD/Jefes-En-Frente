@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import logo from "../Logo.png"; // AJUSTA la ruta
 import { ReporteActividades } from "../types/reporte";
+import { prepararDatosReporte } from "./reportGenerator";
 
 // Función auxiliar para dibujar el mapa con pines
 const dibujarMapaConPines = (
@@ -293,93 +294,39 @@ export const generarPDFReporte = async (
     // ------------------------------------------------
     // TABLAS
     // ------------------------------------------------
-    if (reporte.controlAcarreo?.length) {
-        // Calcular totales
-        const totalVolumenAcarreo = reporte.controlAcarreo
-            .reduce((sum, item) => sum + (parseFloat(item.volSuelto) || 0), 0)
-            .toFixed(2);
+    const datos = prepararDatosReporte(reporte);
 
-        const bodyAcarreo: any[] = reporte.controlAcarreo.map((i, index) => [
-            (index + 1).toString(),
-            i.material,
-            i.noViaje.toString(),
-            `${i.capacidad} m³`,
-            `${i.volSuelto} m³`,
-            i.capaNo,
-            i.elevacionAriza,
-            i.capaOrigen,
-            i.destino,
-        ]);
-
-        // Agregar fila de total
-        bodyAcarreo.push([
-            '',
-            { content: 'TOTAL VOLUMEN:', colSpan: 3, styles: { fontStyle: 'bold', halign: 'right' } },
-            { content: `${totalVolumenAcarreo} m³`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220] } },
-            '', '', '', ''
-        ]);
-
+    if (datos.controlAcarreo.length) {
         renderTable(
             "CONTROL DE ACARREOS",
             [["#", "Material", "No. Viaje", "Capacidad", "Vol. Suelto", "Capa", "Elevación", "Origen", "Destino"]],
-            bodyAcarreo
+            datos.controlAcarreo
         );
     }
 
-    if (reporte.controlMaterial?.length)
+    if (datos.controlMaterial.length) {
         renderTable(
             "CONTROL DE MATERIAL",
             [["Material", "Unidad", "Cantidad", "Zona", "Elevación"]],
-            reporte.controlMaterial.map((i) => [
-                i.material,
-                i.unidad,
-                i.cantidad,
-                i.zona,
-                i.elevacion,
-            ])
-        );
-
-    if (reporte.controlAgua?.length) {
-        const totalVolumenAgua = reporte.controlAgua
-            .reduce((sum, item) => sum + (parseFloat(item.volumen) || 0), 0)
-            .toFixed(2);
-
-        const bodyAgua: any[] = reporte.controlAgua.map((i) => [
-            i.noEconomico,
-            i.viaje.toString(),
-            `${i.capacidad} m³`,
-            `${i.volumen} m³`,
-            i.origen,
-            i.destino,
-        ]);
-
-        bodyAgua.push([
-            { content: 'TOTAL VOLUMEN:', colSpan: 3, styles: { fontStyle: 'bold', halign: 'right' } },
-            { content: `${totalVolumenAgua} m³`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220] } },
-            '', ''
-        ]);
-
-        renderTable(
-            "CONTROL DE AGUA",
-            [["No. Económico", "Viaje", "Capacidad", "Volumen", "Origen", "Destino"]],
-            bodyAgua
+            datos.controlMaterial
         );
     }
 
-    if (reporte.controlMaquinaria?.length)
+    if (datos.controlAgua.length) {
+        renderTable(
+            "CONTROL DE AGUA",
+            [["No. Económico", "Viaje", "Capacidad", "Volumen", "Origen", "Destino"]],
+            datos.controlAgua
+        );
+    }
+
+    if (datos.controlMaquinaria.length) {
         renderTable(
             "CONTROL DE MAQUINARIA",
             [["Tipo", "No. Económico", "Horómetro Inicial", "Horómetro Final", "Horas", "Operador", "Actividad"]],
-            reporte.controlMaquinaria.map((i) => [
-                i.tipo || '-',
-                i.numeroEconomico || '-',
-                i.horometroInicial?.toString() || '0',
-                i.horometroFinal?.toString() || '0',
-                i.horasOperacion?.toString() || '0',
-                i.operador || '-',
-                i.actividad || '-',
-            ])
+            datos.controlMaquinaria
         );
+    }
 
     // ------------------------------------------------
     // OBSERVACIONES

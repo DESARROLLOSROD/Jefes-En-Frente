@@ -3,6 +3,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { ReporteActividades } from '../../types/reporte';
 import { reporteService } from '../../services/api';
 import { generarPDFReporte } from '../../utils/pdfGenerator';
+import { generarExcelReporte } from '../../utils/fileGenerator';
 import ModalConfirmacion from '../shared/modals/ModalConfirmacion';
 
 interface ListaReportesProps {
@@ -171,6 +172,13 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
                         title="DESCARGAR PDF"
                       >
                         PDF
+                      </button>
+                      <button
+                        className="text-green-600 hover:text-green-900 mr-3 font-semibold"
+                        onClick={() => generarExcelReporte(reporte, proyecto?.nombre || 'PROYECTO')}
+                        title="DESCARGAR EXCEL"
+                      >
+                        EXCEL
                       </button>
                       {(user?.rol === 'admin' || user?.rol === 'supervisor') && (
                         <>

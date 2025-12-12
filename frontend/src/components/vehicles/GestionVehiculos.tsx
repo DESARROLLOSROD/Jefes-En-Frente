@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { vehiculoService, proyectoService } from '../../services/api';
 import { Vehiculo, Proyecto } from '../../types/gestion';
 import { generarPDFVehiculos } from '../../utils/pdfVehiculosGenerator';
+import { generarExcelVehiculos } from '../../utils/fileGenerator';
 import ModalConfirmacion from '../shared/modals/ModalConfirmacion';
 import AutocompleteInput from '../shared/AutocompleteInput';
 import { ITipoVehiculoCatalog } from '../../types/gestion';
@@ -211,6 +212,12 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                         className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold ml-2"
                     >
                         📄 REPORTE PDF
+                    </button>
+                    <button
+                        onClick={() => generarExcelVehiculos(vehiculos)}
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold ml-2"
+                    >
+                        📄 REPORTE EXCEL
                     </button>
                 </div>
 
