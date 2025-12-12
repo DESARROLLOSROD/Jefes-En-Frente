@@ -99,7 +99,7 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
         // Gráfica de barras visual
         const maxVolumen = Math.max(...estadisticas.acarreo.materiales.map(m => m.volumen));
         estadisticas.acarreo.materiales.forEach((material) => {
-            const barWidth = (material.volumen / maxVolumen) * (colWidthHalf - 35);
+            const barWidth = maxVolumen > 0 ? Math.max(1, (material.volumen / maxVolumen) * (colWidthHalf - 35)) : 1;
 
             // Nombre del material
             doc.setFontSize(7);
@@ -141,7 +141,7 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
         // Gráfica de barras visual
         const maxVolumenAgua = Math.max(...estadisticas.agua.porOrigen.map(o => o.volumen));
         estadisticas.agua.porOrigen.forEach((origen) => {
-            const barWidth = (origen.volumen / maxVolumenAgua) * (colWidthHalf - 35);
+            const barWidth = maxVolumenAgua > 0 ? Math.max(1, (origen.volumen / maxVolumenAgua) * (colWidthHalf - 35)) : 1;
 
             doc.setFontSize(7);
             doc.setTextColor(60, 60, 60);
@@ -179,7 +179,7 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
         // Gráfica de barras visual
         const maxCantidad = Math.max(...estadisticas.material.materiales.map(m => m.cantidad));
         estadisticas.material.materiales.forEach((material) => {
-            const barWidth = (material.cantidad / maxCantidad) * (colWidthHalf - 35);
+            const barWidth = maxCantidad > 0 ? Math.max(1, (material.cantidad / maxCantidad) * (colWidthHalf - 35)) : 1;
 
             // Nombre del material
             doc.setFontSize(7);
@@ -221,7 +221,7 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
         // Gráfica de barras visual
         const maxHoras = Math.max(...estadisticas.vehiculos.vehiculos.map(v => v.horasOperacion));
         estadisticas.vehiculos.vehiculos.forEach((vehiculo) => {
-            const barWidth = (vehiculo.horasOperacion / maxHoras) * (colWidthHalf - 35);
+            const barWidth = maxHoras > 0 ? Math.max(1, (vehiculo.horasOperacion / maxHoras) * (colWidthHalf - 35)) : 1;
 
             // Nombre del vehículo
             doc.setFontSize(7);
