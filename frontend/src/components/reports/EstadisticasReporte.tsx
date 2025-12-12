@@ -157,7 +157,7 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                                     cx="50%"
                                     cy="50%"
                                     outerRadius={80}
-                                    label={(entry) => `${entry.origen}: ${entry.porcentaje}%`}
+
                                 >
                                     {estadisticas.agua.porOrigen.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
