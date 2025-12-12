@@ -8,10 +8,10 @@ import GestionVehiculos from '../vehicles/GestionVehiculos';
 import { WorkZoneManager } from '../WorkZones';
 import { EstadisticasReporte } from '../reports/EstadisticasReporte';
 import { ReporteActividades } from '../../types/reporte';
-import { reporteService, proyectoService } from '../../services/api';
+import { proyectoService } from '../../services/api';
 import { obtenerEstadisticas, EstadisticasResponse } from '../../services/estadisticas.service';
-import { generarPDFGeneral } from '../../utils/pdfGeneralGenerator';
-import { generarExcelGeneral } from '../../utils/fileGenerator';
+import { generarPDFEstadisticas } from '../../utils/pdfEstadisticasGenerator';
+import { generarExcelEstadisticas } from '../../utils/excelEstadisticasGenerator';
 import { Proyecto } from '../../types/gestion';
 import LogoROD from '../../Logo_ROD.png';
 
@@ -76,23 +76,36 @@ const Dashboard: React.FC = () => {
   const handleDescargarReporteGeneral = async (formato: 'pdf' | 'excel') => {
     setMostrarModalFormato(false);
 
+    // Verificar que haya fechas seleccionadas
+    if (!fechaInicio || !fechaFin) {
+      alert('POR FAVOR SELECCIONA UN RANGO DE FECHAS EN LA VISTA DE ESTADÍSTICAS');
+      setVistaActual('estadisticas');
+      return;
+    }
+
     try {
       setLoadingGeneral(true);
-      const reportesRes = await reporteService.obtenerReportes(proyectoSeleccionado);
-      const proyectosRes = await proyectoService.obtenerProyectos();
 
-      if (reportesRes.success && reportesRes.data && proyectosRes.success && proyectosRes.data) {
-        if (formato === 'pdf') {
-          generarPDFGeneral(reportesRes.data, proyectosRes.data);
-        } else {
-          generarExcelGeneral(reportesRes.data, proyectosRes.data);
-        }
+      // Obtener estadísticas
+      const idsProyectos = proyectoSeleccionado || 'todos';
+      const stats = await obtenerEstadisticas(idsProyectos, fechaInicio, fechaFin);
+
+      // Obtener nombre del proyecto seleccionado
+      let nombreProyecto: string | undefined = undefined;
+      if (proyectoSeleccionado && proyectos.length > 0) {
+        const proyectoEncontrado = proyectos.find(p => p._id === proyectoSeleccionado);
+        nombreProyecto = proyectoEncontrado?.nombre;
+      }
+
+      // Generar el archivo según el formato
+      if (formato === 'pdf') {
+        generarPDFEstadisticas(stats, nombreProyecto);
       } else {
-        alert('ERROR AL OBTENER LOS DATOS PARA EL REPORTE GENERAL');
+        await generarExcelEstadisticas(stats, nombreProyecto);
       }
     } catch (error) {
       console.error('Error generando reporte general:', error);
-      alert('OCURRIÓ UN ERROR AL GENERAR EL REPORTE');
+      alert('OCURRIÓ UN ERROR AL GENERAR EL REPORTE DE ESTADÍSTICAS');
     } finally {
       setLoadingGeneral(false);
     }
