@@ -9,37 +9,69 @@ export const generarExcelReporte = (reporte: ReporteActividades) => {
     const workbook = XLSX.utils.book_new();
     const datos = prepararDatosReporte(reporte);
 
-    // Hoja de Información General
-    const infoSheet = XLSX.utils.json_to_sheet([
-        { Categoria: 'Fecha', Valor: new Date(reporte.fecha).toLocaleDateString('es-MX', { timeZone: 'UTC' }) },
-        { Categoria: 'Turno', Valor: reporte.turno === 'primer' ? 'PRIMER TURNO' : 'SEGUNDO TURNO' },
-        { Categoria: 'Ubicación', Valor: reporte.ubicacion },
-        { Categoria: 'Zona de Trabajo', Valor: typeof reporte.zonaTrabajo === 'string' ? reporte.zonaTrabajo : (reporte.zonaTrabajo?.zonaNombre || 'N/A') },
-        { Categoria: 'Sección de Trabajo', Valor: typeof reporte.seccionTrabajo === 'string' ? reporte.seccionTrabajo : (reporte.seccionTrabajo?.seccionNombre || 'N/A') },
-        { Categoria: 'Jefe de Frente', Valor: reporte.jefeFrente },
-        { Categoria: 'Sobrestante', Valor: reporte.sobrestante },
-    ]);
-    XLSX.utils.book_append_sheet(workbook, infoSheet, 'Info General');
+    // Crear array para una sola hoja con todas las secciones
+    const allData: any[] = [];
+
+    // === INFORMACIÓN GENERAL ===
+    allData.push(['=== INFORMACIÓN GENERAL ===']);
+    allData.push(['Fecha', new Date(reporte.fecha).toLocaleDateString('es-MX', { timeZone: 'UTC' })]);
+    allData.push(['Turno', reporte.turno === 'primer' ? 'PRIMER TURNO' : 'SEGUNDO TURNO']);
+    allData.push(['Ubicación', reporte.ubicacion]);
+    allData.push(['Zona de Trabajo', typeof reporte.zonaTrabajo === 'string' ? reporte.zonaTrabajo : (reporte.zonaTrabajo?.zonaNombre || 'N/A')]);
+    allData.push(['Sección de Trabajo', typeof reporte.seccionTrabajo === 'string' ? reporte.seccionTrabajo : (reporte.seccionTrabajo?.seccionNombre || 'N/A')]);
+    allData.push(['Jefe de Frente', reporte.jefeFrente]);
+    allData.push(['Sobrestante', reporte.sobrestante]);
+    allData.push([]); // Línea en blanco
+
+    // === CONTROL DE ACARREO ===
     if (datos.controlAcarreo.length) {
-        const acarreoSheet = XLSX.utils.json_to_sheet(datos.controlAcarreo);
-        XLSX.utils.book_append_sheet(workbook, acarreoSheet, 'Control Acarreo');
+        allData.push(['=== CONTROL DE ACARREO ===']);
+        allData.push(['No.', 'Material', 'No. Viaje', 'Capacidad', 'Vol. Suelto', 'Capa No.', 'Elevación Ariza', 'Capa Origen', 'Destino']);
+        datos.controlAcarreo.forEach(row => {
+            allData.push(row);
+        });
+        allData.push([]); // Línea en blanco
     }
+
+    // === CONTROL DE MATERIAL ===
     if (datos.controlMaterial.length) {
-        const materialSheet = XLSX.utils.json_to_sheet(datos.controlMaterial);
-        XLSX.utils.book_append_sheet(workbook, materialSheet, 'Control Material');
+        allData.push(['=== CONTROL DE MATERIAL ===']);
+        allData.push(['Material', 'Unidad', 'Cantidad', 'Zona', 'Elevación']);
+        datos.controlMaterial.forEach(row => {
+            allData.push(row);
+        });
+        allData.push([]); // Línea en blanco
     }
+
+    // === CONTROL DE AGUA ===
     if (datos.controlAgua.length) {
-        const aguaSheet = XLSX.utils.json_to_sheet(datos.controlAgua);
-        XLSX.utils.book_append_sheet(workbook, aguaSheet, 'Control Agua');
+        allData.push(['=== CONTROL DE AGUA ===']);
+        allData.push(['No. Económico', 'Viajes', 'Capacidad', 'Volumen', 'Origen', 'Destino']);
+        datos.controlAgua.forEach(row => {
+            allData.push(row);
+        });
+        allData.push([]); // Línea en blanco
     }
+
+    // === CONTROL DE MAQUINARIA ===
     if (datos.controlMaquinaria.length) {
-        const maquinariaSheet = XLSX.utils.json_to_sheet(datos.controlMaquinaria);
-        XLSX.utils.book_append_sheet(workbook, maquinariaSheet, 'Control Maquinaria');
+        allData.push(['=== CONTROL DE MAQUINARIA ===']);
+        allData.push(['Tipo', 'No. Económico', 'H. Inicial', 'H. Final', 'H. Operación', 'Operador', 'Actividad']);
+        datos.controlMaquinaria.forEach(row => {
+            allData.push(row);
+        });
+        allData.push([]); // Línea en blanco
     }
+
+    // === OBSERVACIONES ===
     if (reporte.observaciones) {
-        const observacionesSheet = XLSX.utils.json_to_sheet([{ Observaciones: reporte.observaciones }]);
-        XLSX.utils.book_append_sheet(workbook, observacionesSheet, 'Observaciones');
+        allData.push(['=== OBSERVACIONES ===']);
+        allData.push([reporte.observaciones]);
     }
+
+    // Crear la hoja única
+    const worksheet = XLSX.utils.aoa_to_sheet(allData);
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Reporte Completo');
 
     const fechaArchivo = new Date(reporte.fecha).toISOString().split('T')[0];
     const zonaNombre = typeof reporte.zonaTrabajo === 'string' ? reporte.zonaTrabajo : (reporte.zonaTrabajo?.zonaNombre || 'Zona');
