@@ -90,133 +90,7 @@ router.get('/', async (req: AuthRequest, res) => {
   }
 });
 
-// Obtener reporte por ID
-router.get('/:id', async (req: AuthRequest, res) => {
-  try {
-    const reporte = await ReporteActividades.findById(req.params.id);
-    if (!reporte) {
-      const response: ApiResponse<null> = {
-        success: false,
-        error: 'Reporte no encontrado'
-      };
-      return res.status(404).json(response);
-    }
-    const response: ApiResponse<typeof reporte> = {
-      success: true,
-      data: reporte
-    };
-    res.json(response);
-  } catch (error) {
-    const response: ApiResponse<null> = {
-      success: false,
-      error: (error as Error).message
-    };
-    res.status(500).json(response);
-  }
-});
-
-// Actualizar reporte
-router.put('/:id', async (req: AuthRequest, res) => {
-  try {
-    // 1. Obtener el reporte ANTES de la actualización
-    const reporteAnterior = await ReporteActividades.findById(req.params.id);
-
-    if (!reporteAnterior) {
-      const response: ApiResponse<null> = {
-        success: false,
-        error: 'Reporte no encontrado'
-      };
-      return res.status(404).json(response);
-    }
-
-    // 2. Revertir las horas de los vehículos del reporte anterior
-    if (reporteAnterior.controlMaquinaria && Array.isArray(reporteAnterior.controlMaquinaria)) {
-      for (const maquinaria of reporteAnterior.controlMaquinaria) {
-        if (maquinaria.vehiculoId && maquinaria.horasOperacion) {
-          try {
-            await Vehiculo.findByIdAndUpdate(
-              maquinaria.vehiculoId,
-              { $inc: { horasOperacion: -maquinaria.horasOperacion } }
-            );
-            console.log(`↩️ Horas revertidas para vehículo ${maquinaria.vehiculoId}: -${maquinaria.horasOperacion}`);
-          } catch (error) {
-            console.error(`⚠️ Error revirtiendo horas del vehículo ${maquinaria.vehiculoId}:`, error);
-          }
-        }
-      }
-    }
-
-    // 3. Actualizar el reporte con los nuevos datos
-    const reporteActualizado = await ReporteActividades.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
-
-    // 4. Aplicar las nuevas horas de los vehículos
-    if (reporteActualizado && reporteActualizado.controlMaquinaria && Array.isArray(reporteActualizado.controlMaquinaria)) {
-      for (const maquinaria of reporteActualizado.controlMaquinaria) {
-        if (maquinaria.vehiculoId && maquinaria.horasOperacion) {
-          try {
-            await Vehiculo.findByIdAndUpdate(
-              maquinaria.vehiculoId,
-              {
-                horometroInicial: maquinaria.horometroFinal, // Actualizamos también los horómetros
-                horometroFinal: maquinaria.horometroFinal,
-                $inc: { horasOperacion: maquinaria.horasOperacion }
-              }
-            );
-            console.log(`🔄 Horas aplicadas para vehículo ${maquinaria.vehiculoId}: +${maquinaria.horasOperacion}`);
-          } catch (error) {
-            console.error(`⚠️ Error aplicando horas del vehículo ${maquinaria.vehiculoId}:`, error);
-          }
-        }
-      }
-    }
-
-    const response: ApiResponse<typeof reporteActualizado> = {
-      success: true,
-      data: reporteActualizado
-    };
-    res.json(response);
-  } catch (error) {
-    console.error('❌ Error actualizando reporte:', error);
-    const response: ApiResponse<null> = {
-      success: false,
-      error: (error as Error).message
-    };
-    res.status(500).json(response);
-  }
-});
-
-// Eliminar reporte
-router.delete('/:id', async (req: AuthRequest, res) => {
-  try {
-    const reporte = await ReporteActividades.findByIdAndDelete(req.params.id);
-
-    if (!reporte) {
-      const response: ApiResponse<null> = {
-        success: false,
-        error: 'Reporte no encontrado'
-      };
-      return res.status(404).json(response);
-    }
-
-    const response: ApiResponse<null> = {
-      success: true,
-      data: null
-    };
-    res.json(response);
-  } catch (error) {
-    console.error('❌ Error eliminando reporte:', error);
-    const response: ApiResponse<null> = {
-      success: false,
-      error: (error as Error).message
-    };
-    res.status(500).json(response);
-  }
-});
-
+// Obtener estadísticas (DEBE estar ANTES de la ruta /:id para evitar conflictos)
 router.get('/estadisticas', async (req: AuthRequest, res) => {
   try {
     const { proyectoIds, fechaInicio, fechaFin } = req.query;
@@ -375,8 +249,131 @@ router.get('/estadisticas', async (req: AuthRequest, res) => {
   }
 });
 
+// Obtener reporte por ID (DEBE estar DESPUÉS de rutas específicas como /estadisticas)
+router.get('/:id', async (req: AuthRequest, res) => {
+  try {
+    const reporte = await ReporteActividades.findById(req.params.id);
+    if (!reporte) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'Reporte no encontrado'
+      };
+      return res.status(404).json(response);
+    }
+    const response: ApiResponse<typeof reporte> = {
+      success: true,
+      data: reporte
+    };
+    res.json(response);
+  } catch (error) {
+    const response: ApiResponse<null> = {
+      success: false,
+      error: (error as Error).message
+    };
+    res.status(500).json(response);
+  }
+});
 
+// Actualizar reporte
+router.put('/:id', async (req: AuthRequest, res) => {
+  try {
+    // 1. Obtener el reporte ANTES de la actualización
+    const reporteAnterior = await ReporteActividades.findById(req.params.id);
 
+    if (!reporteAnterior) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'Reporte no encontrado'
+      };
+      return res.status(404).json(response);
+    }
 
+    // 2. Revertir las horas de los vehículos del reporte anterior
+    if (reporteAnterior.controlMaquinaria && Array.isArray(reporteAnterior.controlMaquinaria)) {
+      for (const maquinaria of reporteAnterior.controlMaquinaria) {
+        if (maquinaria.vehiculoId && maquinaria.horasOperacion) {
+          try {
+            await Vehiculo.findByIdAndUpdate(
+              maquinaria.vehiculoId,
+              { $inc: { horasOperacion: -maquinaria.horasOperacion } }
+            );
+            console.log(`↩️ Horas revertidas para vehículo ${maquinaria.vehiculoId}: -${maquinaria.horasOperacion}`);
+          } catch (error) {
+            console.error(`⚠️ Error revirtiendo horas del vehículo ${maquinaria.vehiculoId}:`, error);
+          }
+        }
+      }
+    }
+
+    // 3. Actualizar el reporte con los nuevos datos
+    const reporteActualizado = await ReporteActividades.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+
+    // 4. Aplicar las nuevas horas de los vehículos
+    if (reporteActualizado && reporteActualizado.controlMaquinaria && Array.isArray(reporteActualizado.controlMaquinaria)) {
+      for (const maquinaria of reporteActualizado.controlMaquinaria) {
+        if (maquinaria.vehiculoId && maquinaria.horasOperacion) {
+          try {
+            await Vehiculo.findByIdAndUpdate(
+              maquinaria.vehiculoId,
+              {
+                horometroInicial: maquinaria.horometroFinal, // Actualizamos también los horómetros
+                horometroFinal: maquinaria.horometroFinal,
+                $inc: { horasOperacion: maquinaria.horasOperacion }
+              }
+            );
+            console.log(`🔄 Horas aplicadas para vehículo ${maquinaria.vehiculoId}: +${maquinaria.horasOperacion}`);
+          } catch (error) {
+            console.error(`⚠️ Error aplicando horas del vehículo ${maquinaria.vehiculoId}:`, error);
+          }
+        }
+      }
+    }
+
+    const response: ApiResponse<typeof reporteActualizado> = {
+      success: true,
+      data: reporteActualizado
+    };
+    res.json(response);
+  } catch (error) {
+    console.error('❌ Error actualizando reporte:', error);
+    const response: ApiResponse<null> = {
+      success: false,
+      error: (error as Error).message
+    };
+    res.status(500).json(response);
+  }
+});
+
+// Eliminar reporte
+router.delete('/:id', async (req: AuthRequest, res) => {
+  try {
+    const reporte = await ReporteActividades.findByIdAndDelete(req.params.id);
+
+    if (!reporte) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'Reporte no encontrado'
+      };
+      return res.status(404).json(response);
+    }
+
+    const response: ApiResponse<null> = {
+      success: true,
+      data: null
+    };
+    res.json(response);
+  } catch (error) {
+    console.error('❌ Error eliminando reporte:', error);
+    const response: ApiResponse<null> = {
+      success: false,
+      error: (error as Error).message
+    };
+    res.status(500).json(response);
+  }
+});
 
 export { router as reporteRouter };
