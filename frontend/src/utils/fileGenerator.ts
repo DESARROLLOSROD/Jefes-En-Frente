@@ -302,7 +302,7 @@ export const generarExcelReporte = async (
     if (datos.controlAcarreo.length) {
         addTableSection(
             'CONTROL DE ACARREO',
-            ['No.', 'Material', 'No. Viaje', 'Capacidad', 'Vol. Suelto', 'Capa No.', 'Elevación Ariza', 'Capa Origen', 'Destino'],
+            ['No.', 'Material', 'No. Viaje', 'Capacidad', 'Vol. Suelto', 'Capa No.', 'Elevación', 'Capa Origen', 'Destino'],
             datos.controlAcarreo,
             true
         );
