@@ -94,6 +94,8 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
         doc.setTextColor(100, 100, 100);
         doc.text(`Total Volumen: ${estadisticas.acarreo.totalVolumen.toLocaleString()} m³`, leftColX, yPos);
         yPos += 4;
+        doc.text(`Total de Viajes: ${estadisticas.acarreo.totalViajes.toLocaleString()}`, leftColX, yPos);
+        yPos += 4;
         doc.text(`Material más movido: ${estadisticas.acarreo.materialMasMovido}`, leftColX, yPos);
         yPos += 5;
 
@@ -159,6 +161,8 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
         doc.setFontSize(8);
         doc.setTextColor(100, 100, 100);
         doc.text(`Total Volumen: ${estadisticas.agua.volumenTotal.toLocaleString()} m³`, leftColX, yPos);
+        yPos += 4;
+        doc.text(`Total de Viajes: ${estadisticas.agua.totalViajes.toLocaleString()}`, leftColX, yPos);
         yPos += 4;
         doc.text(`Origen más utilizado: ${estadisticas.agua.origenMasUtilizado}`, leftColX, yPos);
         yPos += 5;
@@ -296,6 +300,13 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
         doc.text(`Vehículo más utilizado: ${estadisticas.vehiculos.vehiculoMasUtilizado}`, rightColX, yPosRight);
         yPosRight += 5;
 
+        // Tabla de distribución de horas
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(...BLUE_RGB);
+        doc.text('Distribución de Horas:', rightColX, yPosRight);
+        yPosRight += 3;
+
         autoTable(doc, {
             startY: yPosRight,
             head: [['Vehículo', 'Horas', '%']],
@@ -319,11 +330,11 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
 
         yPosRight = (doc as any).lastAutoTable.finalY + 4;
 
-        // Gráfica de barras
+        // Gráfica de barras de horas
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(8);
         doc.setTextColor(...BLUE_RGB);
-        doc.text('Gráfica de distribución:', rightColX, yPosRight);
+        doc.text('Gráfica de horas de operación:', rightColX, yPosRight);
         yPosRight += 4;
 
         const maxHoras = Math.max(...estadisticas.vehiculos.vehiculos.map(v => v.horasOperacion));
@@ -339,6 +350,73 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
             doc.setFontSize(6);
             doc.setTextColor(60, 60, 60);
             doc.text(vehiculo.nombre.substring(0, 12), rightColX + barWidth + 2, yPosRight);
+
+            yPosRight += 4;
+        });
+
+        yPosRight += 4;
+
+        // Tabla de todos los vehículos utilizados
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(...BLUE_RGB);
+        doc.text('Vehículos Utilizados:', rightColX, yPosRight);
+        yPosRight += 3;
+
+        autoTable(doc, {
+            startY: yPosRight,
+            head: [['Vehículo', 'No. Económico']],
+            body: estadisticas.vehiculos.vehiculos.map(v => [
+                v.nombre,
+                v.noEconomico
+            ]),
+            theme: 'grid',
+            headStyles: {
+                fillColor: [107, 110, 201],
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                fontSize: 8,
+                halign: 'center'
+            },
+            styles: { fontSize: 7, cellPadding: 1.5 },
+            margin: { left: rightColX, right: 10 },
+            tableWidth: colWidthHalf
+        });
+
+        yPosRight = (doc as any).lastAutoTable.finalY + 4;
+
+        // Gráfica adicional de vehículos por tipo
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(...BLUE_RGB);
+        doc.text('Gráfica de vehículos por tipo:', rightColX, yPosRight);
+        yPosRight += 4;
+
+        // Agrupar vehículos por tipo (basado en el nombre)
+        const vehiculosPorTipo = estadisticas.vehiculos.vehiculos.reduce((acc, v) => {
+            const tipo = v.nombre.split(' ')[0]; // Tomar la primera palabra como tipo
+            if (!acc[tipo]) {
+                acc[tipo] = 0;
+            }
+            acc[tipo]++;
+            return acc;
+        }, {} as Record<string, number>);
+
+        const tiposOrdenados = Object.entries(vehiculosPorTipo).sort((a, b) => b[1] - a[1]);
+        const maxCantidadTipo = Math.max(...tiposOrdenados.map(([, cantidad]) => cantidad));
+
+        tiposOrdenados.forEach(([tipo, cantidad]) => {
+            const barWidth = maxCantidadTipo > 0 ? Math.max(2, (cantidad / maxCantidadTipo) * (colWidthHalf - 30)) : 2;
+
+            // Barra
+            doc.setFillColor(139, 142, 201);
+            doc.rect(rightColX, yPosRight - 2, barWidth, 3, 'F');
+
+            // Etiqueta
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(6);
+            doc.setTextColor(60, 60, 60);
+            doc.text(`${tipo}: ${cantidad}`, rightColX + barWidth + 2, yPosRight);
 
             yPosRight += 4;
         });

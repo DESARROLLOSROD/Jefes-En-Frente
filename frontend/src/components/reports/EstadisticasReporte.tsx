@@ -52,9 +52,19 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                     <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
                         <span className="mr-2" role="img" aria-label="Paquete">📦</span> CONTROL DE ACARREO
                     </h3>
-                    <div className="mb-4">
-                        <p className="text-sm text-gray-600">Total Volumen: <span className="font-bold text-lg text-blue-600">{estadisticas.acarreo.totalVolumen.toLocaleString()} m³</span></p>
-                        <p className="text-sm text-gray-600">Material más movido: <span className="font-semibold">{estadisticas.acarreo.materialMasMovido}</span></p>
+                    <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="bg-blue-50 p-3 rounded">
+                            <p className="text-xs text-gray-600">Total Volumen</p>
+                            <p className="font-bold text-xl text-blue-600">{estadisticas.acarreo.totalVolumen.toLocaleString()} m³</p>
+                        </div>
+                        <div className="bg-green-50 p-3 rounded">
+                            <p className="text-xs text-gray-600">Total de Viajes</p>
+                            <p className="font-bold text-xl text-green-600">{estadisticas.acarreo.totalViajes.toLocaleString()}</p>
+                        </div>
+                        <div className="bg-purple-50 p-3 rounded">
+                            <p className="text-xs text-gray-600">Material más movido</p>
+                            <p className="font-semibold text-sm text-purple-600">{estadisticas.acarreo.materialMasMovido}</p>
+                        </div>
                     </div>
                     <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={estadisticas.acarreo.materiales}>
@@ -143,9 +153,19 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                     <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
                         <span className="mr-2" role="img" aria-label="Agua">💧</span> CONTROL DE AGUA
                     </h3>
-                    <div className="mb-4">
-                        <p className="text-sm text-gray-600">Total Volumen: <span className="font-bold text-lg text-blue-600">{estadisticas.agua.volumenTotal.toLocaleString()} m³</span></p>
-                        <p className="text-sm text-gray-600">Origen más utilizado: <span className="font-semibold">{estadisticas.agua.origenMasUtilizado}</span></p>
+                    <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="bg-blue-50 p-3 rounded">
+                            <p className="text-xs text-gray-600">Total Volumen</p>
+                            <p className="font-bold text-xl text-blue-600">{estadisticas.agua.volumenTotal.toLocaleString()} m³</p>
+                        </div>
+                        <div className="bg-green-50 p-3 rounded">
+                            <p className="text-xs text-gray-600">Total de Viajes</p>
+                            <p className="font-bold text-xl text-green-600">{estadisticas.agua.totalViajes.toLocaleString()}</p>
+                        </div>
+                        <div className="bg-purple-50 p-3 rounded">
+                            <p className="text-xs text-gray-600">Origen más utilizado</p>
+                            <p className="font-semibold text-sm text-purple-600">{estadisticas.agua.origenMasUtilizado}</p>
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -214,23 +234,35 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                     <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
                         <span className="mr-2" role="img" aria-label="Tractor">🚜</span> VEHÍCULOS
                     </h3>
-                    <div className="mb-4">
-                        <p className="text-sm text-gray-600">Total Horas: <span className="font-bold text-lg text-blue-600">{estadisticas.vehiculos.totalHoras.toLocaleString()} hrs</span></p>
-                        <p className="text-sm text-gray-600">Vehículo más utilizado: <span className="font-semibold">{estadisticas.vehiculos.vehiculoMasUtilizado}</span></p>
+                    <div className="mb-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="bg-blue-50 p-3 rounded">
+                            <p className="text-xs text-gray-600">Total Horas</p>
+                            <p className="font-bold text-xl text-blue-600">{estadisticas.vehiculos.totalHoras.toLocaleString()} hrs</p>
+                        </div>
+                        <div className="bg-purple-50 p-3 rounded">
+                            <p className="text-xs text-gray-600">Vehículo más utilizado</p>
+                            <p className="font-semibold text-sm text-purple-600">{estadisticas.vehiculos.vehiculoMasUtilizado}</p>
+                        </div>
                     </div>
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={estadisticas.vehiculos.vehiculos}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="noEconomico" />
-                            <YAxis />
-                            <Tooltip formatter={(value: number) => `${value.toLocaleString()} hrs`} />
-                            <Legend />
-                            <Bar dataKey="horasOperacion" fill="#ABABC9" name="Horas de Operación" />
-                        </BarChart>
-                    </ResponsiveContainer>
 
-                    {/* Tabla de datos */}
-                    <div className="mt-6 overflow-x-auto">
+                    {/* Gráfica de Horas de Operación */}
+                    <div className="mb-6">
+                        <h4 className="text-lg font-semibold text-gray-700 mb-3">Horas de Operación por Vehículo</h4>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={estadisticas.vehiculos.vehiculos}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="noEconomico" />
+                                <YAxis />
+                                <Tooltip formatter={(value: number) => `${value.toLocaleString()} hrs`} />
+                                <Legend />
+                                <Bar dataKey="horasOperacion" fill="#ABABC9" name="Horas de Operación" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    {/* Tabla de Horas de Operación */}
+                    <div className="mb-6 overflow-x-auto">
+                        <h4 className="text-lg font-semibold text-gray-700 mb-3">Distribución de Horas</h4>
                         <table className="min-w-full divide-y divide-gray-200">
                             <caption className="sr-only">Detalle de horas de operación por vehículo</caption>
                             <thead className="bg-gray-50">
@@ -243,7 +275,7 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {estadisticas.vehiculos.vehiculos.map((vehiculo) => (
-                                    <tr key={`vehiculo-${vehiculo.noEconomico}`}>
+                                    <tr key={`vehiculo-horas-${vehiculo.noEconomico}`}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{vehiculo.nombre}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{vehiculo.noEconomico}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{vehiculo.horasOperacion.toLocaleString()}</td>
@@ -252,6 +284,51 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                                 ))}
                             </tbody>
                         </table>
+                    </div>
+
+                    {/* Tabla de Todos los Vehículos Utilizados */}
+                    <div className="mb-6 overflow-x-auto">
+                        <h4 className="text-lg font-semibold text-gray-700 mb-3">Vehículos Utilizados</h4>
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <caption className="sr-only">Lista completa de vehículos utilizados</caption>
+                            <thead className="bg-blue-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vehículo</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Económico</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {estadisticas.vehiculos.vehiculos.map((vehiculo) => (
+                                    <tr key={`vehiculo-listado-${vehiculo.noEconomico}`}>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{vehiculo.nombre}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{vehiculo.noEconomico}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Gráfica de Vehículos por Tipo */}
+                    <div>
+                        <h4 className="text-lg font-semibold text-gray-700 mb-3">Distribución por Tipo de Vehículo</h4>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart
+                                data={Object.entries(
+                                    estadisticas.vehiculos.vehiculos.reduce((acc, v) => {
+                                        const tipo = v.nombre.split(' ')[0];
+                                        acc[tipo] = (acc[tipo] || 0) + 1;
+                                        return acc;
+                                    }, {} as Record<string, number>)
+                                ).map(([tipo, cantidad]) => ({ tipo, cantidad }))}
+                            >
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="tipo" />
+                                <YAxis />
+                                <Tooltip formatter={(value: number) => `${value} vehículo(s)`} />
+                                <Legend />
+                                <Bar dataKey="cantidad" fill="#6B6EC9" name="Cantidad de Vehículos" />
+                            </BarChart>
+                        </ResponsiveContainer>
                     </div>
                 </div>
             )}

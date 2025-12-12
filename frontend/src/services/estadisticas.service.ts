@@ -15,6 +15,7 @@ export interface EstadisticasResponse {
             porcentaje: number;
         }>;
         totalVolumen: number;
+        totalViajes: number;
         materialMasMovido: string;
     };
     material: {
@@ -32,6 +33,7 @@ export interface EstadisticasResponse {
             porcentaje: number;
         }>;
         volumenTotal: number;
+        totalViajes: number;
         origenMasUtilizado: string;
     };
     vehiculos: {

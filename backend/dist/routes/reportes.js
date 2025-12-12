@@ -98,11 +98,13 @@ router.get('/estadisticas', async (req, res) => {
         console.log(`✅ ${reportes.length} reportes encontrados para estadísticas`);
         // === ESTADÍSTICAS DE ACARREO ===
         const materialesAcarreo = new Map();
+        let totalViajesAcarreo = 0;
         reportes.forEach(reporte => {
             reporte.controlAcarreo?.forEach(item => {
                 const volumen = parseFloat(item.volSuelto) || 0;
                 const actual = materialesAcarreo.get(item.material) || 0;
                 materialesAcarreo.set(item.material, actual + volumen);
+                totalViajesAcarreo++; // Contar cada entrada como un viaje
             });
         });
         const totalVolumenAcarreo = Array.from(materialesAcarreo.values()).reduce((sum, vol) => sum + vol, 0);
@@ -137,12 +139,14 @@ router.get('/estadisticas', async (req, res) => {
         // === ESTADÍSTICAS DE AGUA ===
         const aguaPorOrigen = new Map();
         let totalVolumenAgua = 0;
+        let totalViajesAgua = 0;
         reportes.forEach(reporte => {
             reporte.controlAgua?.forEach(item => {
                 const volumen = parseFloat(item.volumen) || 0;
                 totalVolumenAgua += volumen;
                 const actual = aguaPorOrigen.get(item.origen) || 0;
                 aguaPorOrigen.set(item.origen, actual + volumen);
+                totalViajesAgua++; // Contar cada entrada como un viaje
             });
         });
         const aguaArray = Array.from(aguaPorOrigen.entries())
@@ -190,6 +194,7 @@ router.get('/estadisticas', async (req, res) => {
             acarreo: {
                 materiales: acarreoArray,
                 totalVolumen: parseFloat(totalVolumenAcarreo.toFixed(2)),
+                totalViajes: totalViajesAcarreo,
                 materialMasMovido: acarreoArray[0]?.nombre || 'N/A'
             },
             material: {
@@ -199,6 +204,7 @@ router.get('/estadisticas', async (req, res) => {
             agua: {
                 porOrigen: aguaArray,
                 volumenTotal: parseFloat(totalVolumenAgua.toFixed(2)),
+                totalViajes: totalViajesAgua,
                 origenMasUtilizado: aguaArray[0]?.origen || 'N/A'
             },
             vehiculos: {
