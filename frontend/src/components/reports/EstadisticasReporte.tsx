@@ -159,7 +159,7 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                                     outerRadius={80}
 
                                 >
-                                    {estadisticas.agua.porOrigen.map((entry, index) => (
+                                    {estadisticas.agua.porOrigen.map((_, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
