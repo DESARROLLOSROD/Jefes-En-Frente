@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import FormularioReporte from '../reports/FormularioReporte';
 import ListaReportes from '../reports/ListaReportes';
@@ -327,8 +327,8 @@ const Dashboard: React.FC = () => {
                 onClick={handleCargarEstadisticas}
                 disabled={loadingEstadisticas}
                 className={`w-full md:w-auto px-6 py-3 rounded-lg font-semibold text-white ${loadingEstadisticas
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-blue-600 hover:bg-blue-700'
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700'
                   }`}
               >
                 {loadingEstadisticas ? '⏳ CARGANDO...' : '📊 GENERAR ESTADÍSTICAS'}
