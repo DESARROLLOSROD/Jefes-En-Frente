@@ -21,7 +21,7 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
     let currentRow = 1;
 
     // =============== TÍTULO PRINCIPAL ===============
-    sheet.mergeCells(`A${currentRow}:F${currentRow}`);
+    sheet.mergeCells(`A${currentRow}:H${currentRow}`);
     const titleCell = sheet.getCell(`A${currentRow}`);
     titleCell.value = '📊 ANÁLISIS Y ESTADÍSTICAS';
     titleCell.font = { bold: true, size: 18, color: { argb: 'FF1A1A1A' } };
@@ -30,14 +30,14 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
     sheet.getRow(currentRow).height = 30;
     currentRow++;
 
-    sheet.mergeCells(`A${currentRow}:F${currentRow}`);
+    sheet.mergeCells(`A${currentRow}:H${currentRow}`);
     const subtitleCell = sheet.getCell(`A${currentRow}`);
     subtitleCell.value = 'GENERADO POR JEFES EN FRENTE';
     subtitleCell.font = { size: 10, color: { argb: `FF${GRAY}` } };
     subtitleCell.alignment = { horizontal: 'center', vertical: 'middle' };
     currentRow += 2;
 
-    // =============== INFORMACIÓN GENERAL (3 COLUMNAS) ===============
+    // =============== INFORMACIÓN GENERAL (4 COLUMNAS) ===============
     const fechaInicio = new Date(estadisticas.rangoFechas.inicio + 'T00:00:00').toLocaleDateString('es-MX');
     const fechaFin = new Date(estadisticas.rangoFechas.fin + 'T00:00:00').toLocaleDateString('es-MX');
 
@@ -67,15 +67,28 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
     reportesValueCell.font = { bold: true, size: 16, color: { argb: `FF${GREEN}` } };
     reportesValueCell.alignment = { horizontal: 'left', vertical: 'bottom' };
 
-    // Columna 3: Material Más Movido
+    // Columna 3: Total Viajes Generales
     sheet.mergeCells(`E${currentRow}:F${currentRow + 1}`);
-    const materialCell = sheet.getCell(`E${currentRow}`);
+    const viajesCell = sheet.getCell(`E${currentRow}`);
+    viajesCell.value = 'Total Viajes Generales';
+    viajesCell.font = { bold: false, size: 10, color: { argb: `FF${GRAY}` } };
+    viajesCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF9C4' } }; // Light Yellow
+    viajesCell.alignment = { horizontal: 'left', vertical: 'top' };
+
+    const viajesValueCell = sheet.getCell(`E${currentRow + 1}`);
+    viajesValueCell.value = estadisticas.totalViajes || 0;
+    viajesValueCell.font = { bold: true, size: 16, color: { argb: 'FFF59E0B' } }; // Yellow
+    viajesValueCell.alignment = { horizontal: 'left', vertical: 'bottom' };
+
+    // Columna 4: Material Más Movido
+    sheet.mergeCells(`G${currentRow}:H${currentRow + 1}`);
+    const materialCell = sheet.getCell(`G${currentRow}`);
     materialCell.value = 'Material Más Movido';
     materialCell.font = { bold: false, size: 10, color: { argb: `FF${GRAY}` } };
     materialCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${LIGHT_PURPLE}` } };
     materialCell.alignment = { horizontal: 'left', vertical: 'top' };
 
-    const materialValueCell = sheet.getCell(`E${currentRow + 1}`);
+    const materialValueCell = sheet.getCell(`G${currentRow + 1}`);
     materialValueCell.value = estadisticas.acarreo.materialMasMovido || 'N/A';
     materialValueCell.font = { bold: true, size: 11, color: { argb: `FF${PURPLE}` } };
     materialValueCell.alignment = { horizontal: 'left', vertical: 'bottom' };

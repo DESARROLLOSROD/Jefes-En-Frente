@@ -8,6 +8,7 @@ export interface EstadisticasResponse {
         fin: string;
     };
     totalReportes: number;
+    totalViajes: number;
     acarreo: {
         materiales: Array<{
             nombre: string;

@@ -30,8 +30,8 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
 
     let yPos = 30;
 
-    // =============== INFORMACIÓN GENERAL (3 COLUMNAS) ===============
-    const colWidth = (pageWidth - 30) / 3;
+    // =============== INFORMACIÓN GENERAL (4 COLUMNAS) ===============
+    const colWidth = (pageWidth - 35) / 4; // 4 columnas con 5mm de espacio entre ellas (3 espacios)
 
     // Columna 1: Período
     doc.setFillColor(...LIGHT_BLUE_RGB);
@@ -60,17 +60,35 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
     doc.setTextColor(...GREEN_RGB);
     doc.text(estadisticas.totalReportes.toString(), 15 + colWidth + 5, yPos + 12);
 
-    // Columna 3: Material Más Movido
-    doc.setFillColor(243, 232, 255);
+    // Columna 3: Total Viajes Generales
+    doc.setFillColor(254, 243, 199); // Amarillo claro
     doc.rect(10 + (colWidth + 5) * 2, yPos, colWidth, 15, 'F');
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(100, 100, 100);
-    doc.text('Material Más Movido', 15 + (colWidth + 5) * 2, yPos + 5);
+    doc.text('Total Viajes Generales', 15 + (colWidth + 5) * 2, yPos + 5);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.setTextColor(234, 179, 8); // Amarillo oscuro
+    doc.text((estadisticas.totalViajes || 0).toLocaleString(), 15 + (colWidth + 5) * 2, yPos + 12);
+
+    // Columna 4: Material Más Movido
+    doc.setFillColor(243, 232, 255);
+    doc.rect(10 + (colWidth + 5) * 3, yPos, colWidth, 15, 'F');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    doc.text('Material Más Movido', 15 + (colWidth + 5) * 3, yPos + 5);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.setTextColor(...PURPLE_RGB);
-    doc.text(estadisticas.acarreo.materialMasMovido || 'N/A', 15 + (colWidth + 5) * 2, yPos + 12);
+
+    // Ajustar texto largo si es necesario
+    const materialTexto = estadisticas.acarreo.materialMasMovido || 'N/A';
+    // Si es muy largo, cortarlo
+    const textoCorto = materialTexto.length > 15 ? materialTexto.substring(0, 12) + '...' : materialTexto;
+
+    doc.text(textoCorto, 15 + (colWidth + 5) * 3, yPos + 12);
 
     yPos += 20;
 

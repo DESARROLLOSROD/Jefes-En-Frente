@@ -28,7 +28,7 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                 <h2 className="text-2xl font-bold text-gray-800 mb-4">
                     📊 ANÁLISIS DE ACTIVIDADES
                 </h2>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div className="bg-blue-50 p-4 rounded-lg">
                         <p className="text-sm text-gray-600">Período</p>
                         <p className="text-lg font-semibold text-gray-800">
@@ -38,6 +38,10 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                     <div className="bg-green-50 p-4 rounded-lg">
                         <p className="text-sm text-gray-600">Total de Reportes</p>
                         <p className="text-3xl font-bold text-green-600">{estadisticas.totalReportes}</p>
+                    </div>
+                    <div className="bg-yellow-50 p-4 rounded-lg">
+                        <p className="text-sm text-gray-600">Total Viajes Generales</p>
+                        <p className="text-3xl font-bold text-yellow-600">{estadisticas.totalViajes?.toLocaleString() || 0}</p>
                     </div>
                     <div className="bg-purple-50 p-4 rounded-lg">
                         <p className="text-sm text-gray-600">Material Más Movido</p>

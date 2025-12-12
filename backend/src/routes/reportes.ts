@@ -238,7 +238,8 @@ router.get('/estadisticas', async (req: AuthRequest, res) => {
         vehiculos: vehiculosArray,
         totalHoras: parseFloat(totalHoras.toFixed(2)),
         vehiculoMasUtilizado: vehiculosArray[0]?.noEconomico || 'N/A'
-      }
+      },
+      totalViajes: totalViajesAcarreo + totalViajesAgua
     };
 
     const response: ApiResponse<typeof estadisticas> = {
