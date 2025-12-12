@@ -186,14 +186,15 @@ router.get('/estadisticas', async (req: AuthRequest, res) => {
     reportes.forEach(reporte => {
       reporte.controlMaquinaria?.forEach(item => {
         const horas = item.horasOperacion || 0;
-        const key = item.tipo + '_' + (item.vehiculoId || 'sin_id'); // Usar tipo + vehiculoId como clave
+        const noEconomico = item.numeroEconomico || item.tipo || 'S/N';
+        const key = noEconomico; // Usar número económico como clave única
         const actual = vehiculosMap.get(key);
         if (actual) {
           actual.horas += horas;
         } else {
           vehiculosMap.set(key, {
-            nombre: item.tipo,
-            noEconomico: item.tipo, // Usar tipo como identificador
+            nombre: item.tipo || 'Sin tipo',
+            noEconomico: noEconomico,
             horas
           });
         }

@@ -365,10 +365,11 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
 
         autoTable(doc, {
             startY: yPosRight,
-            head: [['Vehículo', 'No. Económico']],
+            head: [['Tipo de Vehículo', 'No. Económico', 'Horas']],
             body: estadisticas.vehiculos.vehiculos.map(v => [
                 v.nombre,
-                v.noEconomico
+                v.noEconomico,
+                v.horasOperacion.toLocaleString()
             ]),
             theme: 'grid',
             headStyles: {
