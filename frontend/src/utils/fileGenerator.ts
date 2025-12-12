@@ -148,7 +148,6 @@ export const generarExcelReporte = async (reporte: ReporteActividades) => {
         // Agregar fila de total si existe
         if (hasTotal && data.length > 0) {
             const totalRow = worksheet.getRow(currentRow);
-            const lastRow = data[data.length - 1];
 
             // Calcular el total de volumen
             let totalVolumen = 0;
