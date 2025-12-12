@@ -18,7 +18,7 @@ export const generarExcelReporte = async (reporte: ReporteActividades) => {
     const sectionTitleStyle = {
         font: { bold: true, size: 14, color: { argb: 'FFFFFFFF' } },
         fill: { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FF4C4EC9' } },
-        alignment: { vertical: 'middle' as const, horizontal: 'left' as const },
+        alignment: { vertical: 'middle' as const, horizontal: 'left' as const, indent: 1 },
         border: {
             top: { style: 'thin' as const },
             left: { style: 'thin' as const },
@@ -40,13 +40,33 @@ export const generarExcelReporte = async (reporte: ReporteActividades) => {
         }
     };
 
-    // Estilo para celdas de datos
+    // Estilo para celdas de datos (filas pares)
     const dataStyle = {
         border: {
-            top: { style: 'thin' as const, color: { argb: 'FFD3D3D3' } },
-            left: { style: 'thin' as const, color: { argb: 'FFD3D3D3' } },
-            bottom: { style: 'thin' as const, color: { argb: 'FFD3D3D3' } },
-            right: { style: 'thin' as const, color: { argb: 'FFD3D3D3' } }
+            top: { style: 'thin' as const, color: { argb: 'FFE0E0E0' } },
+            left: { style: 'thin' as const, color: { argb: 'FFE0E0E0' } },
+            bottom: { style: 'thin' as const, color: { argb: 'FFE0E0E0' } },
+            right: { style: 'thin' as const, color: { argb: 'FFE0E0E0' } }
+        },
+        alignment: { vertical: 'middle' as const }
+    };
+
+    // Estilo para filas alternas (zebra striping)
+    const alternateDataStyle = {
+        ...dataStyle,
+        fill: { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFF5F5F5' } }
+    };
+
+    // Estilo para fila de total
+    const totalStyle = {
+        font: { bold: true, size: 11 },
+        fill: { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFFFE4B5' } },
+        alignment: { vertical: 'middle' as const, horizontal: 'right' as const },
+        border: {
+            top: { style: 'medium' as const },
+            left: { style: 'thin' as const },
+            bottom: { style: 'medium' as const },
+            right: { style: 'thin' as const }
         }
     };
 
@@ -55,7 +75,7 @@ export const generarExcelReporte = async (reporte: ReporteActividades) => {
     titleRow.getCell(1).value = 'INFORMACIÓN GENERAL';
     titleRow.getCell(1).style = sectionTitleStyle;
     worksheet.mergeCells(currentRow, 1, currentRow, 9);
-    titleRow.height = 25;
+    titleRow.height = 30;
     currentRow++;
 
     // Encabezados
@@ -64,6 +84,7 @@ export const generarExcelReporte = async (reporte: ReporteActividades) => {
     infoHeaderRow.getCell(2).value = 'Valor';
     infoHeaderRow.getCell(1).style = headerStyle;
     infoHeaderRow.getCell(2).style = headerStyle;
+    infoHeaderRow.height = 25;
     currentRow++;
 
     // Datos de información general
@@ -77,19 +98,20 @@ export const generarExcelReporte = async (reporte: ReporteActividades) => {
         ['Sobrestante', reporte.sobrestante]
     ];
 
-    infoData.forEach(([campo, valor]) => {
+    infoData.forEach(([campo, valor], index) => {
         const row = worksheet.getRow(currentRow);
         row.getCell(1).value = campo;
         row.getCell(2).value = valor;
         row.getCell(1).style = { ...dataStyle, font: { bold: true } };
-        row.getCell(2).style = dataStyle;
+        row.getCell(2).style = index % 2 === 0 ? dataStyle : alternateDataStyle;
+        row.height = 22;
         currentRow++;
     });
 
-    currentRow++; // Espacio
+    currentRow += 2; // Espacio entre secciones
 
     // Helper function para agregar sección con tabla
-    const addTableSection = (title: string, headers: string[], data: any[][]) => {
+    const addTableSection = (title: string, headers: string[], data: any[][], hasTotal: boolean = false) => {
         if (data.length === 0) return;
 
         // Título de sección
@@ -97,7 +119,7 @@ export const generarExcelReporte = async (reporte: ReporteActividades) => {
         sectionRow.getCell(1).value = title;
         sectionRow.getCell(1).style = sectionTitleStyle;
         worksheet.mergeCells(currentRow, 1, currentRow, headers.length);
-        sectionRow.height = 25;
+        sectionRow.height = 30;
         currentRow++;
 
         // Encabezados
@@ -106,27 +128,69 @@ export const generarExcelReporte = async (reporte: ReporteActividades) => {
             headerRow.getCell(index + 1).value = header;
             headerRow.getCell(index + 1).style = headerStyle;
         });
+        headerRow.height = 25;
         currentRow++;
 
-        // Datos
-        data.forEach(rowData => {
+        // Datos (filtrar la fila de total si existe)
+        const dataRows = hasTotal ? data.slice(0, -1) : data;
+        dataRows.forEach((rowData, index) => {
             const dataRow = worksheet.getRow(currentRow);
-            rowData.forEach((value, index) => {
-                dataRow.getCell(index + 1).value = value;
-                dataRow.getCell(index + 1).style = dataStyle;
+            rowData.forEach((value, colIndex) => {
+                // Limpiar valores que puedan ser objetos
+                const cleanValue = typeof value === 'object' ? '' : value;
+                dataRow.getCell(colIndex + 1).value = cleanValue;
+                dataRow.getCell(colIndex + 1).style = index % 2 === 0 ? dataStyle : alternateDataStyle;
             });
+            dataRow.height = 22;
             currentRow++;
         });
 
-        currentRow++; // Espacio
+        // Agregar fila de total si existe
+        if (hasTotal && data.length > 0) {
+            const totalRow = worksheet.getRow(currentRow);
+            const lastRow = data[data.length - 1];
+
+            // Calcular el total de volumen
+            let totalVolumen = 0;
+            if (title === 'CONTROL DE ACARREO') {
+                dataRows.forEach(row => {
+                    const vol = parseFloat(row[4]) || 0; // Columna Vol. Suelto
+                    totalVolumen += vol;
+                });
+                totalRow.getCell(1).value = '';
+                totalRow.getCell(2).value = '';
+                totalRow.getCell(3).value = '';
+                totalRow.getCell(4).value = 'TOTAL VOLUMEN:';
+                totalRow.getCell(5).value = `${totalVolumen.toFixed(2)} m³`;
+                totalRow.getCell(4).style = totalStyle;
+                totalRow.getCell(5).style = totalStyle;
+            } else if (title === 'CONTROL DE AGUA') {
+                dataRows.forEach(row => {
+                    const vol = parseFloat(row[3]) || 0; // Columna Volumen
+                    totalVolumen += vol;
+                });
+                totalRow.getCell(1).value = '';
+                totalRow.getCell(2).value = '';
+                totalRow.getCell(3).value = 'TOTAL VOLUMEN:';
+                totalRow.getCell(4).value = `${totalVolumen.toFixed(2)} m³`;
+                totalRow.getCell(3).style = totalStyle;
+                totalRow.getCell(4).style = totalStyle;
+            }
+
+            totalRow.height = 25;
+            currentRow++;
+        }
+
+        currentRow += 2; // Espacio entre secciones
     };
 
     // === CONTROL DE ACARREO ===
     if (datos.controlAcarreo.length) {
         addTableSection(
             'CONTROL DE ACARREO',
-            ['No.', 'Material', 'No. Viaje', 'Capacidad', 'Vol. Suelto', 'Capa No.', 'Elevación', 'Capa Origen', 'Destino'],
-            datos.controlAcarreo
+            ['No.', 'Material', 'No. Viaje', 'Capacidad', 'Vol. Suelto', 'Capa No.', 'Elevación Ariza', 'Capa Origen', 'Destino'],
+            datos.controlAcarreo,
+            true
         );
     }
 
@@ -135,7 +199,8 @@ export const generarExcelReporte = async (reporte: ReporteActividades) => {
         addTableSection(
             'CONTROL DE MATERIAL',
             ['Material', 'Unidad', 'Cantidad', 'Zona', 'Elevación'],
-            datos.controlMaterial
+            datos.controlMaterial,
+            false
         );
     }
 
@@ -144,7 +209,8 @@ export const generarExcelReporte = async (reporte: ReporteActividades) => {
         addTableSection(
             'CONTROL DE AGUA',
             ['No. Económico', 'Viajes', 'Capacidad', 'Volumen', 'Origen', 'Destino'],
-            datos.controlAgua
+            datos.controlAgua,
+            true
         );
     }
 
@@ -153,7 +219,8 @@ export const generarExcelReporte = async (reporte: ReporteActividades) => {
         addTableSection(
             'CONTROL DE MAQUINARIA',
             ['Tipo', 'No. Económico', 'H. Inicial', 'H. Final', 'H. Operación', 'Operador', 'Actividad'],
-            datos.controlMaquinaria
+            datos.controlMaquinaria,
+            false
         );
     }
 
@@ -163,27 +230,31 @@ export const generarExcelReporte = async (reporte: ReporteActividades) => {
         obsRow.getCell(1).value = 'OBSERVACIONES';
         obsRow.getCell(1).style = sectionTitleStyle;
         worksheet.mergeCells(currentRow, 1, currentRow, 9);
-        obsRow.height = 25;
+        obsRow.height = 30;
         currentRow++;
 
         const obsDataRow = worksheet.getRow(currentRow);
         obsDataRow.getCell(1).value = reporte.observaciones;
-        obsDataRow.getCell(1).style = { ...dataStyle, alignment: { wrapText: true, vertical: 'top' as const } };
+        obsDataRow.getCell(1).style = {
+            ...dataStyle,
+            alignment: { wrapText: true, vertical: 'top' as const },
+            fill: { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFFAFAFA' } }
+        };
         worksheet.mergeCells(currentRow, 1, currentRow, 9);
-        obsDataRow.height = 60;
+        obsDataRow.height = 80;
     }
 
     // Configurar anchos de columna
     worksheet.columns = [
-        { width: 18 },
-        { width: 22 },
-        { width: 14 },
-        { width: 14 },
-        { width: 14 },
-        { width: 14 },
-        { width: 18 },
-        { width: 18 },
-        { width: 18 }
+        { width: 20 },
+        { width: 25 },
+        { width: 16 },
+        { width: 16 },
+        { width: 16 },
+        { width: 16 },
+        { width: 20 },
+        { width: 20 },
+        { width: 20 }
     ];
 
     // Generar y descargar archivo
