@@ -86,7 +86,7 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(11);
         doc.setTextColor(...BLUE_RGB);
-        doc.text('📦 CONTROL DE ACARREO', leftColX, yPos);
+        doc.text('CONTROL DE ACARREO', leftColX, yPos);
         yPos += 5;
 
         doc.setFont('helvetica', 'normal');
@@ -118,7 +118,33 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
             tableWidth: colWidthHalf
         });
 
-        yPos = (doc as any).lastAutoTable.finalY + 6;
+        yPos = (doc as any).lastAutoTable.finalY + 4;
+
+        // Gráfica de barras
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(...BLUE_RGB);
+        doc.text('Gráfica de distribución:', leftColX, yPos);
+        yPos += 4;
+
+        const maxVolumen = Math.max(...estadisticas.acarreo.materiales.map(m => m.volumen));
+        estadisticas.acarreo.materiales.forEach((material) => {
+            const barWidth = maxVolumen > 0 ? Math.max(2, (material.volumen / maxVolumen) * (colWidthHalf - 30)) : 2;
+
+            // Barra
+            doc.setFillColor(...BLUE_RGB);
+            doc.rect(leftColX, yPos - 2, barWidth, 3, 'F');
+
+            // Etiqueta
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(6);
+            doc.setTextColor(60, 60, 60);
+            doc.text(material.nombre.substring(0, 12), leftColX + barWidth + 2, yPos);
+
+            yPos += 4;
+        });
+
+        yPos += 2;
     }
 
     // === CONTROL DE AGUA ===
@@ -126,7 +152,7 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(11);
         doc.setTextColor(...BLUE_RGB);
-        doc.text('💧 CONTROL DE AGUA', leftColX, yPos);
+        doc.text('CONTROL DE AGUA', leftColX, yPos);
         yPos += 5;
 
         doc.setFont('helvetica', 'normal');
@@ -158,7 +184,33 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
             tableWidth: colWidthHalf
         });
 
-        yPos = (doc as any).lastAutoTable.finalY + 6;
+        yPos = (doc as any).lastAutoTable.finalY + 4;
+
+        // Gráfica de barras
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(...BLUE_RGB);
+        doc.text('Gráfica de distribución:', leftColX, yPos);
+        yPos += 4;
+
+        const maxVolumenAgua = Math.max(...estadisticas.agua.porOrigen.map(o => o.volumen));
+        estadisticas.agua.porOrigen.forEach((origen) => {
+            const barWidth = maxVolumenAgua > 0 ? Math.max(2, (origen.volumen / maxVolumenAgua) * (colWidthHalf - 30)) : 2;
+
+            // Barra
+            doc.setFillColor(139, 142, 201);
+            doc.rect(leftColX, yPos - 2, barWidth, 3, 'F');
+
+            // Etiqueta
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(6);
+            doc.setTextColor(60, 60, 60);
+            doc.text(origen.origen.substring(0, 12), leftColX + barWidth + 2, yPos);
+
+            yPos += 4;
+        });
+
+        yPos += 2;
     }
 
     // =============== COLUMNA DERECHA ===============
@@ -169,7 +221,7 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(11);
         doc.setTextColor(...BLUE_RGB);
-        doc.text('🏗️ CONTROL DE MATERIAL', rightColX, yPosRight);
+        doc.text('CONTROL DE MATERIAL', rightColX, yPosRight);
         yPosRight += 5;
 
         doc.setFont('helvetica', 'normal');
@@ -199,7 +251,33 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
             tableWidth: colWidthHalf
         });
 
-        yPosRight = (doc as any).lastAutoTable.finalY + 6;
+        yPosRight = (doc as any).lastAutoTable.finalY + 4;
+
+        // Gráfica de barras
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(...BLUE_RGB);
+        doc.text('Gráfica de distribución:', rightColX, yPosRight);
+        yPosRight += 4;
+
+        const maxCantidad = Math.max(...estadisticas.material.materiales.map(m => m.cantidad));
+        estadisticas.material.materiales.forEach((material) => {
+            const barWidth = maxCantidad > 0 ? Math.max(2, (material.cantidad / maxCantidad) * (colWidthHalf - 30)) : 2;
+
+            // Barra
+            doc.setFillColor(107, 110, 201);
+            doc.rect(rightColX, yPosRight - 2, barWidth, 3, 'F');
+
+            // Etiqueta
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(6);
+            doc.setTextColor(60, 60, 60);
+            doc.text(material.nombre.substring(0, 12), rightColX + barWidth + 2, yPosRight);
+
+            yPosRight += 4;
+        });
+
+        yPosRight += 2;
     }
 
     // === VEHÍCULOS ===
@@ -207,7 +285,7 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(11);
         doc.setTextColor(...BLUE_RGB);
-        doc.text('🚜 VEHÍCULOS', rightColX, yPosRight);
+        doc.text('VEHICULOS', rightColX, yPosRight);
         yPosRight += 5;
 
         doc.setFont('helvetica', 'normal');
@@ -237,6 +315,32 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
             styles: { fontSize: 7, cellPadding: 1.5 },
             margin: { left: rightColX, right: 10 },
             tableWidth: colWidthHalf
+        });
+
+        yPosRight = (doc as any).lastAutoTable.finalY + 4;
+
+        // Gráfica de barras
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.setTextColor(...BLUE_RGB);
+        doc.text('Gráfica de distribución:', rightColX, yPosRight);
+        yPosRight += 4;
+
+        const maxHoras = Math.max(...estadisticas.vehiculos.vehiculos.map(v => v.horasOperacion));
+        estadisticas.vehiculos.vehiculos.forEach((vehiculo) => {
+            const barWidth = maxHoras > 0 ? Math.max(2, (vehiculo.horasOperacion / maxHoras) * (colWidthHalf - 30)) : 2;
+
+            // Barra
+            doc.setFillColor(171, 171, 201);
+            doc.rect(rightColX, yPosRight - 2, barWidth, 3, 'F');
+
+            // Etiqueta
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(6);
+            doc.setTextColor(60, 60, 60);
+            doc.text(vehiculo.nombre.substring(0, 12), rightColX + barWidth + 2, yPosRight);
+
+            yPosRight += 4;
         });
     }
 
