@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import FormularioReporte from '../reports/FormularioReporte';
 import ListaReportes from '../reports/ListaReportes';
@@ -30,6 +30,24 @@ const Dashboard: React.FC = () => {
   const [loadingEstadisticas, setLoadingEstadisticas] = useState(false);
   const [fechaInicio, setFechaInicio] = useState<string>('');
   const [fechaFin, setFechaFin] = useState<string>('');
+
+  // Cargar proyectos cuando se entra a la vista de estadísticas
+  useEffect(() => {
+    const cargarProyectos = async () => {
+      if (vistaActual === 'estadisticas' && proyectos.length === 0) {
+        try {
+          const proyectosRes = await proyectoService.obtenerProyectos();
+          if (proyectosRes.success && proyectosRes.data) {
+            setProyectos(proyectosRes.data);
+          }
+        } catch (error) {
+          console.error('Error cargando proyectos:', error);
+        }
+      }
+    };
+
+    cargarProyectos();
+  }, [vistaActual]);
 
   const handleLogout = () => {
     logout();
@@ -93,16 +111,10 @@ const Dashboard: React.FC = () => {
 
     try {
       setLoadingEstadisticas(true);
-      const proyectosRes = await proyectoService.obtenerProyectos();
-
-      if (proyectosRes.success && proyectosRes.data) {
-        setProyectos(proyectosRes.data);
-      }
 
       const idsProyectos = proyectoSeleccionado || 'todos';
       const stats = await obtenerEstadisticas(idsProyectos, fechaInicio, fechaFin);
       setEstadisticas(stats);
-      setVistaActual('estadisticas');
     } catch (error) {
       console.error('Error cargando estadísticas:', error);
       alert('ERROR AL CARGAR ESTADÍSTICAS');
