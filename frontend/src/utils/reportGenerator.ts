@@ -98,7 +98,7 @@ export const prepararDatosVehiculos = (vehiculos: Vehiculo[]) => {
 export const prepararDatosGeneral = (reportes: ReporteActividades[], proyectos: Proyecto[]) => {
     const proyectosMap = new Map(proyectos.map(p => [p._id, p.nombre]));
     return reportes.map(r => ({
-        Proyecto: proyectosMap.get(r.proyecto) || 'N/A',
+        Proyecto: proyectosMap.get(r.proyectoId) || 'N/A',
         Fecha: new Date(r.fecha).toLocaleDateString('es-MX', { timeZone: 'UTC' }),
         Turno: r.turno,
         Ubicación: r.ubicacion,
