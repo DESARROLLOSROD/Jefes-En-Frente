@@ -14,7 +14,7 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
     const PURPLE_RGB: [number, number, number] = [168, 85, 247];
 
     // =============== HEADER ===============
-    doc.addImage(logo, 'PNG', 10, 5, 20, 20);
+    doc.addImage(logo, 'PNG', 10, 2.5, 20, 20);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(16);
     doc.setTextColor(26, 26, 26);
