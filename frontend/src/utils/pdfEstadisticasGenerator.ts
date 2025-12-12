@@ -119,10 +119,11 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
 
         autoTable(doc, {
             startY: yPos,
-            head: [['Material', 'Volumen (m³)', '%']],
+            head: [['Material', 'Volumen (m³)', 'Viajes', '%']],
             body: estadisticas.acarreo.materiales.map(m => [
                 m.nombre,
                 m.volumen.toLocaleString(),
+                m.viajes.toLocaleString(),
                 `${m.porcentaje}%`
             ]),
             theme: 'grid',
@@ -187,10 +188,11 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
 
         autoTable(doc, {
             startY: yPos,
-            head: [['Origen', 'Volumen (m³)', '%']],
+            head: [['Origen', 'Volumen (m³)', 'Viajes', '%']],
             body: estadisticas.agua.porOrigen.map(o => [
                 o.origen,
                 o.volumen.toLocaleString(),
+                o.viajes.toLocaleString(),
                 `${o.porcentaje}%`
             ]),
             theme: 'grid',

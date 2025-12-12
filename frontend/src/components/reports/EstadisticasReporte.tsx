@@ -89,6 +89,7 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Material</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Volumen (m³)</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Viajes</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Porcentaje</th>
                                 </tr>
                             </thead>
@@ -97,6 +98,7 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                                     <tr key={`acarreo-${material.nombre}`}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{material.nombre}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{material.volumen.toLocaleString()}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{material.viajes.toLocaleString()}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{material.porcentaje}%</td>
                                     </tr>
                                 ))}
@@ -215,6 +217,7 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                                 <tr>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Origen</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Volumen (m³)</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Viajes</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Porcentaje</th>
                                 </tr>
                             </thead>
@@ -223,6 +226,7 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                                     <tr key={`agua-${origen.origen}`}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{origen.origen}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{origen.volumen.toLocaleString()}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{origen.viajes.toLocaleString()}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{origen.porcentaje}%</td>
                                     </tr>
                                 ))}

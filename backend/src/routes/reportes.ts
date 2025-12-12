@@ -117,23 +117,27 @@ router.get('/estadisticas', async (req: AuthRequest, res) => {
     console.log(`✅ ${reportes.length} reportes encontrados para estadísticas`);
 
     // === ESTADÍSTICAS DE ACARREO ===
-    const materialesAcarreo = new Map<string, number>();
+    const materialesAcarreo = new Map<string, { volumen: number; viajes: number }>();
     let totalViajesAcarreo = 0;
     reportes.forEach(reporte => {
       reporte.controlAcarreo?.forEach(item => {
         const volumen = parseFloat(item.volSuelto) || 0;
-        const actual = materialesAcarreo.get(item.material) || 0;
-        materialesAcarreo.set(item.material, actual + volumen);
+        const actual = materialesAcarreo.get(item.material) || { volumen: 0, viajes: 0 };
+        materialesAcarreo.set(item.material, {
+          volumen: actual.volumen + volumen,
+          viajes: actual.viajes + 1
+        });
         totalViajesAcarreo++; // Contar cada entrada como un viaje
       });
     });
 
-    const totalVolumenAcarreo = Array.from(materialesAcarreo.values()).reduce((sum, vol) => sum + vol, 0);
+    const totalVolumenAcarreo = Array.from(materialesAcarreo.values()).reduce((sum, val) => sum + val.volumen, 0);
     const acarreoArray = Array.from(materialesAcarreo.entries())
-      .map(([nombre, volumen]) => ({
+      .map(([nombre, data]) => ({
         nombre,
-        volumen: parseFloat(volumen.toFixed(2)),
-        porcentaje: totalVolumenAcarreo > 0 ? parseFloat(((volumen / totalVolumenAcarreo) * 100).toFixed(1)) : 0
+        volumen: parseFloat(data.volumen.toFixed(2)),
+        viajes: data.viajes,
+        porcentaje: totalVolumenAcarreo > 0 ? parseFloat(((data.volumen / totalVolumenAcarreo) * 100).toFixed(1)) : 0
       }))
       .sort((a, b) => b.volumen - a.volumen);
 
@@ -160,24 +164,28 @@ router.get('/estadisticas', async (req: AuthRequest, res) => {
       .sort((a, b) => b.cantidad - a.cantidad);
 
     // === ESTADÍSTICAS DE AGUA ===
-    const aguaPorOrigen = new Map<string, number>();
+    const aguaPorOrigen = new Map<string, { volumen: number; viajes: number }>();
     let totalVolumenAgua = 0;
     let totalViajesAgua = 0;
     reportes.forEach(reporte => {
       reporte.controlAgua?.forEach(item => {
         const volumen = parseFloat(item.volumen) || 0;
         totalVolumenAgua += volumen;
-        const actual = aguaPorOrigen.get(item.origen) || 0;
-        aguaPorOrigen.set(item.origen, actual + volumen);
+        const actual = aguaPorOrigen.get(item.origen) || { volumen: 0, viajes: 0 };
+        aguaPorOrigen.set(item.origen, {
+          volumen: actual.volumen + volumen,
+          viajes: actual.viajes + 1
+        });
         totalViajesAgua++; // Contar cada entrada como un viaje
       });
     });
 
     const aguaArray = Array.from(aguaPorOrigen.entries())
-      .map(([origen, volumen]) => ({
+      .map(([origen, data]) => ({
         origen,
-        volumen: parseFloat(volumen.toFixed(2)),
-        porcentaje: totalVolumenAgua > 0 ? parseFloat(((volumen / totalVolumenAgua) * 100).toFixed(1)) : 0
+        volumen: parseFloat(data.volumen.toFixed(2)),
+        viajes: data.viajes,
+        porcentaje: totalVolumenAgua > 0 ? parseFloat(((data.volumen / totalVolumenAgua) * 100).toFixed(1)) : 0
       }))
       .sort((a, b) => b.volumen - a.volumen);
 

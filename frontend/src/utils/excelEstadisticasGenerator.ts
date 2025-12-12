@@ -115,7 +115,7 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
 
         // Tabla de acarreo
         const acarreoHeaderRow = sheet.getRow(currentRow);
-        acarreoHeaderRow.values = ['Material', 'Volumen (m³)', 'Porcentaje'];
+        acarreoHeaderRow.values = ['Material', 'Volumen (m³)', 'Viajes', 'Porcentaje'];
         acarreoHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
         acarreoHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${BLUE}` } };
         acarreoHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
@@ -124,7 +124,7 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
 
         estadisticas.acarreo.materiales.forEach((material) => {
             const row = sheet.getRow(currentRow);
-            row.values = [material.nombre, material.volumen, `${material.porcentaje}%`];
+            row.values = [material.nombre, material.volumen, material.viajes, `${material.porcentaje}%`];
             row.alignment = { horizontal: 'left', vertical: 'middle' };
             currentRow++;
         });
@@ -185,7 +185,7 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
 
         // Tabla de agua
         const aguaHeaderRow = sheet.getRow(currentRow);
-        aguaHeaderRow.values = ['Origen', 'Volumen (m³)', 'Porcentaje'];
+        aguaHeaderRow.values = ['Origen', 'Volumen (m³)', 'Viajes', 'Porcentaje'];
         aguaHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
         aguaHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${BLUE}` } };
         aguaHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
@@ -194,7 +194,7 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
 
         estadisticas.agua.porOrigen.forEach((origen) => {
             const row = sheet.getRow(currentRow);
-            row.values = [origen.origen, origen.volumen, `${origen.porcentaje}%`];
+            row.values = [origen.origen, origen.volumen, origen.viajes, `${origen.porcentaje}%`];
             row.alignment = { horizontal: 'left', vertical: 'middle' };
             currentRow++;
         });

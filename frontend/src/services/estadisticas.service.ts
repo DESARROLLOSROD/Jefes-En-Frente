@@ -13,6 +13,7 @@ export interface EstadisticasResponse {
         materiales: Array<{
             nombre: string;
             volumen: number;
+            viajes: number;
             porcentaje: number;
         }>;
         totalVolumen: number;
@@ -31,6 +32,7 @@ export interface EstadisticasResponse {
         porOrigen: Array<{
             origen: string;
             volumen: number;
+            viajes: number;
             porcentaje: number;
         }>;
         volumenTotal: number;
