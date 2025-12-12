@@ -3,7 +3,7 @@ import { Vehiculo, Proyecto } from '../types/gestion';
 
 // Prepara los datos del reporte para ser usados por los generadores de PDF y Excel
 export const prepararDatosReporte = (reporte: ReporteActividades) => {
-    const controlAcarreo = reporte.controlAcarreo?.length
+    const controlAcarreo: any[] = reporte.controlAcarreo?.length
         ? reporte.controlAcarreo.map((i, index) => [
             (index + 1).toString(),
             i.material,
@@ -24,8 +24,8 @@ export const prepararDatosReporte = (reporte: ReporteActividades) => {
     if (controlAcarreo.length > 0) {
         controlAcarreo.push([
             '',
-            { content: 'TOTAL VOLUMEN:', colSpan: 3, styles: { fontStyle: 'bold', halign: 'right' } },
-            { content: `${totalVolumenAcarreo} m³`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220] } },
+            { content: 'TOTAL VOLUMEN:', colSpan: 3, styles: { fontStyle: 'bold', halign: 'right' } } as any,
+            { content: `${totalVolumenAcarreo} m³`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220] } } as any,
             '', '', '', ''
         ]);
     }
@@ -56,9 +56,9 @@ export const prepararDatosReporte = (reporte: ReporteActividades) => {
         .toFixed(2);
 
     if (controlAgua.length > 0) {
-        controlAgua.push([
-            { content: 'TOTAL VOLUMEN:', colSpan: 3, styles: { fontStyle: 'bold', halign: 'right' } },
-            { content: `${totalVolumenAgua} m³`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220] } },
+        (controlAgua as any[]).push([
+            { content: 'TOTAL VOLUMEN:', colSpan: 3, styles: { fontStyle: 'bold', halign: 'right' } } as any,
+            { content: `${totalVolumenAgua} m³`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220] } } as any,
             '', ''
         ]);
     }
@@ -91,7 +91,7 @@ export const prepararDatosVehiculos = (vehiculos: Vehiculo[]) => {
         'Horómetro Inicial': v.horometroInicial,
         'Horómetro Final': v.horometroFinal || '-',
         'Horas Operación': v.horasOperacion || '0',
-        'Proyectos': Array.isArray(v.proyectos) ? v.proyectos.map((p: Proyecto) => p.nombre).join(', ') : 'N/A'
+        'Proyectos': Array.isArray(v.proyectos) ? v.proyectos.map((p: any) => (typeof p === 'object' && p.nombre ? p.nombre : String(p))).join(', ') : 'N/A'
     }));
 };
 

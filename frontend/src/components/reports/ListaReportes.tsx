@@ -175,7 +175,7 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
                       </button>
                       <button
                         className="text-green-600 hover:text-green-900 mr-3 font-semibold"
-                        onClick={() => generarExcelReporte(reporte, proyecto?.nombre || 'PROYECTO')}
+                        onClick={() => generarExcelReporte(reporte)}
                         title="DESCARGAR EXCEL"
                       >
                         EXCEL

@@ -4,7 +4,7 @@ import { Vehiculo, Proyecto } from '../types/gestion';
 import { prepararDatosReporte, prepararDatosVehiculos, prepararDatosGeneral } from './reportGenerator';
 
 // Función para generar y descargar un archivo Excel a partir de un reporte
-export const generarExcelReporte = (reporte: ReporteActividades, nombreProyecto: string) => {
+export const generarExcelReporte = (reporte: ReporteActividades) => {
     // Crear un nuevo libro de trabajo
     const workbook = XLSX.utils.book_new();
     const datos = prepararDatosReporte(reporte);
