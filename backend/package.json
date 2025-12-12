@@ -1,6 +1,6 @@
 {
-  "name": "jefes-en-frente-backend",
-  "version": "1.0.0",
+  "name": "jefes-backend",
+  "version": "2.0.1",
   "description": "Sistema de reportes mineros - Jefes en Frente",
   "type": "module",
   "scripts": {
