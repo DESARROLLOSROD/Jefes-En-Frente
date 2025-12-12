@@ -6,15 +6,17 @@ import GestionUsuarios from '../users/GestionUsuarios';
 import GestionProyectos from '../projects/GestionProyectos';
 import GestionVehiculos from '../vehicles/GestionVehiculos';
 import { WorkZoneManager } from '../WorkZones';
+import { EstadisticasReporte } from '../reports/EstadisticasReporte';
 import { ReporteActividades } from '../../types/reporte';
 import { reporteService, proyectoService } from '../../services/api';
+import { obtenerEstadisticas, EstadisticasResponse } from '../../services/estadisticas.service';
 import { generarPDFGeneral } from '../../utils/pdfGeneralGenerator';
 import { generarExcelGeneral } from '../../utils/fileGenerator';
 import { Proyecto } from '../../types/gestion';
 import LogoROD from '../../Logo_ROD.png';
 
 const Dashboard: React.FC = () => {
-  const [vistaActual, setVistaActual] = useState<'formulario' | 'lista' | 'usuarios' | 'proyectos' | 'vehiculos' | 'zonas'>('formulario');
+  const [vistaActual, setVistaActual] = useState<'formulario' | 'lista' | 'usuarios' | 'proyectos' | 'vehiculos' | 'zonas' | 'estadisticas'>('formulario');
   const [reporteEditar, setReporteEditar] = useState<ReporteActividades | null>(null);
   const { user, proyecto, logout } = useAuth();
   const [loadingGeneral, setLoadingGeneral] = useState(false);
@@ -22,6 +24,12 @@ const Dashboard: React.FC = () => {
   const [mostrarModalFormato, setMostrarModalFormato] = useState(false);
   const [proyectos, setProyectos] = useState<Proyecto[]>([]);
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState<string | undefined>(undefined);
+
+  // Estados para estadísticas
+  const [estadisticas, setEstadisticas] = useState<EstadisticasResponse | null>(null);
+  const [loadingEstadisticas, setLoadingEstadisticas] = useState(false);
+  const [fechaInicio, setFechaInicio] = useState<string>('');
+  const [fechaFin, setFechaFin] = useState<string>('');
 
   const handleLogout = () => {
     logout();
@@ -69,6 +77,37 @@ const Dashboard: React.FC = () => {
       alert('OCURRIÓ UN ERROR AL GENERAR EL REPORTE');
     } finally {
       setLoadingGeneral(false);
+    }
+  };
+
+  const handleCargarEstadisticas = async () => {
+    if (!fechaInicio || !fechaFin) {
+      alert('POR FAVOR SELECCIONA UN RANGO DE FECHAS');
+      return;
+    }
+
+    if (new Date(fechaInicio) > new Date(fechaFin)) {
+      alert('LA FECHA DE INICIO DEBE SER ANTERIOR A LA FECHA FIN');
+      return;
+    }
+
+    try {
+      setLoadingEstadisticas(true);
+      const proyectosRes = await proyectoService.obtenerProyectos();
+
+      if (proyectosRes.success && proyectosRes.data) {
+        setProyectos(proyectosRes.data);
+      }
+
+      const idsProyectos = proyectoSeleccionado || 'todos';
+      const stats = await obtenerEstadisticas(idsProyectos, fechaInicio, fechaFin);
+      setEstadisticas(stats);
+      setVistaActual('estadisticas');
+    } catch (error) {
+      console.error('Error cargando estadísticas:', error);
+      alert('ERROR AL CARGAR ESTADÍSTICAS');
+    } finally {
+      setLoadingEstadisticas(false);
     }
   };
 
