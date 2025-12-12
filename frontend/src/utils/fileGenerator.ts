@@ -3,8 +3,69 @@ import { ReporteActividades } from '../types/reporte';
 import { Vehiculo, Proyecto } from '../types/gestion';
 import { prepararDatosReporte, prepararDatosVehiculos, prepararDatosGeneral } from './reportGenerator';
 
+// Función auxiliar para dibujar el mapa con pines (reutilizada del PDF)
+const dibujarMapaConPines = (
+    mapaBase64: string,
+    mapaContentType: string,
+    pines: Array<{ pinX: number; pinY: number; etiqueta?: string; color?: string }>
+): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+            reject(new Error('No se pudo crear el contexto del canvas'));
+            return;
+        }
+
+        const img = new Image();
+        img.onload = () => {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx.drawImage(img, 0, 0);
+
+            const pinSize = Math.max(img.width, img.height) * 0.03;
+
+            pines.forEach(pin => {
+                const pinXPx = (pin.pinX / 100) * img.width;
+                const pinYPx = (pin.pinY / 100) * img.height;
+
+                ctx.beginPath();
+                ctx.arc(pinXPx, pinYPx, pinSize, 0, Math.PI * 2);
+                ctx.fillStyle = pin.color || '#EF4444';
+                ctx.fill();
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.lineWidth = pinSize * 0.2;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(pinXPx, pinYPx, pinSize * 0.4, 0, Math.PI * 2);
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fill();
+
+                if (pin.etiqueta) {
+                    ctx.font = `bold ${pinSize}px Arial`;
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = pinSize * 0.1;
+                    ctx.textAlign = 'center';
+                    ctx.strokeText(pin.etiqueta, pinXPx, pinYPx - pinSize * 1.5);
+                    ctx.fillText(pin.etiqueta, pinXPx, pinYPx - pinSize * 1.5);
+                }
+            });
+
+            const resultado = canvas.toDataURL('image/png').split(',')[1];
+            resolve(resultado);
+        };
+        img.onerror = () => reject(new Error('Error al cargar la imagen del mapa'));
+        img.src = `data:${mapaContentType};base64,${mapaBase64}`;
+    });
+};
+
 // Función para generar y descargar un archivo Excel a partir de un reporte con formato profesional
-export const generarExcelReporte = async (reporte: ReporteActividades) => {
+export const generarExcelReporte = async (
+    reporte: ReporteActividades,
+    proyectoMapa?: { imagen: { data: string; contentType: string }; width: number; height: number }
+) => {
     const ExcelJS = (await import('exceljs')).default;
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Reporte Completo', {
@@ -109,6 +170,60 @@ export const generarExcelReporte = async (reporte: ReporteActividades) => {
     });
 
     currentRow += 2; // Espacio entre secciones
+
+    // === MAPA DEL PROYECTO ===
+    let pinesParaDibujar: Array<{ pinX: number; pinY: number; etiqueta?: string; color?: string }> = [];
+
+    if (reporte.pinesMapa && reporte.pinesMapa.length > 0) {
+        pinesParaDibujar = reporte.pinesMapa;
+    } else if (reporte.ubicacionMapa?.colocado) {
+        pinesParaDibujar = [{
+            pinX: reporte.ubicacionMapa.pinX,
+            pinY: reporte.ubicacionMapa.pinY
+        }];
+    }
+
+    if (proyectoMapa?.imagen?.data && pinesParaDibujar.length > 0) {
+        try {
+            const mapaConPines = await dibujarMapaConPines(
+                proyectoMapa.imagen.data,
+                proyectoMapa.imagen.contentType,
+                pinesParaDibujar
+            );
+
+            // Título de mapa
+            const mapaRow = worksheet.getRow(currentRow);
+            mapaRow.getCell(1).value = 'UBICACIÓN EN MAPA DEL PROYECTO';
+            mapaRow.getCell(1).style = sectionTitleStyle;
+            worksheet.mergeCells(currentRow, 1, currentRow, 9);
+            mapaRow.height = 30;
+            currentRow++;
+
+            // Agregar imagen al workbook
+            const imageId = workbook.addImage({
+                base64: mapaConPines,
+                extension: 'png',
+            });
+
+            // Calcular dimensiones (aproximadamente 400px de ancho)
+            const aspectRatio = proyectoMapa.width / proyectoMapa.height;
+            const imageWidth = 400;
+            const imageHeight = imageWidth / aspectRatio;
+
+            // Insertar imagen
+            worksheet.addImage(imageId, {
+                tl: { col: 0, row: currentRow - 1 },
+                ext: { width: imageWidth, height: imageHeight }
+            });
+
+            // Calcular cuántas filas ocupa la imagen (aproximadamente 15px por fila)
+            const rowsNeeded = Math.ceil(imageHeight / 15);
+            currentRow += rowsNeeded + 1;
+
+        } catch (error) {
+            console.error('Error al agregar mapa al Excel:', error);
+        }
+    }
 
     // Helper function para agregar sección con tabla
     const addTableSection = (title: string, headers: string[], data: any[][], hasTotal: boolean = false) => {
