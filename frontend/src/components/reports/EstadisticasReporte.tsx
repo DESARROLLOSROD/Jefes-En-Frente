@@ -10,10 +10,13 @@ const COLORS = ['#4C4EC9', '#6B6EC9', '#8B8EC9', '#ABABC9', '#CBCBC9'];
 
 // Helper function para formatear fechas
 const formatDate = (date: string): string => {
-    return new Date(date).toLocaleDateString('es-MX', {
+    // Agregar 'T00:00:00' para forzar interpretación como fecha local
+    const localDate = new Date(date + 'T00:00:00');
+    return localDate.toLocaleDateString('es-MX', {
         year: 'numeric',
         month: 'long',
-        day: 'numeric'
+        day: 'numeric',
+        timeZone: 'America/Mexico_City'
     });
 };
 

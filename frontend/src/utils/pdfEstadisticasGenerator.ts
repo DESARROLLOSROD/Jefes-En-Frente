@@ -43,8 +43,8 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.setTextColor(26, 26, 26);
-    const fechaInicio = new Date(estadisticas.rangoFechas.inicio).toLocaleDateString('es-MX');
-    const fechaFin = new Date(estadisticas.rangoFechas.fin).toLocaleDateString('es-MX');
+    const fechaInicio = new Date(estadisticas.rangoFechas.inicio + 'T00:00:00').toLocaleDateString('es-MX');
+    const fechaFin = new Date(estadisticas.rangoFechas.fin + 'T00:00:00').toLocaleDateString('es-MX');
     doc.text(`${fechaInicio} -`, 15, yPos + 10);
     doc.text(fechaFin, 15, yPos + 14);
 

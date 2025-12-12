@@ -38,8 +38,8 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
     currentRow += 2;
 
     // =============== INFORMACIÓN GENERAL (3 COLUMNAS) ===============
-    const fechaInicio = new Date(estadisticas.rangoFechas.inicio).toLocaleDateString('es-MX');
-    const fechaFin = new Date(estadisticas.rangoFechas.fin).toLocaleDateString('es-MX');
+    const fechaInicio = new Date(estadisticas.rangoFechas.inicio + 'T00:00:00').toLocaleDateString('es-MX');
+    const fechaFin = new Date(estadisticas.rangoFechas.fin + 'T00:00:00').toLocaleDateString('es-MX');
 
     // Columna 1: Período
     sheet.mergeCells(`A${currentRow}:B${currentRow + 1}`);
