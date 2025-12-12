@@ -9,6 +9,7 @@ import { WorkZoneManager } from '../WorkZones';
 import { ReporteActividades } from '../../types/reporte';
 import { reporteService, proyectoService } from '../../services/api';
 import { generarPDFGeneral } from '../../utils/pdfGeneralGenerator';
+import { generarExcelGeneral } from '../../utils/fileGenerator';
 import { Proyecto } from '../../types/gestion';
 import LogoROD from '../../Logo_ROD.png';
 
@@ -18,7 +19,9 @@ const Dashboard: React.FC = () => {
   const { user, proyecto, logout } = useAuth();
   const [loadingGeneral, setLoadingGeneral] = useState(false);
   const [mostrarModalProyectos, setMostrarModalProyectos] = useState(false);
+  const [mostrarModalFormato, setMostrarModalFormato] = useState(false);
   const [proyectos, setProyectos] = useState<Proyecto[]>([]);
+  const [proyectoSeleccionado, setProyectoSeleccionado] = useState<string | undefined>(undefined);
 
   const handleLogout = () => {
     logout();
@@ -44,20 +47,20 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleDescargarReporteGeneral = async (proyectoId?: string) => {
-    setMostrarModalProyectos(false);
+  const handleDescargarReporteGeneral = async (formato: 'pdf' | 'excel') => {
+    setMostrarModalFormato(false);
 
     try {
       setLoadingGeneral(true);
-      // 1. Obtener reportes (filtrados o todos)
-      const reportesRes = await reporteService.obtenerReportes(proyectoId);
-
-      // 2. Obtener todos los proyectos para tener sus nombres
+      const reportesRes = await reporteService.obtenerReportes(proyectoSeleccionado);
       const proyectosRes = await proyectoService.obtenerProyectos();
 
       if (reportesRes.success && reportesRes.data && proyectosRes.success && proyectosRes.data) {
-        // 3. Generar PDF
-        generarPDFGeneral(reportesRes.data, proyectosRes.data);
+        if (formato === 'pdf') {
+          generarPDFGeneral(reportesRes.data, proyectosRes.data);
+        } else {
+          generarExcelGeneral(reportesRes.data, proyectosRes.data);
+        }
       } else {
         alert('ERROR AL OBTENER LOS DATOS PARA EL REPORTE GENERAL');
       }
@@ -241,7 +244,7 @@ const Dashboard: React.FC = () => {
             </p>
             <div className="space-y-2 max-h-96 overflow-y-auto">
               <button
-                onClick={() => handleDescargarReporteGeneral()}
+                onClick={() => { setProyectoSeleccionado(undefined); setMostrarModalProyectos(false); setMostrarModalFormato(true); }}
                 className="w-full text-left px-4 py-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200"
               >
                 <span className="font-semibold text-blue-800">📋 TODOS LOS PROYECTOS</span>
@@ -249,7 +252,7 @@ const Dashboard: React.FC = () => {
               {proyectos.map((proj) => (
                 <button
                   key={proj._id}
-                  onClick={() => handleDescargarReporteGeneral(proj._id)}
+                  onClick={() => { setProyectoSeleccionado(proj._id); setMostrarModalProyectos(false); setMostrarModalFormato(true); }}
                   className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
                 >
                   <span className="font-semibold text-gray-800">{proj.nombre}</span>
@@ -261,6 +264,39 @@ const Dashboard: React.FC = () => {
             <div className="mt-6 flex justify-end">
               <button
                 onClick={() => setMostrarModalProyectos(false)}
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-semibold"
+              >
+                CANCELAR
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {mostrarModalFormato && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-2xl p-6 max-w-md w-full mx-4">
+            <h3 className="text-xl font-bold text-gray-800 mb-4">📂 SELECCIONAR FORMATO</h3>
+            <p className="text-gray-600 mb-6">
+              ELIGE EL FORMATO EN EL QUE DESEAS EXPORTAR EL REPORTE:
+            </p>
+            <div className="flex justify-around">
+              <button
+                onClick={() => handleDescargarReporteGeneral('pdf')}
+                className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-semibold"
+              >
+                PDF
+              </button>
+              <button
+                onClick={() => handleDescargarReporteGeneral('excel')}
+                className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-semibold"
+              >
+                EXCEL
+              </button>
+            </div>
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setMostrarModalFormato(false)}
                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-semibold"
               >
                 CANCELAR
