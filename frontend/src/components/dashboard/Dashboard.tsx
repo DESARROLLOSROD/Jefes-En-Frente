@@ -222,6 +222,16 @@ const Dashboard: React.FC = () => {
                 >
                   🚙 VEHÍCULOS
                 </button>
+
+                <button
+                  onClick={() => setVistaActual('estadisticas')}
+                  className={`py-4 px-6 font-semibold text-lg transition-all duration-300 whitespace-nowrap ${vistaActual === 'estadisticas'
+                    ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
+                    : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
+                    }`}
+                >
+                  📊 ESTADÍSTICAS
+                </button>
               </>
             )}
             {user?.rol === 'admin' && (
@@ -263,6 +273,76 @@ const Dashboard: React.FC = () => {
             projectId={proyecto._id}
             isAdmin={user?.rol === 'admin' || user?.rol === 'supervisor'}
           />
+        )}
+        {vistaActual === 'estadisticas' && (
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              📊 ANÁLISIS Y ESTADÍSTICAS
+            </h2>
+
+            {/* Selector de rango de fechas y proyectos */}
+            <div className="bg-gray-50 p-6 rounded-lg mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Fecha Inicio
+                  </label>
+                  <input
+                    type="date"
+                    value={fechaInicio}
+                    onChange={(e) => setFechaInicio(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Fecha Fin
+                  </label>
+                  <input
+                    type="date"
+                    value={fechaFin}
+                    onChange={(e) => setFechaFin(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Proyecto
+                  </label>
+                  <select
+                    value={proyectoSeleccionado || 'todos'}
+                    onChange={(e) => setProyectoSeleccionado(e.target.value === 'todos' ? undefined : e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="todos">TODOS LOS PROYECTOS</option>
+                    {proyectos.map((p) => (
+                      <option key={p._id} value={p._id}>
+                        {p.nombre}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <button
+                onClick={handleCargarEstadisticas}
+                disabled={loadingEstadisticas}
+                className={`w-full md:w-auto px-6 py-3 rounded-lg font-semibold text-white ${loadingEstadisticas
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
+              >
+                {loadingEstadisticas ? '⏳ CARGANDO...' : '📊 GENERAR ESTADÍSTICAS'}
+              </button>
+            </div>
+            {/* Mostrar estadísticas */}
+            {estadisticas && <EstadisticasReporte estadisticas={estadisticas} />}
+
+            {!estadisticas && !loadingEstadisticas && (
+              <div className="text-center py-12 text-gray-500">
+                <p className="text-lg">Selecciona un rango de fechas y genera las estadísticas</p>
+              </div>
+            )}
+          </div>
         )}
         {(user?.rol === 'admin' || user?.rol === 'supervisor') && (
           <>
