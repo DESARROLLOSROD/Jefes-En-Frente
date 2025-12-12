@@ -100,9 +100,9 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
         sheet.getCell(`A${currentRow}`).font = { size: 10, color: { argb: `FF${GRAY}` } };
         currentRow++;
 
-        // Tabla de acarreo con barras visuales
+        // Tabla de acarreo
         const acarreoHeaderRow = sheet.getRow(currentRow);
-        acarreoHeaderRow.values = ['Material', 'Volumen (m³)', 'Gráfica', 'Porcentaje'];
+        acarreoHeaderRow.values = ['Material', 'Volumen (m³)', 'Porcentaje'];
         acarreoHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
         acarreoHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${BLUE}` } };
         acarreoHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
@@ -111,20 +111,8 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
 
         estadisticas.acarreo.materiales.forEach((material) => {
             const row = sheet.getRow(currentRow);
-            row.values = [material.nombre, material.volumen, material.volumen, `${material.porcentaje}%`];
+            row.values = [material.nombre, material.volumen, `${material.porcentaje}%`];
             row.alignment = { horizontal: 'left', vertical: 'middle' };
-
-            // Barra de datos visual en la columna C
-            const barCell = sheet.getCell(`C${currentRow}`);
-            barCell.fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: `FF${BLUE}` },
-                bgColor: { argb: 'FFFFFFFF' }
-            };
-            barCell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
-            barCell.alignment = { horizontal: 'center', vertical: 'middle' };
-
             currentRow++;
         });
 
@@ -144,9 +132,9 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
         sheet.getCell(`D${currentRow}`).font = { size: 10, color: { argb: `FF${GRAY}` } };
         currentRow++;
 
-        // Tabla de material con barras visuales
+        // Tabla de material
         const materialHeaderRow = sheet.getRow(currentRow);
-        materialHeaderRow.values = [undefined, undefined, undefined, 'Material', 'Cantidad', 'Gráfica', 'Unidad'];
+        materialHeaderRow.values = [undefined, undefined, undefined, 'Material', 'Cantidad', 'Unidad'];
         materialHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
         materialHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${BLUE}` } };
         materialHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
@@ -155,20 +143,8 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
 
         estadisticas.material.materiales.forEach((material) => {
             const row = sheet.getRow(currentRow);
-            row.values = [undefined, undefined, undefined, material.nombre, material.cantidad, material.cantidad, material.unidad];
+            row.values = [undefined, undefined, undefined, material.nombre, material.cantidad, material.unidad];
             row.alignment = { horizontal: 'left', vertical: 'middle' };
-
-            // Barra de datos visual en la columna F
-            const barCell = sheet.getCell(`F${currentRow}`);
-            barCell.fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: 'FF6B6EC9' }, // Color morado medio
-                bgColor: { argb: 'FFFFFFFF' }
-            };
-            barCell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
-            barCell.alignment = { horizontal: 'center', vertical: 'middle' };
-
             currentRow++;
         });
 
@@ -194,9 +170,9 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
         sheet.getCell(`A${currentRow}`).font = { size: 10, color: { argb: `FF${GRAY}` } };
         currentRow++;
 
-        // Tabla de agua con barras visuales
+        // Tabla de agua
         const aguaHeaderRow = sheet.getRow(currentRow);
-        aguaHeaderRow.values = ['Origen', 'Volumen (m³)', 'Gráfica', 'Porcentaje'];
+        aguaHeaderRow.values = ['Origen', 'Volumen (m³)', 'Porcentaje'];
         aguaHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
         aguaHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${BLUE}` } };
         aguaHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
@@ -205,20 +181,8 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
 
         estadisticas.agua.porOrigen.forEach((origen) => {
             const row = sheet.getRow(currentRow);
-            row.values = [origen.origen, origen.volumen, origen.volumen, `${origen.porcentaje}%`];
+            row.values = [origen.origen, origen.volumen, `${origen.porcentaje}%`];
             row.alignment = { horizontal: 'left', vertical: 'middle' };
-
-            // Barra de datos visual en la columna C
-            const barCell = sheet.getCell(`C${currentRow}`);
-            barCell.fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: 'FF8B8EC9' }, // Color azul más claro
-                bgColor: { argb: 'FFFFFFFF' }
-            };
-            barCell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
-            barCell.alignment = { horizontal: 'center', vertical: 'middle' };
-
             currentRow++;
         });
 
@@ -241,9 +205,9 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
         sheet.getCell(`D${currentRow}`).font = { size: 10, color: { argb: `FF${GRAY}` } };
         currentRow++;
 
-        // Tabla de vehículos con barras visuales
+        // Tabla de vehículos
         const vehiculosHeaderRow = sheet.getRow(currentRow);
-        vehiculosHeaderRow.values = [undefined, undefined, undefined, 'Vehículo', 'Horas', 'Gráfica', 'Porcentaje'];
+        vehiculosHeaderRow.values = [undefined, undefined, undefined, 'Vehículo', 'Horas', 'Porcentaje'];
         vehiculosHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
         vehiculosHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${BLUE}` } };
         vehiculosHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
@@ -252,20 +216,8 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
 
         estadisticas.vehiculos.vehiculos.forEach((vehiculo) => {
             const row = sheet.getRow(currentRow);
-            row.values = [undefined, undefined, undefined, vehiculo.nombre, vehiculo.horasOperacion, vehiculo.horasOperacion, `${vehiculo.porcentaje}%`];
+            row.values = [undefined, undefined, undefined, vehiculo.nombre, vehiculo.horasOperacion, `${vehiculo.porcentaje}%`];
             row.alignment = { horizontal: 'left', vertical: 'middle' };
-
-            // Barra de datos visual en la columna F
-            const barCell = sheet.getCell(`F${currentRow}`);
-            barCell.fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: 'FFABABC9' }, // Color gris-azul claro
-                bgColor: { argb: 'FFFFFFFF' }
-            };
-            barCell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
-            barCell.alignment = { horizontal: 'center', vertical: 'middle' };
-
             currentRow++;
         });
     }
@@ -273,11 +225,10 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
     // Ajustar anchos de columnas
     sheet.getColumn('A').width = 25;
     sheet.getColumn('B').width = 15;
-    sheet.getColumn('C').width = 20; // Gráfica
+    sheet.getColumn('C').width = 15;
     sheet.getColumn('D').width = 25;
     sheet.getColumn('E').width = 15;
-    sheet.getColumn('F').width = 20; // Gráfica
-    sheet.getColumn('G').width = 15;
+    sheet.getColumn('F').width = 15;
 
     // Descargar el archivo
     const buffer = await workbook.xlsx.writeBuffer();

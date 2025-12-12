@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import logo from '../Logo.png';
 import { EstadisticasResponse } from '../services/estadisticas.service';
 
@@ -96,30 +97,28 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
         doc.text(`Material más movido: ${estadisticas.acarreo.materialMasMovido}`, leftColX, yPos);
         yPos += 5;
 
-        // Gráfica de barras visual
-        const maxVolumen = Math.max(...estadisticas.acarreo.materiales.map(m => m.volumen));
-        estadisticas.acarreo.materiales.forEach((material) => {
-            const barWidth = maxVolumen > 0 ? Math.max(1, (material.volumen / maxVolumen) * (colWidthHalf - 35)) : 1;
-
-            // Nombre del material
-            doc.setFontSize(7);
-            doc.setTextColor(60, 60, 60);
-            doc.text(material.nombre.substring(0, 15), leftColX, yPos);
-
-            // Barra de color
-            doc.setFillColor(...BLUE_RGB);
-            doc.rect(leftColX + 30, yPos - 3, barWidth, 4, 'F');
-
-            // Valor
-            doc.setTextColor(26, 26, 26);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`${material.volumen.toLocaleString()} m³ (${material.porcentaje}%)`, leftColX + 32 + barWidth, yPos);
-            doc.setFont('helvetica', 'normal');
-
-            yPos += 5;
+        autoTable(doc, {
+            startY: yPos,
+            head: [['Material', 'Volumen (m³)', '%']],
+            body: estadisticas.acarreo.materiales.map(m => [
+                m.nombre,
+                m.volumen.toLocaleString(),
+                `${m.porcentaje}%`
+            ]),
+            theme: 'grid',
+            headStyles: {
+                fillColor: BLUE_RGB,
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                fontSize: 8,
+                halign: 'center'
+            },
+            styles: { fontSize: 7, cellPadding: 1.5 },
+            margin: { left: leftColX, right: pageWidth / 2 + 5 },
+            tableWidth: colWidthHalf
         });
 
-        yPos += 3;
+        yPos = (doc as any).lastAutoTable.finalY + 6;
     }
 
     // === CONTROL DE AGUA ===
@@ -138,25 +137,28 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
         doc.text(`Origen más utilizado: ${estadisticas.agua.origenMasUtilizado}`, leftColX, yPos);
         yPos += 5;
 
-        // Gráfica de barras visual
-        const maxVolumenAgua = Math.max(...estadisticas.agua.porOrigen.map(o => o.volumen));
-        estadisticas.agua.porOrigen.forEach((origen) => {
-            const barWidth = maxVolumenAgua > 0 ? Math.max(1, (origen.volumen / maxVolumenAgua) * (colWidthHalf - 35)) : 1;
-
-            doc.setFontSize(7);
-            doc.setTextColor(60, 60, 60);
-            doc.text(origen.origen.substring(0, 18), leftColX, yPos);
-
-            doc.setFillColor(139, 142, 201); // Color azul más claro
-            doc.rect(leftColX + 30, yPos - 3, barWidth, 4, 'F');
-
-            doc.setTextColor(26, 26, 26);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`${origen.volumen.toLocaleString()} m³ (${origen.porcentaje}%)`, leftColX + 32 + barWidth, yPos);
-            doc.setFont('helvetica', 'normal');
-
-            yPos += 5;
+        autoTable(doc, {
+            startY: yPos,
+            head: [['Origen', 'Volumen (m³)', '%']],
+            body: estadisticas.agua.porOrigen.map(o => [
+                o.origen,
+                o.volumen.toLocaleString(),
+                `${o.porcentaje}%`
+            ]),
+            theme: 'grid',
+            headStyles: {
+                fillColor: BLUE_RGB,
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                fontSize: 8,
+                halign: 'center'
+            },
+            styles: { fontSize: 7, cellPadding: 1.5 },
+            margin: { left: leftColX, right: pageWidth / 2 + 5 },
+            tableWidth: colWidthHalf
         });
+
+        yPos = (doc as any).lastAutoTable.finalY + 6;
     }
 
     // =============== COLUMNA DERECHA ===============
@@ -176,30 +178,28 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
         doc.text(`Material más utilizado: ${estadisticas.material.materialMasUtilizado}`, rightColX, yPosRight);
         yPosRight += 5;
 
-        // Gráfica de barras visual
-        const maxCantidad = Math.max(...estadisticas.material.materiales.map(m => m.cantidad));
-        estadisticas.material.materiales.forEach((material) => {
-            const barWidth = maxCantidad > 0 ? Math.max(1, (material.cantidad / maxCantidad) * (colWidthHalf - 35)) : 1;
-
-            // Nombre del material
-            doc.setFontSize(7);
-            doc.setTextColor(60, 60, 60);
-            doc.text(material.nombre.substring(0, 15), rightColX, yPosRight);
-
-            // Barra de color
-            doc.setFillColor(107, 110, 201); // Color morado medio
-            doc.rect(rightColX + 30, yPosRight - 3, barWidth, 4, 'F');
-
-            // Valor
-            doc.setTextColor(26, 26, 26);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`${material.cantidad.toLocaleString()} ${material.unidad}`, rightColX + 32 + barWidth, yPosRight);
-            doc.setFont('helvetica', 'normal');
-
-            yPosRight += 5;
+        autoTable(doc, {
+            startY: yPosRight,
+            head: [['Material', 'Cantidad', 'Unidad']],
+            body: estadisticas.material.materiales.map(m => [
+                m.nombre,
+                m.cantidad.toLocaleString(),
+                m.unidad
+            ]),
+            theme: 'grid',
+            headStyles: {
+                fillColor: BLUE_RGB,
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                fontSize: 8,
+                halign: 'center'
+            },
+            styles: { fontSize: 7, cellPadding: 1.5 },
+            margin: { left: rightColX, right: 10 },
+            tableWidth: colWidthHalf
         });
 
-        yPosRight += 3;
+        yPosRight = (doc as any).lastAutoTable.finalY + 6;
     }
 
     // === VEHÍCULOS ===
@@ -218,27 +218,25 @@ export const generarPDFEstadisticas = (estadisticas: EstadisticasResponse, nombr
         doc.text(`Vehículo más utilizado: ${estadisticas.vehiculos.vehiculoMasUtilizado}`, rightColX, yPosRight);
         yPosRight += 5;
 
-        // Gráfica de barras visual
-        const maxHoras = Math.max(...estadisticas.vehiculos.vehiculos.map(v => v.horasOperacion));
-        estadisticas.vehiculos.vehiculos.forEach((vehiculo) => {
-            const barWidth = maxHoras > 0 ? Math.max(1, (vehiculo.horasOperacion / maxHoras) * (colWidthHalf - 35)) : 1;
-
-            // Nombre del vehículo
-            doc.setFontSize(7);
-            doc.setTextColor(60, 60, 60);
-            doc.text(vehiculo.nombre.substring(0, 15), rightColX, yPosRight);
-
-            // Barra de color
-            doc.setFillColor(171, 171, 201); // Color gris-azul claro
-            doc.rect(rightColX + 30, yPosRight - 3, barWidth, 4, 'F');
-
-            // Valor
-            doc.setTextColor(26, 26, 26);
-            doc.setFont('helvetica', 'bold');
-            doc.text(`${vehiculo.horasOperacion.toLocaleString()} hrs (${vehiculo.porcentaje}%)`, rightColX + 32 + barWidth, yPosRight);
-            doc.setFont('helvetica', 'normal');
-
-            yPosRight += 5;
+        autoTable(doc, {
+            startY: yPosRight,
+            head: [['Vehículo', 'Horas', '%']],
+            body: estadisticas.vehiculos.vehiculos.map(v => [
+                v.nombre,
+                v.horasOperacion.toLocaleString(),
+                `${v.porcentaje}%`
+            ]),
+            theme: 'grid',
+            headStyles: {
+                fillColor: BLUE_RGB,
+                textColor: [255, 255, 255],
+                fontStyle: 'bold',
+                fontSize: 8,
+                halign: 'center'
+            },
+            styles: { fontSize: 7, cellPadding: 1.5 },
+            margin: { left: rightColX, right: 10 },
+            tableWidth: colWidthHalf
         });
     }
 
