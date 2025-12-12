@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import FormularioReporte from '../reports/FormularioReporte';
 import ListaReportes from '../reports/ListaReportes';
