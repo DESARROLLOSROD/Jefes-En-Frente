@@ -1,11 +1,25 @@
-// Configuración de la API
-// Cambia esta URL según tu entorno
-export const API_URL = 'https://jefes-backend-production.up.railway.app/api'; // Railway production
-// Para desarrollo local con emulador Android: 'http://10.0.2.2:5000/api'
-// Para desarrollo local con dispositivo físico: 'http://TU_IP_LOCAL:5000/api'
+import Constants from 'expo-constants';
 
-// Timeout de inactividad (15 minutos en ms)
-export const INACTIVITY_TIMEOUT = 15 * 60 * 1000;
+// Configuración de la API desde variables de entorno
+// Valores por defecto si no están configuradas las variables de entorno
+const DEFAULT_API_URL = 'https://jefes-backend-production.up.railway.app/api';
+const DEFAULT_INACTIVITY_TIMEOUT = 15 * 60 * 1000; // 15 minutos
+
+// Obtener valores de variables de entorno con fallback
+export const API_URL = process.env.EXPO_PUBLIC_API_URL || DEFAULT_API_URL;
+export const ENV = process.env.EXPO_PUBLIC_ENV || 'production';
+export const INACTIVITY_TIMEOUT = process.env.EXPO_PUBLIC_INACTIVITY_TIMEOUT
+  ? parseInt(process.env.EXPO_PUBLIC_INACTIVITY_TIMEOUT, 10)
+  : DEFAULT_INACTIVITY_TIMEOUT;
+
+// Log para desarrollo (solo en modo dev)
+if (__DEV__) {
+  console.log('🔧 Environment Config:', {
+    API_URL,
+    ENV,
+    INACTIVITY_TIMEOUT: `${INACTIVITY_TIMEOUT / 60000} minutos`,
+  });
+}
 
 // Colores de la aplicación
 export const COLORS = {

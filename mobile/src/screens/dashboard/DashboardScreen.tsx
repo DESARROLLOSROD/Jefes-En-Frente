@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   Alert,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
@@ -19,7 +20,8 @@ type DashboardNavigationProp = StackNavigationProp<RootStackParamList, 'Dashboar
 interface MenuOption {
   title: string;
   description: string;
-  icon: string;
+  icon: keyof typeof Ionicons.glyphMap;
+  iconColor?: string;
   onPress: () => void;
   allowedRoles: string[];
 }
@@ -47,42 +49,48 @@ const DashboardScreen = () => {
     {
       title: 'Crear Reporte',
       description: 'Registrar actividades diarias',
-      icon: '📝',
+      icon: 'document-text',
+      iconColor: COLORS.primary,
       onPress: () => navigation.navigate('ReportForm', {}),
       allowedRoles: [ROLES.ADMIN, ROLES.SUPERVISOR, ROLES.JEFE_EN_FRENTE],
     },
     {
       title: 'Mis Reportes',
       description: 'Ver reportes creados',
-      icon: '📋',
+      icon: 'list',
+      iconColor: COLORS.success,
       onPress: () => navigation.navigate('ReportList'),
       allowedRoles: [ROLES.ADMIN, ROLES.SUPERVISOR, ROLES.JEFE_EN_FRENTE],
     },
     {
       title: 'Gestión de Usuarios',
       description: 'Administrar usuarios del sistema',
-      icon: '👥',
+      icon: 'people',
+      iconColor: COLORS.warning,
       onPress: () => navigation.navigate('UserManagement'),
       allowedRoles: [ROLES.ADMIN, ROLES.SUPERVISOR],
     },
     {
       title: 'Gestión de Vehículos',
       description: 'Administrar flota de vehículos',
-      icon: '🚗',
+      icon: 'car',
+      iconColor: COLORS.info,
       onPress: () => navigation.navigate('VehicleManagement'),
       allowedRoles: [ROLES.ADMIN, ROLES.SUPERVISOR],
     },
     {
       title: 'Gestión de Proyectos',
       description: 'Administrar proyectos mineros',
-      icon: '🏗️',
+      icon: 'construct',
+      iconColor: COLORS.danger,
       onPress: () => navigation.navigate('ProjectManagement'),
       allowedRoles: [ROLES.ADMIN],
     },
     {
       title: 'Zonas de Trabajo',
       description: 'Administrar zonas y secciones',
-      icon: '📍',
+      icon: 'location',
+      iconColor: '#8b5cf6',
       onPress: () => navigation.navigate('WorkZoneManagement'),
       allowedRoles: [ROLES.ADMIN, ROLES.SUPERVISOR],
     },
@@ -97,12 +105,16 @@ const DashboardScreen = () => {
       key={option.title}
       style={styles.menuCard}
       onPress={option.onPress}
+      activeOpacity={0.7}
     >
-      <Text style={styles.menuIcon}>{option.icon}</Text>
+      <View style={[styles.iconContainer, { backgroundColor: `${option.iconColor}15` }]}>
+        <Ionicons name={option.icon} size={28} color={option.iconColor || COLORS.primary} />
+      </View>
       <View style={styles.menuTextContainer}>
         <Text style={styles.menuTitle}>{option.title}</Text>
         <Text style={styles.menuDescription}>{option.description}</Text>
       </View>
+      <Ionicons name="chevron-forward" size={20} color={COLORS.gray} />
     </TouchableOpacity>
   );
 
@@ -115,7 +127,8 @@ const DashboardScreen = () => {
             <Text style={styles.userName}>{user?.nombre}</Text>
             <Text style={styles.userRole}>{user?.rol}</Text>
           </View>
-          <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutButton} activeOpacity={0.8}>
+            <Ionicons name="log-out-outline" size={18} color={COLORS.white} />
             <Text style={styles.logoutText}>Salir</Text>
           </TouchableOpacity>
         </View>
@@ -174,6 +187,9 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
   logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     backgroundColor: COLORS.danger,
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -182,6 +198,7 @@ const styles = StyleSheet.create({
   logoutText: {
     color: COLORS.white,
     fontWeight: '600',
+    marginLeft: 4,
   },
   projectInfo: {
     backgroundColor: COLORS.primary,
@@ -228,8 +245,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  menuIcon: {
-    fontSize: 32,
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 16,
   },
   menuTextContainer: {

@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosError } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_URL } from '../constants/config';
+import { API_URL, ENV } from '../constants/config';
+import { logError } from '../utils/errorHandler';
 import {
   LoginResponse,
   ReporteActividades,
@@ -29,19 +30,42 @@ class ApiService {
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }
+
+        // Log en desarrollo
+        if (__DEV__) {
+          console.log(`📡 ${config.method?.toUpperCase()} ${config.url}`);
+        }
+
         return config;
       },
-      (error) => Promise.reject(error)
+      (error) => {
+        logError(error, 'Request Interceptor');
+        return Promise.reject(error);
+      }
     );
 
-    // Interceptor para manejar errores
+    // Interceptor para manejar errores de respuesta
     this.api.interceptors.response.use(
-      (response) => response,
+      (response) => {
+        // Log en desarrollo
+        if (__DEV__) {
+          console.log(`✅ ${response.status} ${response.config.url}`);
+        }
+        return response;
+      },
       async (error: AxiosError) => {
+        logError(error, 'API Response');
+
+        // Token expirado o inválido - limpiar storage
         if (error.response?.status === 401) {
-          // Token expirado o inválido
           await AsyncStorage.multiRemove(['token', 'user', 'selectedProject']);
         }
+
+        // Rate limiting - esperar antes de reintentar
+        if (error.response?.status === 429) {
+          console.log('⏳ Rate limited, esperando...');
+        }
+
         return Promise.reject(error);
       }
     );

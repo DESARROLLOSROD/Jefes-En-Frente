@@ -14,6 +14,7 @@ import UserManagementScreen from '../screens/users/UserManagementEnhanced';
 import VehicleManagementScreen from '../screens/vehicles/VehicleManagementEnhanced';
 import ProjectManagementScreen from '../screens/projects/ProjectManagementScreen';
 import WorkZoneManagementScreen from '../screens/workzones/WorkZoneManagementEnhanced';
+import SettingsScreen from '../screens/settings/SettingsScreen';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -26,6 +27,7 @@ export type RootStackParamList = {
   VehicleManagement: undefined;
   ProjectManagement: undefined;
   WorkZoneManagement: undefined;
+  Settings: undefined;
 };
 
 const Stack = createStackNavigator<RootStackParamList>();
@@ -99,6 +101,11 @@ const AppNavigator = () => {
               name="WorkZoneManagement"
               component={WorkZoneManagementScreen}
               options={{ title: 'Gestión de Zonas' }}
+            />
+            <Stack.Screen
+              name="Settings"
+              component={SettingsScreen}
+              options={{ title: 'Configuración' }}
             />
           </>
         )}
