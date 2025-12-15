@@ -102,17 +102,22 @@ router.get('/estadisticas', async (req, res) => {
         reportes.forEach(reporte => {
             reporte.controlAcarreo?.forEach(item => {
                 const volumen = parseFloat(item.volSuelto) || 0;
-                const actual = materialesAcarreo.get(item.material) || 0;
-                materialesAcarreo.set(item.material, actual + volumen);
-                totalViajesAcarreo++; // Contar cada entrada como un viaje
+                const numViajes = item.noViaje || 1; // Usar el campo noViaje, si no existe usar 1
+                const actual = materialesAcarreo.get(item.material) || { volumen: 0, viajes: 0 };
+                materialesAcarreo.set(item.material, {
+                    volumen: actual.volumen + volumen,
+                    viajes: actual.viajes + numViajes
+                });
+                totalViajesAcarreo += numViajes; // Sumar el número de viajes especificado
             });
         });
-        const totalVolumenAcarreo = Array.from(materialesAcarreo.values()).reduce((sum, vol) => sum + vol, 0);
+        const totalVolumenAcarreo = Array.from(materialesAcarreo.values()).reduce((sum, val) => sum + val.volumen, 0);
         const acarreoArray = Array.from(materialesAcarreo.entries())
-            .map(([nombre, volumen]) => ({
+            .map(([nombre, data]) => ({
             nombre,
-            volumen: parseFloat(volumen.toFixed(2)),
-            porcentaje: totalVolumenAcarreo > 0 ? parseFloat(((volumen / totalVolumenAcarreo) * 100).toFixed(1)) : 0
+            volumen: parseFloat(data.volumen.toFixed(2)),
+            viajes: data.viajes,
+            porcentaje: totalVolumenAcarreo > 0 ? parseFloat(((data.volumen / totalVolumenAcarreo) * 100).toFixed(1)) : 0
         }))
             .sort((a, b) => b.volumen - a.volumen);
         // === ESTADÍSTICAS DE MATERIAL ===
@@ -143,17 +148,22 @@ router.get('/estadisticas', async (req, res) => {
         reportes.forEach(reporte => {
             reporte.controlAgua?.forEach(item => {
                 const volumen = parseFloat(item.volumen) || 0;
+                const numViajes = item.viaje || 1; // Usar el campo viaje, si no existe usar 1
                 totalVolumenAgua += volumen;
-                const actual = aguaPorOrigen.get(item.origen) || 0;
-                aguaPorOrigen.set(item.origen, actual + volumen);
-                totalViajesAgua++; // Contar cada entrada como un viaje
+                const actual = aguaPorOrigen.get(item.origen) || { volumen: 0, viajes: 0 };
+                aguaPorOrigen.set(item.origen, {
+                    volumen: actual.volumen + volumen,
+                    viajes: actual.viajes + numViajes
+                });
+                totalViajesAgua += numViajes; // Sumar el número de viajes especificado
             });
         });
         const aguaArray = Array.from(aguaPorOrigen.entries())
-            .map(([origen, volumen]) => ({
+            .map(([origen, data]) => ({
             origen,
-            volumen: parseFloat(volumen.toFixed(2)),
-            porcentaje: totalVolumenAgua > 0 ? parseFloat(((volumen / totalVolumenAgua) * 100).toFixed(1)) : 0
+            volumen: parseFloat(data.volumen.toFixed(2)),
+            viajes: data.viajes,
+            porcentaje: totalVolumenAgua > 0 ? parseFloat(((data.volumen / totalVolumenAgua) * 100).toFixed(1)) : 0
         }))
             .sort((a, b) => b.volumen - a.volumen);
         // === ESTADÍSTICAS DE VEHÍCULOS ===
@@ -212,7 +222,8 @@ router.get('/estadisticas', async (req, res) => {
                 vehiculos: vehiculosArray,
                 totalHoras: parseFloat(totalHoras.toFixed(2)),
                 vehiculoMasUtilizado: vehiculosArray[0]?.noEconomico || 'N/A'
-            }
+            },
+            totalViajes: totalViajesAcarreo + totalViajesAgua
         };
         const response = {
             success: true,

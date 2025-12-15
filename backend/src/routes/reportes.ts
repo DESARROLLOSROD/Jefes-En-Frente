@@ -122,12 +122,13 @@ router.get('/estadisticas', async (req: AuthRequest, res) => {
     reportes.forEach(reporte => {
       reporte.controlAcarreo?.forEach(item => {
         const volumen = parseFloat(item.volSuelto) || 0;
+        const numViajes = item.noViaje || 1; // Usar el campo noViaje, si no existe usar 1
         const actual = materialesAcarreo.get(item.material) || { volumen: 0, viajes: 0 };
         materialesAcarreo.set(item.material, {
           volumen: actual.volumen + volumen,
-          viajes: actual.viajes + 1
+          viajes: actual.viajes + numViajes
         });
-        totalViajesAcarreo++; // Contar cada entrada como un viaje
+        totalViajesAcarreo += numViajes; // Sumar el número de viajes especificado
       });
     });
 
@@ -170,13 +171,14 @@ router.get('/estadisticas', async (req: AuthRequest, res) => {
     reportes.forEach(reporte => {
       reporte.controlAgua?.forEach(item => {
         const volumen = parseFloat(item.volumen) || 0;
+        const numViajes = item.viaje || 1; // Usar el campo viaje, si no existe usar 1
         totalVolumenAgua += volumen;
         const actual = aguaPorOrigen.get(item.origen) || { volumen: 0, viajes: 0 };
         aguaPorOrigen.set(item.origen, {
           volumen: actual.volumen + volumen,
-          viajes: actual.viajes + 1
+          viajes: actual.viajes + numViajes
         });
-        totalViajesAgua++; // Contar cada entrada como un viaje
+        totalViajesAgua += numViajes; // Sumar el número de viajes especificado
       });
     });
 
