@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 // Screens
 import LoginScreen from '../screens/auth/LoginScreen';
 import ProjectSelectionScreen from '../screens/projects/ProjectSelectionScreen';
+import ProjectDetailScreen from '../screens/projects/ProjectDetailScreen';
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
 import ReportFormScreen from '../screens/reports/ReportFormEnhanced';
 import ReportListScreen from '../screens/reports/ReportListScreen';
@@ -15,10 +16,12 @@ import VehicleManagementScreen from '../screens/vehicles/VehicleManagementEnhanc
 import ProjectManagementScreen from '../screens/projects/ProjectManagementScreen';
 import WorkZoneManagementScreen from '../screens/workzones/WorkZoneManagementEnhanced';
 import SettingsScreen from '../screens/settings/SettingsScreen';
+import { Proyecto } from '../types';
 
 export type RootStackParamList = {
   Login: undefined;
   ProjectSelection: undefined;
+  ProjectDetail: { proyecto: Proyecto };
   Dashboard: undefined;
   ReportForm: { reportId?: string };
   ReportList: undefined;
@@ -55,11 +58,18 @@ const AppNavigator = () => {
             options={{ headerShown: false }}
           />
         ) : !selectedProject ? (
-          <Stack.Screen
-            name="ProjectSelection"
-            component={ProjectSelectionScreen}
-            options={{ title: 'Seleccionar Proyecto', headerLeft: () => null }}
-          />
+          <>
+            <Stack.Screen
+              name="ProjectSelection"
+              component={ProjectSelectionScreen}
+              options={{ title: 'Seleccionar Proyecto', headerLeft: () => null }}
+            />
+            <Stack.Screen
+              name="ProjectDetail"
+              component={ProjectDetailScreen}
+              options={{ title: 'Detalle del Proyecto' }}
+            />
+          </>
         ) : (
           <>
             <Stack.Screen

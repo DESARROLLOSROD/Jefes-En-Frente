@@ -6,27 +6,64 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
+  Alert,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { Proyecto } from '../../types';
-import { COLORS } from '../../constants/config';
 
-const ProjectSelectionScreen = () => {
+const ProjectSelectionScreen = ({ navigation }: any) => {
   const { proyectos, selectProject, logout } = useAuth();
+  const { theme } = useTheme();
 
   const handleSelectProject = (project: Proyecto) => {
     selectProject(project);
   };
 
+  const handleProjectPress = (project: Proyecto) => {
+    Alert.alert(
+      project.nombre,
+      'Selecciona una opción',
+      [
+        {
+          text: 'Ver Detalles y Mapa',
+          onPress: () => navigation.navigate('ProjectDetail', { proyecto: project }),
+        },
+        {
+          text: 'Seleccionar Proyecto',
+          onPress: () => handleSelectProject(project),
+        },
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+      ]
+    );
+  };
+
   const renderProject = ({ item }: { item: Proyecto }) => (
     <TouchableOpacity
-      style={styles.projectCard}
-      onPress={() => handleSelectProject(item)}
+      style={[styles.projectCard, { backgroundColor: theme.surface }]}
+      onPress={() => handleProjectPress(item)}
     >
-      <Text style={styles.projectName}>{item.nombre}</Text>
-      <Text style={styles.projectLocation}>{item.ubicacion}</Text>
+      <View style={styles.projectHeader}>
+        <Ionicons name="business" size={24} color={theme.primary} />
+        {item.mapa && (
+          <View style={[styles.mapBadge, { backgroundColor: theme.success }]}>
+            <Ionicons name="map" size={12} color={theme.white} />
+          </View>
+        )}
+      </View>
+      <Text style={[styles.projectName, { color: theme.text }]}>{item.nombre}</Text>
+      <View style={styles.locationRow}>
+        <Ionicons name="location-outline" size={16} color={theme.textSecondary} />
+        <Text style={[styles.projectLocation, { color: theme.textSecondary }]}>
+          {item.ubicacion}
+        </Text>
+      </View>
       {item.descripcion && (
-        <Text style={styles.projectDescription} numberOfLines={2}>
+        <Text style={[styles.projectDescription, { color: theme.textSecondary }]} numberOfLines={2}>
           {item.descripcion}
         </Text>
       )}
@@ -34,17 +71,19 @@ const ProjectSelectionScreen = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Selecciona un Proyecto</Text>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]}>
+      <View style={[styles.header, { backgroundColor: theme.surface, borderBottomColor: theme.border }]}>
+        <Text style={[styles.title, { color: theme.text }]}>Selecciona un Proyecto</Text>
         <TouchableOpacity onPress={logout} style={styles.logoutButton}>
-          <Text style={styles.logoutText}>Cerrar Sesión</Text>
+          <Ionicons name="log-out-outline" size={16} color={theme.danger} />
+          <Text style={[styles.logoutText, { color: theme.danger }]}>Cerrar Sesión</Text>
         </TouchableOpacity>
       </View>
 
       {proyectos.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>
+          <Ionicons name="folder-open-outline" size={64} color={theme.textDisabled} />
+          <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
             No tienes proyectos asignados. Contacta al administrador.
           </Text>
         </View>
@@ -63,25 +102,23 @@ const ProjectSelectionScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.light,
   },
   header: {
     padding: 20,
-    backgroundColor: COLORS.white,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.gray,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: COLORS.dark,
     marginBottom: 8,
   },
   logoutButton: {
     marginTop: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   logoutText: {
-    color: COLORS.danger,
     fontSize: 14,
     fontWeight: '600',
   },
@@ -89,7 +126,6 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   projectCard: {
-    backgroundColor: COLORS.white,
     borderRadius: 12,
     padding: 20,
     marginBottom: 16,
@@ -99,20 +135,36 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  projectHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  mapBadge: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   projectName: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: COLORS.dark,
-    marginBottom: 4,
+    marginBottom: 8,
+  },
+  locationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginBottom: 8,
   },
   projectLocation: {
     fontSize: 14,
-    color: COLORS.secondary,
-    marginBottom: 8,
+    flex: 1,
   },
   projectDescription: {
     fontSize: 14,
-    color: COLORS.gray,
     lineHeight: 20,
   },
   emptyContainer: {
@@ -123,8 +175,8 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: COLORS.secondary,
     textAlign: 'center',
+    marginTop: 16,
   },
 });
 
