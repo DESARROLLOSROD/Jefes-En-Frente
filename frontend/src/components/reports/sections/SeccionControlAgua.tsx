@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ControlAgua } from '../../../types/reporte';
 import ModalControlAgua from '../../shared/modals/ModalControlAgua';
+import { origenService, IOrigen } from '../../../services/origenService';
+import { destinoService, IDestino } from '../../../services/destinoService';
 
 interface SeccionControlAguaProps {
   aguas: ControlAgua[];
@@ -18,6 +20,49 @@ const SeccionControlAgua: React.FC<SeccionControlAguaProps> = ({
     index: number;
     data: ControlAgua;
   } | null>(null);
+
+  const [listaOrigenes, setListaOrigenes] = useState<IOrigen[]>([]);
+  const [listaDestinos, setListaDestinos] = useState<IDestino[]>([]);
+
+  useEffect(() => {
+    cargarCatalogos();
+  }, []);
+
+  const cargarCatalogos = async () => {
+    try {
+      // Cargar Orígenes
+      const responseOrigenes = await origenService.obtenerOrigenes();
+      if (responseOrigenes.success && responseOrigenes.data) {
+        setListaOrigenes(responseOrigenes.data);
+      }
+
+      // Cargar Destinos
+      const responseDestinos = await destinoService.obtenerDestinos();
+      if (responseDestinos.success && responseDestinos.data) {
+        setListaDestinos(responseDestinos.data);
+      }
+    } catch (error) {
+      console.error('Error al cargar catálogos:', error);
+    }
+  };
+
+  const handleCrearOrigen = async (nombre: string): Promise<IOrigen | null> => {
+    const response = await origenService.crearOrigen({ nombre });
+    if (response.success && response.data) {
+      setListaOrigenes(prev => [...prev, response.data!].sort((a, b) => a.nombre.localeCompare(b.nombre)));
+      return response.data;
+    }
+    return null;
+  };
+
+  const handleCrearDestino = async (nombre: string): Promise<IDestino | null> => {
+    const response = await destinoService.crearDestino({ nombre });
+    if (response.success && response.data) {
+      setListaDestinos(prev => [...prev, response.data!].sort((a, b) => a.nombre.localeCompare(b.nombre)));
+      return response.data;
+    }
+    return null;
+  };
 
   const handleAgregarNuevo = () => {
     setAguaEditando(null);
@@ -148,6 +193,10 @@ const SeccionControlAgua: React.FC<SeccionControlAguaProps> = ({
         aguaInicial={aguaEditando?.data || null}
         title={aguaEditando !== null ? 'EDITAR CONTROL DE AGUA' : 'AGREGAR CONTROL DE AGUA'}
         proyectoId={proyectoId}
+        listaOrigenes={listaOrigenes}
+        onCrearOrigen={handleCrearOrigen}
+        listaDestinos={listaDestinos}
+        onCrearDestino={handleCrearDestino}
       />
     </div>
   );

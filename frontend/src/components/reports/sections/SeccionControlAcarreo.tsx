@@ -4,6 +4,8 @@ import ModalControlAcarreo from '../../shared/modals/ModalControlAcarreo';
 import ModalConfirmacion from '../../shared/modals/ModalConfirmacion';
 import { materialService } from '../../../services/materialService';
 import { capacidadService } from '../../../services/capacidadService';
+import { origenService, IOrigen } from '../../../services/origenService';
+import { destinoService, IDestino } from '../../../services/destinoService';
 
 
 interface SeccionControlAcarreoProps {
@@ -23,6 +25,8 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
 
   const [listaMateriales, setListaMateriales] = useState<IMaterialCatalog[]>([]);
   const [listaCapacidades, setListaCapacidades] = useState<ICapacidadCatalog[]>([]);
+  const [listaOrigenes, setListaOrigenes] = useState<IOrigen[]>([]);
+  const [listaDestinos, setListaDestinos] = useState<IDestino[]>([]);
 
   // Estado para eliminación
   const [confirmacionOpen, setConfirmacionOpen] = useState(false);
@@ -44,6 +48,18 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
       const responseCapacidades = await capacidadService.obtenerCapacidades();
       if (responseCapacidades.success && responseCapacidades.data) {
         setListaCapacidades(responseCapacidades.data);
+      }
+
+      // Cargar Orígenes
+      const responseOrigenes = await origenService.obtenerOrigenes();
+      if (responseOrigenes.success && responseOrigenes.data) {
+        setListaOrigenes(responseOrigenes.data);
+      }
+
+      // Cargar Destinos
+      const responseDestinos = await destinoService.obtenerDestinos();
+      if (responseDestinos.success && responseDestinos.data) {
+        setListaDestinos(responseDestinos.data);
       }
     } catch (error) {
       console.error('Error al cargar catálogos:', error);
@@ -74,6 +90,24 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
           return a.valor.localeCompare(b.valor);
         });
       });
+      return response.data;
+    }
+    return null;
+  };
+
+  const handleCrearOrigen = async (nombre: string): Promise<IOrigen | null> => {
+    const response = await origenService.crearOrigen({ nombre });
+    if (response.success && response.data) {
+      setListaOrigenes(prev => [...prev, response.data!].sort((a, b) => a.nombre.localeCompare(b.nombre)));
+      return response.data;
+    }
+    return null;
+  };
+
+  const handleCrearDestino = async (nombre: string): Promise<IDestino | null> => {
+    const response = await destinoService.crearDestino({ nombre });
+    if (response.success && response.data) {
+      setListaDestinos(prev => [...prev, response.data!].sort((a, b) => a.nombre.localeCompare(b.nombre)));
       return response.data;
     }
     return null;
@@ -227,6 +261,10 @@ const SeccionControlAcarreo: React.FC<SeccionControlAcarreoProps> = ({
         onCrearMaterial={handleCrearMaterial}
         listaCapacidades={listaCapacidades}
         onCrearCapacidad={handleCrearCapacidad}
+        listaOrigenes={listaOrigenes}
+        onCrearOrigen={handleCrearOrigen}
+        listaDestinos={listaDestinos}
+        onCrearDestino={handleCrearDestino}
       />
 
       {/* Modal Confirmación */}

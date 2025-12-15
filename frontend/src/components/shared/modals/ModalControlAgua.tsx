@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { ControlAgua } from '../../../types/reporte';
 import { Vehiculo } from '../../../types/gestion';
 import AutocompleteInput from '../AutocompleteInput';
-import { ORIGENES, DESTINOS } from '../../../constants/reporteConstants';
+import { IOrigen } from '../../../services/origenService';
+import { IDestino } from '../../../services/destinoService';
 import { vehiculoService } from '../../../services/api';
 
 interface ModalControlAguaProps {
@@ -12,6 +13,10 @@ interface ModalControlAguaProps {
   aguaInicial?: ControlAgua | null;
   title?: string;
   proyectoId?: string;
+  listaOrigenes: IOrigen[];
+  onCrearOrigen: (nombre: string) => Promise<IOrigen | null>;
+  listaDestinos: IDestino[];
+  onCrearDestino: (nombre: string) => Promise<IDestino | null>;
 }
 
 const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
@@ -20,7 +25,11 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
   onSave,
   aguaInicial,
   title = 'AGREGAR CONTROL DE AGUA',
-  proyectoId
+  proyectoId,
+  listaOrigenes,
+  onCrearOrigen,
+  listaDestinos,
+  onCrearDestino
 }) => {
   const [formData, setFormData] = useState<ControlAgua>({
     noEconomico: '',
@@ -153,21 +162,51 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     console.log('🔵 MODAL AGUA handleSubmit llamado');
     console.log('📝 FormData del modal:', formData);
 
     if (validateForm()) {
-      console.log('✅ Validación pasada, llamando onSave');
-      onSave(formData);
-      console.log('🚪 Cerrando modal');
-      onClose();
+      try {
+        // Verificar si el origen existe en la lista
+        const origenNombre = formData.origen.trim().toUpperCase();
+        const existeOrigen = listaOrigenes.some(o => o.nombre === origenNombre);
+
+        if (!existeOrigen && origenNombre) {
+          const confirmacion = window.confirm(`El origen "${origenNombre}" no existe en el catálogo. ¿Desea agregarlo para futuros reportes?`);
+          if (confirmacion) {
+            await onCrearOrigen(origenNombre);
+          }
+        }
+
+        // Verificar si el destino existe en la lista
+        const destinoNombre = formData.destino.trim().toUpperCase();
+        const existeDestino = listaDestinos.some(d => d.nombre === destinoNombre);
+
+        if (!existeDestino && destinoNombre) {
+          const confirmacion = window.confirm(`El destino "${destinoNombre}" no existe en el catálogo. ¿Desea agregarlo para futuros reportes?`);
+          if (confirmacion) {
+            await onCrearDestino(destinoNombre);
+          }
+        }
+
+        console.log('✅ Validación pasada, llamando onSave');
+        onSave(formData);
+        console.log('🚪 Cerrando modal');
+        onClose();
+      } catch (error) {
+        console.error('Error al guardar control de agua:', error);
+        alert('Error al procesar el control de agua');
+      }
     } else {
       console.log('❌ Validación falló');
     }
   };
 
   if (!isOpen) return null;
+
+  const opcionesOrigenes = listaOrigenes.map(o => o.nombre);
+  const opcionesDestinos = listaDestinos.map(d => d.nombre);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -301,10 +340,13 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
                 label="ORIGEN"
                 value={formData.origen}
                 onChange={(value) => handleChange('origen', value)}
-                options={ORIGENES}
+                options={opcionesOrigenes}
                 placeholder="SELECCIONE O ESCRIBA EL ORIGEN..."
                 required
               />
+              <p className="text-xs text-gray-500 mt-1">
+                * Si el origen no existe, se le preguntará si desea agregarlo.
+              </p>
               {errors.origen && (
                 <p className="text-red-500 text-xs mt-1">{errors.origen}</p>
               )}
@@ -316,10 +358,13 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
                 label="DESTINO"
                 value={formData.destino}
                 onChange={(value) => handleChange('destino', value)}
-                options={DESTINOS}
+                options={opcionesDestinos}
                 placeholder="SELECCIONE O ESCRIBA EL DESTINO..."
                 required
               />
+              <p className="text-xs text-gray-500 mt-1">
+                * Si el destino no existe, se le preguntará si desea agregarlo.
+              </p>
               {errors.destino && (
                 <p className="text-red-500 text-xs mt-1">{errors.destino}</p>
               )}

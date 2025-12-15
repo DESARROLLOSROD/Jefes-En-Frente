@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { ControlAcarreo, IMaterialCatalog, ICapacidadCatalog } from '../../../types/reporte';
 import AutocompleteInput from '../AutocompleteInput';
-import { ORIGENES, DESTINOS } from '../../../constants/reporteConstants';
+import { IOrigen } from '../../../services/origenService';
+import { IDestino } from '../../../services/destinoService';
 
 interface ModalControlAcarreoProps {
   isOpen: boolean;
@@ -13,6 +14,10 @@ interface ModalControlAcarreoProps {
   onCrearMaterial: (nombre: string) => Promise<IMaterialCatalog | null>;
   listaCapacidades: ICapacidadCatalog[];
   onCrearCapacidad: (valor: string) => Promise<ICapacidadCatalog | null>;
+  listaOrigenes: IOrigen[];
+  onCrearOrigen: (nombre: string) => Promise<IOrigen | null>;
+  listaDestinos: IDestino[];
+  onCrearDestino: (nombre: string) => Promise<IDestino | null>;
 }
 
 const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
@@ -24,7 +29,11 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
   listaMateriales,
   onCrearMaterial,
   listaCapacidades,
-  onCrearCapacidad
+  onCrearCapacidad,
+  listaOrigenes,
+  onCrearOrigen,
+  listaDestinos,
+  onCrearDestino
 }) => {
   const [formData, setFormData] = useState<ControlAcarreo>({
     material: '',
@@ -133,6 +142,28 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
           }
         }
 
+        // Verificar si el origen existe en la lista
+        const origenNombre = formData.capaOrigen.trim().toUpperCase();
+        const existeOrigen = listaOrigenes.some(o => o.nombre === origenNombre);
+
+        if (!existeOrigen && origenNombre) {
+          const confirmacion = window.confirm(`El origen "${origenNombre}" no existe en el catálogo. ¿Desea agregarlo para futuros reportes?`);
+          if (confirmacion) {
+            await onCrearOrigen(origenNombre);
+          }
+        }
+
+        // Verificar si el destino existe en la lista
+        const destinoNombre = formData.destino.trim().toUpperCase();
+        const existeDestino = listaDestinos.some(d => d.nombre === destinoNombre);
+
+        if (!existeDestino && destinoNombre) {
+          const confirmacion = window.confirm(`El destino "${destinoNombre}" no existe en el catálogo. ¿Desea agregarlo para futuros reportes?`);
+          if (confirmacion) {
+            await onCrearDestino(destinoNombre);
+          }
+        }
+
         console.log('✅ Validación pasada, llamando onSave');
         onSave(formData);
         console.log('🚪 Cerrando modal');
@@ -152,6 +183,8 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
 
   const opcionesMateriales = listaMateriales.map(m => m.nombre);
   const opcionesCapacidades = listaCapacidades.map(c => c.valor);
+  const opcionesOrigenes = listaOrigenes.map(o => o.nombre);
+  const opcionesDestinos = listaDestinos.map(d => d.nombre);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -282,10 +315,13 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
                 label="ORIGEN"
                 value={formData.capaOrigen}
                 onChange={(value) => handleChange('capaOrigen', value)}
-                options={ORIGENES}
+                options={opcionesOrigenes}
                 placeholder="SELECCIONE O ESCRIBA EL ORIGEN..."
                 required
               />
+              <p className="text-xs text-gray-500 mt-1">
+                * Si el origen no existe, se le preguntará si desea agregarlo.
+              </p>
               {errors.capaOrigen && (
                 <p className="text-red-500 text-xs mt-1">{errors.capaOrigen}</p>
               )}
@@ -297,10 +333,13 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
                 label="DESTINO"
                 value={formData.destino}
                 onChange={(value) => handleChange('destino', value)}
-                options={DESTINOS}
+                options={opcionesDestinos}
                 placeholder="SELECCIONE O ESCRIBA EL DESTINO..."
                 required
               />
+              <p className="text-xs text-gray-500 mt-1">
+                * Si el destino no existe, se le preguntará si desea agregarlo.
+              </p>
               {errors.destino && (
                 <p className="text-red-500 text-xs mt-1">{errors.destino}</p>
               )}
