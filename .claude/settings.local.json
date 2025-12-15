@@ -28,7 +28,8 @@
       "Bash(npx expo start:*)",
       "Bash(tree:*)",
       "Bash(xargs:*)",
-      "Bash(timeout /t 30)"
+      "Bash(timeout /t 30)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []
