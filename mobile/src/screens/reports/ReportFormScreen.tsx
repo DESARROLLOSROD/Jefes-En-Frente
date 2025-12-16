@@ -24,7 +24,7 @@ import {
   ControlAgua,
   ControlMaquinaria,
 } from '../../types';
-import { COLORS, TURNOS } from '../../constants/config';
+import { COLORS, TURNOS, THEME } from '../../constants/config';
 import ControlAcarreoSection from '../../components/reports/ControlAcarreoSection';
 import ControlMaterialSection from '../../components/reports/ControlMaterialSection';
 import ControlAguaSection from '../../components/reports/ControlAguaSection';
@@ -125,6 +125,7 @@ const ReportFormScreen = () => {
         reporte.ubicacionMapa = {
           pinX: mapPin.pinX,
           pinY: mapPin.pinY,
+          colocado: true,
         };
       }
 
@@ -173,9 +174,9 @@ const ReportFormScreen = () => {
           </View>
         )}
 
-        <Text style={styles.sectionTitle}>INFORMACIÓN GENERAL</Text>
+        <View style={styles.sectionContainerOrange}>
+          <Text style={styles.sectionTitleOrange}>INFORMACIÓN GENERAL</Text>
 
-        <View style={styles.infoCard}>
           <View style={styles.row}>
             <View style={[styles.inputGroup, styles.flex1]}>
               <Text style={styles.label}>FECHA</Text>
@@ -275,15 +276,15 @@ const ReportFormScreen = () => {
 
         {/* Mapa del Proyecto */}
         {selectedProject?.mapa && (
-          <>
-            <Text style={styles.sectionTitle}>UBICACIÓN EN MAPA DEL PROYECTO</Text>
+          <View style={styles.sectionContainerBlue}>
+            <Text style={styles.sectionTitleBlue}>UBICACIÓN EN MAPA DEL PROYECTO</Text>
             <MapPinSelector
               mapaBase64={selectedProject.mapa.imagen.data}
               pin={mapPin || undefined}
               onPinChange={(x, y) => setMapPin({ pinX: x, pinY: y })}
               onPinRemove={() => setMapPin(null)}
             />
-          </>
+          </View>
         )}
 
         {zones.length > 0 && (
@@ -298,7 +299,7 @@ const ReportFormScreen = () => {
                 placeholder="Seleccionar zona..."
               />
 
-              {selectedZone && zones.find((z) => z._id === selectedZone)?.sections.length > 0 && (
+              {selectedZone && (zones.find((z) => z._id === selectedZone)?.sections.length ?? 0) > 0 && (
                 <Picker
                   label="Sección"
                   value={selectedSection}
@@ -396,15 +397,40 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   infoCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: 8,
+    ...THEME.card.base,
+    ...THEME.card.orange, // Default to orange style for general info
+  },
+  sectionContainerOrange: {
+    ...THEME.card.base,
+    ...THEME.card.orange,
     padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    marginBottom: 20,
+  },
+  sectionTitleOrange: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.orange.text,
+    marginBottom: 16,
+    letterSpacing: 0.8,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.orange.border,
+    paddingBottom: 8,
+  },
+  sectionContainerBlue: {
+    ...THEME.card.base,
+    ...THEME.card.blue,
+    padding: 16,
+    marginBottom: 20,
+  },
+  sectionTitleBlue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: COLORS.blue.text,
+    marginBottom: 16,
+    letterSpacing: 0.8,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.blue.border,
+    paddingBottom: 8,
   },
   inputGroup: {
     marginBottom: 12,

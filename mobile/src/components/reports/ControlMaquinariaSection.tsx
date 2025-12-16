@@ -10,7 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import { ControlMaquinaria } from '../../types';
-import { COLORS } from '../../constants/config';
+import { COLORS, THEME } from '../../constants/config';
 
 interface Props {
   items: ControlMaquinaria[];
@@ -286,58 +286,63 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   card: {
-    backgroundColor: '#e9d5ff',
-    borderRadius: 8,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...THEME.card.base,
+    ...THEME.card.purple,
+    marginBottom: 0, // Remove margin as it's handled by wrapper in parent or should be tight
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.purple.border,
+    paddingBottom: 12,
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: '#581c87',
+    color: COLORS.purple.text,
     letterSpacing: 0.5,
   },
   addButton: {
-    backgroundColor: '#9333ea',
+    backgroundColor: COLORS.purple.primary,
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 6,
+    borderRadius: 8,
   },
   addButtonText: {
     color: COLORS.white,
-    fontWeight: '600',
+    fontWeight: '700',
     fontSize: 12,
   },
   machineCard: {
     backgroundColor: COLORS.white,
-    borderRadius: 6,
-    marginBottom: 12,
+    borderRadius: 8,
+    marginBottom: 16,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   machineHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#f3f4f6',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
+    backgroundColor: '#faf5ff', // purple-50
+    paddingHorizontal: 16,
+    paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    borderBottomColor: '#f3e8ff', // purple-100
   },
   machineTitle: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
-    color: COLORS.dark,
+    color: COLORS.purple.text,
   },
   machineActions: {
     flexDirection: 'row',

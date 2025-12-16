@@ -10,7 +10,7 @@ import {
   Alert,
 } from 'react-native';
 import { ControlAcarreo } from '../../types';
-import { COLORS } from '../../constants/config';
+import { COLORS, THEME } from '../../constants/config';
 
 interface Props {
   items: ControlAcarreo[];
@@ -299,14 +299,10 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   card: {
-    backgroundColor: COLORS.white,
-    borderRadius: 8,
-    padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...THEME.card.base,
+    // Keep it standard white card, maybe subtle border
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
   },
   header: {
     flexDirection: 'row',
@@ -315,7 +311,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 18,
     fontWeight: 'bold',
     color: COLORS.dark,
     letterSpacing: 0.5,
