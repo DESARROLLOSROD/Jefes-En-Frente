@@ -32,7 +32,8 @@
       "Bash(find:*)",
       "Bash(npm outdated:*)",
       "Bash(npm dedupe:*)",
-      "Bash(npx expo-doctor:*)"
+      "Bash(npx expo-doctor:*)",
+      "Bash(eas update:configure:*)"
     ],
     "deny": [],
     "ask": []
