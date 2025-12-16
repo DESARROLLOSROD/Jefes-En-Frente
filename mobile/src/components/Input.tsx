@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, TextInputProps, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TextInputProps, TouchableOpacity, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
+import { COLORS } from '../constants/config';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -9,6 +10,8 @@ interface InputProps extends TextInputProps {
   required?: boolean;
   icon?: keyof typeof Ionicons.glyphMap;
   helperText?: string;
+  variant?: 'default' | 'login';
+  containerStyle?: ViewStyle;
 }
 
 const Input: React.FC<InputProps> = ({
@@ -19,6 +22,9 @@ const Input: React.FC<InputProps> = ({
   helperText,
   secureTextEntry,
   style,
+  variant = 'default',
+  containerStyle,
+  placeholder,
   ...props
 }) => {
   const { theme } = useTheme();
@@ -28,23 +34,40 @@ const Input: React.FC<InputProps> = ({
   const showPasswordToggle = secureTextEntry !== undefined;
   const actualSecureEntry = showPasswordToggle && !isPasswordVisible;
 
+  const isLoginVariant = variant === 'login';
+
+  const finalPlaceholder =
+    isLoginVariant && placeholder ? placeholder.toUpperCase() : placeholder;
+
+  const wrapperStyle = [
+    isLoginVariant ? styles.loginInputWrapper : styles.inputWrapper,
+    !isLoginVariant && {
+      backgroundColor: theme.inputBackground,
+      borderColor: theme.inputBorder,
+    },
+    isFocused && !isLoginVariant && { borderColor: theme.primary, borderWidth: 2 },
+    isFocused && isLoginVariant && { borderColor: COLORS.orange.primary, borderWidth: 1 },
+    error && { borderColor: theme.danger },
+    containerStyle,
+  ];
+
+  const inputStyle = [
+    isLoginVariant ? styles.loginInput : styles.input,
+    !isLoginVariant && icon ? styles.inputWithIcon : {},
+    { color: isLoginVariant ? COLORS.dark : theme.text },
+    style,
+  ];
+
   return (
     <View style={styles.container}>
-      {label && (
+      {label && !isLoginVariant && (
         <Text style={[styles.label, { color: theme.text }]}>
           {label}
           {required && <Text style={[styles.required, { color: theme.danger }]}> *</Text>}
         </Text>
       )}
-      <View
-        style={[
-          styles.inputWrapper,
-          { backgroundColor: theme.inputBackground, borderColor: theme.inputBorder },
-          isFocused && { borderColor: theme.primary, borderWidth: 2 },
-          error && { borderColor: theme.danger },
-        ]}
-      >
-        {icon && (
+      <View style={wrapperStyle}>
+        {icon && !isLoginVariant && (
           <Ionicons
             name={icon}
             size={20}
@@ -53,8 +76,9 @@ const Input: React.FC<InputProps> = ({
           />
         )}
         <TextInput
-          style={[styles.input, icon && styles.inputWithIcon, { color: theme.text }, style]}
-          placeholderTextColor={theme.inputPlaceholder}
+          style={inputStyle}
+          placeholder={finalPlaceholder}
+          placeholderTextColor={isLoginVariant ? COLORS.gray : theme.inputPlaceholder}
           secureTextEntry={actualSecureEntry}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
@@ -130,6 +154,18 @@ const styles = StyleSheet.create({
   helperText: {
     fontSize: 12,
     marginTop: 4,
+  },
+  // Login Variant
+  loginInputWrapper: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: COLORS.gray,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+  },
+  loginInput: {
+    fontSize: 14,
+    color: COLORS.dark,
   },
 });
 

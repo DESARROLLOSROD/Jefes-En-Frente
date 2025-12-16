@@ -2,11 +2,12 @@ import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
+import { COLORS } from '../constants/config';
 
 interface ButtonProps {
   title: string;
   onPress: () => void;
-  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'outline';
+  variant?: 'primary' | 'secondary' | 'danger' | 'success' | 'outline' | 'orange';
   size?: 'small' | 'medium' | 'large';
   disabled?: boolean;
   loading?: boolean;
@@ -15,6 +16,7 @@ interface ButtonProps {
   fullWidth?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  uppercase?: boolean;
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -29,6 +31,7 @@ const Button: React.FC<ButtonProps> = ({
   fullWidth = false,
   style,
   textStyle,
+  uppercase = false,
 }) => {
   const { theme } = useTheme();
 
@@ -60,6 +63,9 @@ const Button: React.FC<ButtonProps> = ({
         break;
       case 'outline':
         baseStyle.push({ backgroundColor: 'transparent', borderWidth: 2, borderColor: theme.primary });
+        break;
+      case 'orange':
+        baseStyle.push({ backgroundColor: COLORS.orange.primary });
         break;
       default:
         baseStyle.push({ backgroundColor: theme.primary });
@@ -99,6 +105,10 @@ const Button: React.FC<ButtonProps> = ({
         break;
       default:
         baseStyle.push({ color: theme.white });
+    }
+
+    if (uppercase) {
+      baseStyle.push(styles.uppercaseText);
     }
 
     return baseStyle;
@@ -180,6 +190,9 @@ const styles = StyleSheet.create({
   // Text
   buttonText: {
     fontWeight: '600',
+  },
+  uppercaseText: {
+    textTransform: 'uppercase',
   },
   textSmall: {
     fontSize: 14,
