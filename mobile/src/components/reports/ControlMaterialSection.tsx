@@ -38,7 +38,7 @@ const ControlMaterialSection: React.FC<Props> = ({ items, onChange }) => {
     const item = items[index];
     setMaterial(item.material);
     setUnidad(item.unidad);
-    setCantidad(item.cantidad.toString());
+    setCantidad(item.cantidad);
     setZona(item.zona);
     setElevacion(item.elevacion);
     setEditingIndex(index);
@@ -59,12 +59,10 @@ const ControlMaterialSection: React.FC<Props> = ({ items, onChange }) => {
       return;
     }
 
-    const cantidadNum = parseFloat(cantidad);
-
     const newItem: ControlMaterial = {
       material,
       unidad,
-      cantidad: cantidadNum,
+      cantidad,
       zona,
       elevacion,
     };
@@ -102,39 +100,55 @@ const ControlMaterialSection: React.FC<Props> = ({ items, onChange }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.sectionTitle}>📦 Control de Material</Text>
+        <Text style={styles.sectionTitle}>Control de Material ({items.length})</Text>
         <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
-          <Text style={styles.addButtonText}>+ Agregar</Text>
+          <Text style={styles.addButtonText}>+ AGREGAR MATERIAL</Text>
         </TouchableOpacity>
       </View>
 
       {items.length === 0 ? (
-        <Text style={styles.emptyText}>No hay registros de material</Text>
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyText}>No hay registros. Presiona "AGREGAR MATERIAL" para comenzar.</Text>
+        </View>
       ) : (
-        items.map((item, index) => (
-          <View key={index} style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>{item.material}</Text>
-              <View style={styles.cardActions}>
+        <View style={styles.tableContainer}>
+          {/* Header de tabla */}
+          <View style={styles.tableHeader}>
+            <Text style={[styles.tableHeaderText, { flex: 2 }]}>MATERIAL</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>CANTIDAD</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>UNIDAD</Text>
+            <Text style={[styles.tableHeaderText, { width: 60 }]}></Text>
+          </View>
+
+          {/* Filas de datos */}
+          {items.map((item, index) => (
+            <View key={index} style={styles.tableRow}>
+              <Text style={[styles.tableCellText, { flex: 2 }]} numberOfLines={1}>
+                {item.material}
+              </Text>
+              <Text style={[styles.tableCellText, { flex: 1, textAlign: 'center' }]}>
+                {item.cantidad}
+              </Text>
+              <Text style={[styles.tableCellText, { flex: 1, textAlign: 'center' }]}>
+                {item.unidad}
+              </Text>
+              <View style={[styles.tableActions, { width: 60 }]}>
                 <TouchableOpacity onPress={() => openEditModal(index)}>
-                  <Text style={styles.editButton}>✏️</Text>
+                  <Text style={styles.actionIcon}>✏️</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleDelete(index)}>
-                  <Text style={styles.deleteButton}>🗑️</Text>
+                  <Text style={styles.actionIcon}>🗑️</Text>
                 </TouchableOpacity>
               </View>
             </View>
-            <Text style={styles.cardDetail}>
-              Cantidad: {item.cantidad} {item.unidad}
-            </Text>
-            {item.zona && (
-              <Text style={styles.cardDetail}>Zona: {item.zona}</Text>
-            )}
-            {item.elevacion && (
-              <Text style={styles.cardDetail}>Elevación: {item.elevacion}</Text>
-            )}
+          ))}
+
+          {/* Fila de totales */}
+          <View style={styles.tableFooter}>
+            <Text style={[styles.tableFooterText, { flex: 4 }]}>TOTAL REGISTROS: {items.length}</Text>
+            <View style={{ width: 60 }} />
           </View>
-        ))
+        </View>
       )}
 
       <Modal
@@ -225,7 +239,7 @@ const ControlMaterialSection: React.FC<Props> = ({ items, onChange }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   header: {
     flexDirection: 'row',
@@ -234,61 +248,89 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: COLORS.dark,
   },
   addButton: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 4,
   },
   addButtonText: {
     color: COLORS.white,
-    fontWeight: '600',
-    fontSize: 14,
+    fontWeight: '700',
+    fontSize: 11,
+    letterSpacing: 0.5,
+  },
+  emptyCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 6,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: COLORS.gray,
+    borderStyle: 'dashed',
   },
   emptyText: {
     textAlign: 'center',
     color: COLORS.secondary,
-    fontStyle: 'italic',
-    padding: 16,
+    fontSize: 14,
   },
-  card: {
+  tableContainer: {
     backgroundColor: COLORS.white,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
+    borderRadius: 6,
+    overflow: 'hidden',
     borderWidth: 1,
     borderColor: COLORS.gray,
   },
-  cardHeader: {
+  tableHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    backgroundColor: '#f5f5f5',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: COLORS.gray,
   },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+  tableHeaderText: {
+    fontSize: 11,
+    fontWeight: '700',
     color: COLORS.dark,
-    flex: 1,
+    letterSpacing: 0.3,
   },
-  cardActions: {
+  tableRow: {
     flexDirection: 'row',
-    gap: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    alignItems: 'center',
   },
-  editButton: {
-    fontSize: 18,
+  tableCellText: {
+    fontSize: 13,
+    color: COLORS.dark,
   },
-  deleteButton: {
-    fontSize: 18,
+  tableActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
   },
-  cardDetail: {
-    fontSize: 14,
-    color: COLORS.secondary,
-    marginBottom: 2,
+  actionIcon: {
+    fontSize: 16,
+    padding: 4,
+  },
+  tableFooter: {
+    flexDirection: 'row',
+    backgroundColor: '#e3f2fd',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+  },
+  tableFooterText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.dark,
+    letterSpacing: 0.5,
   },
   modalOverlay: {
     flex: 1,

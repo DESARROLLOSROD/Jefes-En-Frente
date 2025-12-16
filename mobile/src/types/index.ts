@@ -71,11 +71,11 @@ export interface WorkZone {
 // Controles del reporte
 export interface ControlAcarreo {
   material: string;
-  viajes: number;
-  capacidad: number;
-  volumenSuelto: number;
-  capa: string;
-  elevacion: string;
+  noViaje: number;
+  capacidad: string;
+  volSuelto: string;
+  capaNo: string;
+  elevacionAriza: string;
   capaOrigen: string;
   destino: string;
 }
@@ -83,30 +83,30 @@ export interface ControlAcarreo {
 export interface ControlMaterial {
   material: string;
   unidad: string;
-  cantidad: number;
+  cantidad: string;
   zona: string;
   elevacion: string;
 }
 
 export interface ControlAgua {
   noEconomico: string;
-  viajes: number;
-  capacidad: number;
-  volumen: number;
+  viaje: number;
+  capacidad: string;
+  volumen: string;
   origen: string;
   destino: string;
 }
 
 export interface ControlMaquinaria {
+  vehiculoId?: string;
+  nombre: string;
   tipo: string;
-  modelo: string;
-  noEconomico: string;
+  numeroEconomico: string;
+  horometroInicial: number;
+  horometroFinal: number;
+  horasOperacion: number;
   operador: string;
   actividad: string;
-  vehiculoId?: string;
-  horometroInicial?: number;
-  horometroFinal?: number;
-  horasOperacion?: number;
 }
 
 // Pin de mapa

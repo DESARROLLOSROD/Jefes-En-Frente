@@ -22,9 +22,9 @@ const ControlMaquinariaSection: React.FC<Props> = ({ items, onChange }) => {
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   // Form state
+  const [nombre, setNombre] = useState('');
   const [tipo, setTipo] = useState('');
-  const [modelo, setModelo] = useState('');
-  const [noEconomico, setNoEconomico] = useState('');
+  const [numeroEconomico, setNumeroEconomico] = useState('');
   const [operador, setOperador] = useState('');
   const [actividad, setActividad] = useState('');
   const [horometroInicial, setHorometroInicial] = useState('');
@@ -38,21 +38,21 @@ const ControlMaquinariaSection: React.FC<Props> = ({ items, onChange }) => {
 
   const openEditModal = (index: number) => {
     const item = items[index];
+    setNombre(item.nombre);
     setTipo(item.tipo);
-    setModelo(item.modelo);
-    setNoEconomico(item.noEconomico);
+    setNumeroEconomico(item.numeroEconomico);
     setOperador(item.operador);
     setActividad(item.actividad);
-    setHorometroInicial(item.horometroInicial?.toString() || '');
-    setHorometroFinal(item.horometroFinal?.toString() || '');
+    setHorometroInicial(item.horometroInicial.toString());
+    setHorometroFinal(item.horometroFinal.toString());
     setEditingIndex(index);
     setModalVisible(true);
   };
 
   const clearForm = () => {
+    setNombre('');
     setTipo('');
-    setModelo('');
-    setNoEconomico('');
+    setNumeroEconomico('');
     setOperador('');
     setActividad('');
     setHorometroInicial('');
@@ -60,28 +60,24 @@ const ControlMaquinariaSection: React.FC<Props> = ({ items, onChange }) => {
   };
 
   const handleSave = () => {
-    if (!tipo || !noEconomico || !operador || !actividad) {
-      Alert.alert('Error', 'Tipo, No. Económico, operador y actividad son requeridos');
+    if (!nombre || !tipo || !numeroEconomico || !operador || !actividad || !horometroInicial || !horometroFinal) {
+      Alert.alert('Error', 'Todos los campos son requeridos');
       return;
     }
 
-    const horometroInicialNum = horometroInicial ? parseFloat(horometroInicial) : undefined;
-    const horometroFinalNum = horometroFinal ? parseFloat(horometroFinal) : undefined;
-
-    let horasOperacion: number | undefined = undefined;
-    if (horometroInicialNum !== undefined && horometroFinalNum !== undefined) {
-      horasOperacion = horometroFinalNum - horometroInicialNum;
-    }
+    const horometroInicialNum = parseFloat(horometroInicial);
+    const horometroFinalNum = parseFloat(horometroFinal);
+    const horasOperacion = horometroFinalNum - horometroInicialNum;
 
     const newItem: ControlMaquinaria = {
+      nombre,
       tipo,
-      modelo,
-      noEconomico,
-      operador,
-      actividad,
+      numeroEconomico,
       horometroInicial: horometroInicialNum,
       horometroFinal: horometroFinalNum,
       horasOperacion,
+      operador,
+      actividad,
     };
 
     if (editingIndex !== null) {
@@ -114,43 +110,69 @@ const ControlMaquinariaSection: React.FC<Props> = ({ items, onChange }) => {
     );
   };
 
+  const calcularTotalHoras = () => {
+    return items.reduce((sum, item) => sum + item.horasOperacion, 0).toFixed(2);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.sectionTitle}>🚜 Control de Maquinaria</Text>
+        <Text style={styles.sectionTitle}>Control de Maquinaria ({items.length})</Text>
         <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
-          <Text style={styles.addButtonText}>+ Agregar</Text>
+          <Text style={styles.addButtonText}>+ AGREGAR MAQUINARIA</Text>
         </TouchableOpacity>
       </View>
 
       {items.length === 0 ? (
-        <Text style={styles.emptyText}>No hay registros de maquinaria</Text>
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyText}>No hay registros. Presiona "AGREGAR MAQUINARIA" para comenzar.</Text>
+        </View>
       ) : (
-        items.map((item, index) => (
-          <View key={index} style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>{item.tipo} - {item.noEconomico}</Text>
-              <View style={styles.cardActions}>
+        <View style={styles.tableContainer}>
+          {/* Header de tabla */}
+          <View style={styles.tableHeader}>
+            <Text style={[styles.tableHeaderText, { flex: 2 }]}>MÁQUINA</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>NO. ECON.</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>OPERADOR</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>HRS</Text>
+            <Text style={[styles.tableHeaderText, { width: 60 }]}></Text>
+          </View>
+
+          {/* Filas de datos */}
+          {items.map((item, index) => (
+            <View key={index} style={styles.tableRow}>
+              <Text style={[styles.tableCellText, { flex: 2 }]} numberOfLines={1}>
+                {item.nombre}
+              </Text>
+              <Text style={[styles.tableCellText, { flex: 1, textAlign: 'center' }]}>
+                {item.numeroEconomico}
+              </Text>
+              <Text style={[styles.tableCellText, { flex: 1, textAlign: 'center' }]} numberOfLines={1}>
+                {item.operador}
+              </Text>
+              <Text style={[styles.tableCellText, { flex: 1, textAlign: 'center' }]}>
+                {item.horasOperacion.toFixed(1)}
+              </Text>
+              <View style={[styles.tableActions, { width: 60 }]}>
                 <TouchableOpacity onPress={() => openEditModal(index)}>
-                  <Text style={styles.editButton}>✏️</Text>
+                  <Text style={styles.actionIcon}>✏️</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleDelete(index)}>
-                  <Text style={styles.deleteButton}>🗑️</Text>
+                  <Text style={styles.actionIcon}>🗑️</Text>
                 </TouchableOpacity>
               </View>
             </View>
-            {item.modelo && (
-              <Text style={styles.cardDetail}>Modelo: {item.modelo}</Text>
-            )}
-            <Text style={styles.cardDetail}>Operador: {item.operador}</Text>
-            <Text style={styles.cardDetail}>Actividad: {item.actividad}</Text>
-            {item.horasOperacion !== undefined && (
-              <Text style={styles.cardDetail}>
-                Horas de Operación: {item.horasOperacion.toFixed(2)} hrs
-              </Text>
-            )}
+          ))}
+
+          {/* Fila de totales */}
+          <View style={styles.tableFooter}>
+            <Text style={[styles.tableFooterText, { flex: 4 }]}>TOTAL HORAS:</Text>
+            <Text style={[styles.tableFooterValue, { flex: 1, textAlign: 'center' }]}>
+              {calcularTotalHoras()} hrs
+            </Text>
+            <View style={{ width: 60 }} />
           </View>
-        ))
+        </View>
       )}
 
       <Modal
@@ -167,6 +189,16 @@ const ControlMaquinariaSection: React.FC<Props> = ({ items, onChange }) => {
               </Text>
 
               <View style={styles.inputGroup}>
+                <Text style={styles.label}>Nombre *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={nombre}
+                  onChangeText={setNombre}
+                  placeholder="Ej: Excavadora CAT 320"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
                 <Text style={styles.label}>Tipo *</Text>
                 <TextInput
                   style={styles.input}
@@ -177,21 +209,11 @@ const ControlMaquinariaSection: React.FC<Props> = ({ items, onChange }) => {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Modelo</Text>
+                <Text style={styles.label}>Número Económico *</Text>
                 <TextInput
                   style={styles.input}
-                  value={modelo}
-                  onChangeText={setModelo}
-                  placeholder="Ej: CAT 320"
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>No. Económico *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={noEconomico}
-                  onChangeText={setNoEconomico}
+                  value={numeroEconomico}
+                  onChangeText={setNumeroEconomico}
                   placeholder="Ej: 001"
                 />
               </View>
@@ -220,7 +242,7 @@ const ControlMaquinariaSection: React.FC<Props> = ({ items, onChange }) => {
 
               <View style={styles.row}>
                 <View style={[styles.inputGroup, styles.flex1]}>
-                  <Text style={styles.label}>Horómetro Inicial</Text>
+                  <Text style={styles.label}>Horómetro Inicial *</Text>
                   <TextInput
                     style={styles.input}
                     value={horometroInicial}
@@ -231,7 +253,7 @@ const ControlMaquinariaSection: React.FC<Props> = ({ items, onChange }) => {
                 </View>
 
                 <View style={[styles.inputGroup, styles.flex1, styles.marginLeft]}>
-                  <Text style={styles.label}>Horómetro Final</Text>
+                  <Text style={styles.label}>Horómetro Final *</Text>
                   <TextInput
                     style={styles.input}
                     value={horometroFinal}
@@ -273,7 +295,7 @@ const ControlMaquinariaSection: React.FC<Props> = ({ items, onChange }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   header: {
     flexDirection: 'row',
@@ -282,61 +304,94 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: COLORS.dark,
   },
   addButton: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
+    backgroundColor: '#FF9800',
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 4,
   },
   addButtonText: {
     color: COLORS.white,
-    fontWeight: '600',
-    fontSize: 14,
+    fontWeight: '700',
+    fontSize: 11,
+    letterSpacing: 0.5,
+  },
+  emptyCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 6,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: COLORS.gray,
+    borderStyle: 'dashed',
   },
   emptyText: {
     textAlign: 'center',
     color: COLORS.secondary,
-    fontStyle: 'italic',
-    padding: 16,
+    fontSize: 14,
   },
-  card: {
+  tableContainer: {
     backgroundColor: COLORS.white,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
+    borderRadius: 6,
+    overflow: 'hidden',
     borderWidth: 1,
     borderColor: COLORS.gray,
   },
-  cardHeader: {
+  tableHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    backgroundColor: '#f5f5f5',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: COLORS.gray,
   },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+  tableHeaderText: {
+    fontSize: 11,
+    fontWeight: '700',
     color: COLORS.dark,
-    flex: 1,
+    letterSpacing: 0.3,
   },
-  cardActions: {
+  tableRow: {
     flexDirection: 'row',
-    gap: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    alignItems: 'center',
   },
-  editButton: {
-    fontSize: 18,
+  tableCellText: {
+    fontSize: 13,
+    color: COLORS.dark,
   },
-  deleteButton: {
-    fontSize: 18,
+  tableActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
   },
-  cardDetail: {
+  actionIcon: {
+    fontSize: 16,
+    padding: 4,
+  },
+  tableFooter: {
+    flexDirection: 'row',
+    backgroundColor: '#e3f2fd',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+  },
+  tableFooterText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.dark,
+    letterSpacing: 0.5,
+  },
+  tableFooterValue: {
     fontSize: 14,
-    color: COLORS.secondary,
-    marginBottom: 2,
+    fontWeight: 'bold',
+    color: COLORS.primary,
   },
   modalOverlay: {
     flex: 1,

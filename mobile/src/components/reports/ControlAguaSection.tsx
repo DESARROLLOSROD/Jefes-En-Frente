@@ -23,7 +23,7 @@ const ControlAguaSection: React.FC<Props> = ({ items, onChange }) => {
 
   // Form state
   const [noEconomico, setNoEconomico] = useState('');
-  const [viajes, setViajes] = useState('');
+  const [viaje, setViaje] = useState('');
   const [capacidad, setCapacidad] = useState('');
   const [origen, setOrigen] = useState('');
   const [destino, setDestino] = useState('');
@@ -37,8 +37,8 @@ const ControlAguaSection: React.FC<Props> = ({ items, onChange }) => {
   const openEditModal = (index: number) => {
     const item = items[index];
     setNoEconomico(item.noEconomico);
-    setViajes(item.viajes.toString());
-    setCapacidad(item.capacidad.toString());
+    setViaje(item.viaje.toString());
+    setCapacidad(item.capacidad);
     setOrigen(item.origen);
     setDestino(item.destino);
     setEditingIndex(index);
@@ -47,26 +47,27 @@ const ControlAguaSection: React.FC<Props> = ({ items, onChange }) => {
 
   const clearForm = () => {
     setNoEconomico('');
-    setViajes('');
+    setViaje('');
     setCapacidad('');
     setOrigen('');
     setDestino('');
   };
 
   const handleSave = () => {
-    if (!noEconomico || !viajes || !capacidad) {
-      Alert.alert('Error', 'No. Económico, viajes y capacidad son requeridos');
+    if (!noEconomico || !viaje || !capacidad) {
+      Alert.alert('Error', 'No. Económico, viaje y capacidad son requeridos');
       return;
     }
 
-    const viajesNum = parseInt(viajes);
+    const viajeNum = parseInt(viaje);
     const capacidadNum = parseFloat(capacidad);
+    const volumen = (viajeNum * capacidadNum).toFixed(2);
 
     const newItem: ControlAgua = {
       noEconomico,
-      viajes: viajesNum,
-      capacidad: capacidadNum,
-      volumen: viajesNum * capacidadNum,
+      viaje: viajeNum,
+      capacidad,
+      volumen,
       origen,
       destino,
     };
@@ -101,45 +102,69 @@ const ControlAguaSection: React.FC<Props> = ({ items, onChange }) => {
     );
   };
 
+  const calcularTotal = () => {
+    return items.reduce((sum, item) => sum + parseFloat(item.volumen || '0'), 0).toFixed(2);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.sectionTitle}>💧 Control de Agua</Text>
+        <Text style={styles.sectionTitle}>Control de Agua ({items.length})</Text>
         <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
-          <Text style={styles.addButtonText}>+ Agregar</Text>
+          <Text style={styles.addButtonText}>+ AGREGAR AGUA</Text>
         </TouchableOpacity>
       </View>
 
       {items.length === 0 ? (
-        <Text style={styles.emptyText}>No hay registros de agua</Text>
+        <View style={styles.emptyCard}>
+          <Text style={styles.emptyText}>No hay registros. Presiona "AGREGAR AGUA" para comenzar.</Text>
+        </View>
       ) : (
-        items.map((item, index) => (
-          <View key={index} style={styles.card}>
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>Vehículo {item.noEconomico}</Text>
-              <View style={styles.cardActions}>
+        <View style={styles.tableContainer}>
+          {/* Header de tabla */}
+          <View style={styles.tableHeader}>
+            <Text style={[styles.tableHeaderText, { flex: 2 }]}>NO. ECONÓMICO</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>VIAJE</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>CAP. (m³)</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>VOL. (m³)</Text>
+            <Text style={[styles.tableHeaderText, { width: 60 }]}></Text>
+          </View>
+
+          {/* Filas de datos */}
+          {items.map((item, index) => (
+            <View key={index} style={styles.tableRow}>
+              <Text style={[styles.tableCellText, { flex: 2 }]} numberOfLines={1}>
+                {item.noEconomico}
+              </Text>
+              <Text style={[styles.tableCellText, { flex: 1, textAlign: 'center' }]}>
+                {item.viaje}
+              </Text>
+              <Text style={[styles.tableCellText, { flex: 1, textAlign: 'center' }]}>
+                {item.capacidad}
+              </Text>
+              <Text style={[styles.tableCellText, { flex: 1, textAlign: 'center' }]}>
+                {item.volumen}
+              </Text>
+              <View style={[styles.tableActions, { width: 60 }]}>
                 <TouchableOpacity onPress={() => openEditModal(index)}>
-                  <Text style={styles.editButton}>✏️</Text>
+                  <Text style={styles.actionIcon}>✏️</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleDelete(index)}>
-                  <Text style={styles.deleteButton}>🗑️</Text>
+                  <Text style={styles.actionIcon}>🗑️</Text>
                 </TouchableOpacity>
               </View>
             </View>
-            <Text style={styles.cardDetail}>
-              Viajes: {item.viajes} | Capacidad: {item.capacidad} m³
+          ))}
+
+          {/* Fila de totales */}
+          <View style={styles.tableFooter}>
+            <Text style={[styles.tableFooterText, { flex: 4 }]}>TOTAL VOLUMEN:</Text>
+            <Text style={[styles.tableFooterValue, { flex: 1, textAlign: 'center' }]}>
+              {calcularTotal()} m³
             </Text>
-            <Text style={styles.cardDetail}>
-              Volumen: {item.volumen.toFixed(2)} m³
-            </Text>
-            {item.origen && (
-              <Text style={styles.cardDetail}>Origen: {item.origen}</Text>
-            )}
-            {item.destino && (
-              <Text style={styles.cardDetail}>Destino: {item.destino}</Text>
-            )}
+            <View style={{ width: 60 }} />
           </View>
-        ))
+        </View>
       )}
 
       <Modal
@@ -167,11 +192,11 @@ const ControlAguaSection: React.FC<Props> = ({ items, onChange }) => {
 
               <View style={styles.row}>
                 <View style={[styles.inputGroup, styles.flex1]}>
-                  <Text style={styles.label}>Viajes *</Text>
+                  <Text style={styles.label}>Viaje *</Text>
                   <TextInput
                     style={styles.input}
-                    value={viajes}
-                    onChangeText={setViajes}
+                    value={viaje}
+                    onChangeText={setViaje}
                     placeholder="0"
                     keyboardType="number-pad"
                   />
@@ -231,7 +256,7 @@ const ControlAguaSection: React.FC<Props> = ({ items, onChange }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   header: {
     flexDirection: 'row',
@@ -240,61 +265,94 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     color: COLORS.dark,
   },
   addButton: {
-    backgroundColor: COLORS.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 6,
+    backgroundColor: '#2196F3',
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 4,
   },
   addButtonText: {
     color: COLORS.white,
-    fontWeight: '600',
-    fontSize: 14,
+    fontWeight: '700',
+    fontSize: 11,
+    letterSpacing: 0.5,
+  },
+  emptyCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 6,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: COLORS.gray,
+    borderStyle: 'dashed',
   },
   emptyText: {
     textAlign: 'center',
     color: COLORS.secondary,
-    fontStyle: 'italic',
-    padding: 16,
+    fontSize: 14,
   },
-  card: {
+  tableContainer: {
     backgroundColor: COLORS.white,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 8,
+    borderRadius: 6,
+    overflow: 'hidden',
     borderWidth: 1,
     borderColor: COLORS.gray,
   },
-  cardHeader: {
+  tableHeader: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    backgroundColor: '#f5f5f5',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderBottomWidth: 2,
+    borderBottomColor: COLORS.gray,
   },
-  cardTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+  tableHeaderText: {
+    fontSize: 11,
+    fontWeight: '700',
     color: COLORS.dark,
-    flex: 1,
+    letterSpacing: 0.3,
   },
-  cardActions: {
+  tableRow: {
     flexDirection: 'row',
-    gap: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
+    alignItems: 'center',
   },
-  editButton: {
-    fontSize: 18,
+  tableCellText: {
+    fontSize: 13,
+    color: COLORS.dark,
   },
-  deleteButton: {
-    fontSize: 18,
+  tableActions: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
   },
-  cardDetail: {
+  actionIcon: {
+    fontSize: 16,
+    padding: 4,
+  },
+  tableFooter: {
+    flexDirection: 'row',
+    backgroundColor: '#e3f2fd',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    alignItems: 'center',
+  },
+  tableFooterText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: COLORS.dark,
+    letterSpacing: 0.5,
+  },
+  tableFooterValue: {
     fontSize: 14,
-    color: COLORS.secondary,
-    marginBottom: 2,
+    fontWeight: 'bold',
+    color: COLORS.primary,
   },
   modalOverlay: {
     flex: 1,

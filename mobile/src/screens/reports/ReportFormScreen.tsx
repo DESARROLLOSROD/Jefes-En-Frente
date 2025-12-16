@@ -175,129 +175,148 @@ const ReportFormScreen = () => {
 
         <Text style={styles.sectionTitle}>INFORMACIÓN GENERAL</Text>
 
-        <View style={styles.row}>
-          <View style={[styles.inputGroup, styles.flex1]}>
-            <Text style={styles.label}>Fecha *</Text>
-            <View style={styles.dateDisplay}>
-              <Text style={styles.dateText}>
-                {fecha.toLocaleDateString('es-ES', {
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric',
-                })}
-              </Text>
+        <View style={styles.infoCard}>
+          <View style={styles.row}>
+            <View style={[styles.inputGroup, styles.flex1]}>
+              <Text style={styles.label}>FECHA</Text>
+              <View style={styles.dateDisplay}>
+                <Text style={styles.dateText}>
+                  {fecha.toLocaleDateString('es-ES', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                  })}
+                </Text>
+              </View>
             </View>
-          </View>
 
-          <View style={[styles.inputGroup, styles.flex1, styles.marginLeft]}>
-            <Text style={styles.label}>Turno *</Text>
-            <View style={styles.turnoButtonGroup}>
-              {TURNOS.map((t) => (
-                <TouchableOpacity
-                  key={t.value}
-                  style={[
-                    styles.turnoButton,
-                    turno === t.value && styles.turnoButtonSelected,
-                  ]}
-                  onPress={() => setTurno(t.value as any)}
-                >
-                  <Text
+            <View style={[styles.inputGroup, styles.flex1, styles.marginLeft]}>
+              <Text style={styles.label}>TURNO</Text>
+              <View style={styles.turnoButtonGroup}>
+                {TURNOS.map((t) => (
+                  <TouchableOpacity
+                    key={t.value}
                     style={[
-                      styles.turnoText,
-                      turno === t.value && styles.turnoTextSelected,
+                      styles.turnoButton,
+                      turno === t.value && styles.turnoButtonSelected,
                     ]}
+                    onPress={() => setTurno(t.value as any)}
                   >
-                    {t.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <Text
+                      style={[
+                        styles.turnoText,
+                        turno === t.value && styles.turnoTextSelected,
+                      ]}
+                    >
+                      {t.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.row}>
+            <View style={[styles.inputGroup, styles.flex1]}>
+              <Text style={styles.label}>INICIO (HH:MM)</Text>
+              <TextInput
+                style={styles.input}
+                value={inicioActividades}
+                onChangeText={setInicioActividades}
+                placeholder="07:00"
+                keyboardType="numbers-and-punctuation"
+              />
+            </View>
+
+            <View style={[styles.inputGroup, styles.flex1, styles.marginLeft]}>
+              <Text style={styles.label}>TÉRMINO (HH:MM)</Text>
+              <TextInput
+                style={styles.input}
+                value={terminoActividades}
+                onChangeText={setTerminoActividades}
+                placeholder="19:00"
+                keyboardType="numbers-and-punctuation"
+              />
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>ZONA DE TRABAJO</Text>
+            <TextInput
+              style={styles.input}
+              value={ubicacion}
+              onChangeText={setUbicacion}
+              placeholder="Ej: Zona Norte"
+            />
+          </View>
+
+          <View style={styles.row}>
+            <View style={[styles.inputGroup, styles.flex1]}>
+              <Text style={styles.label}>JEFE DE FRENTE</Text>
+              <TextInput
+                style={styles.input}
+                value={jefeFrente}
+                onChangeText={setJefeFrente}
+                placeholder="Nombre del jefe"
+              />
+            </View>
+
+            <View style={[styles.inputGroup, styles.flex1, styles.marginLeft]}>
+              <Text style={styles.label}>SOBRESTANTE</Text>
+              <TextInput
+                style={styles.input}
+                value={sobrestante}
+                onChangeText={setSobrestante}
+                placeholder="Nombre del sobrestante"
+              />
             </View>
           </View>
         </View>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Ubicación *</Text>
-          <TextInput
-            style={styles.input}
-            value={ubicacion}
-            onChangeText={setUbicacion}
-            placeholder="Ej: Zona Norte"
-          />
-        </View>
-
-        <View style={styles.row}>
-          <View style={[styles.inputGroup, styles.flex1]}>
-            <Text style={styles.label}>Inicio (HH:MM) *</Text>
-            <TextInput
-              style={styles.input}
-              value={inicioActividades}
-              onChangeText={setInicioActividades}
-              placeholder="07:00"
-              keyboardType="numbers-and-punctuation"
+        {/* Mapa del Proyecto */}
+        {selectedProject?.mapa && (
+          <>
+            <Text style={styles.sectionTitle}>UBICACIÓN EN MAPA DEL PROYECTO</Text>
+            <MapPinSelector
+              mapaBase64={selectedProject.mapa.imagen.data}
+              pin={mapPin || undefined}
+              onPinChange={(x, y) => setMapPin({ pinX: x, pinY: y })}
+              onPinRemove={() => setMapPin(null)}
             />
-          </View>
-
-          <View style={[styles.inputGroup, styles.flex1, styles.marginLeft]}>
-            <Text style={styles.label}>Término (HH:MM) *</Text>
-            <TextInput
-              style={styles.input}
-              value={terminoActividades}
-              onChangeText={setTerminoActividades}
-              placeholder="19:00"
-              keyboardType="numbers-and-punctuation"
-            />
-          </View>
-        </View>
-
-        <View style={styles.row}>
-          <View style={[styles.inputGroup, styles.flex1]}>
-            <Text style={styles.label}>Jefe de Frente</Text>
-            <TextInput
-              style={styles.input}
-              value={jefeFrente}
-              onChangeText={setJefeFrente}
-              placeholder="Nombre del jefe"
-            />
-          </View>
-
-          <View style={[styles.inputGroup, styles.flex1, styles.marginLeft]}>
-            <Text style={styles.label}>Sobrestante</Text>
-            <TextInput
-              style={styles.input}
-              value={sobrestante}
-              onChangeText={setSobrestante}
-              placeholder="Nombre del sobrestante"
-            />
-          </View>
-        </View>
-
-        <Text style={styles.sectionTitle}>ZONA DE TRABAJO</Text>
-
-        {zones.length > 0 && (
-          <Picker
-            label="Zona de Trabajo"
-            value={selectedZone}
-            options={zones.map((z) => ({ label: z.name, value: z._id }))}
-            onChange={setSelectedZone}
-            placeholder="Seleccionar zona..."
-          />
+          </>
         )}
 
-        {selectedZone && zones.find((z) => z._id === selectedZone)?.sections.length > 0 && (
-          <Picker
-            label="Sección"
-            value={selectedSection}
-            options={
-              zones
-                .find((z) => z._id === selectedZone)
-                ?.sections.map((s) => ({ label: s.name, value: s.id })) || []
-            }
-            onChange={setSelectedSection}
-            placeholder="Seleccionar sección..."
-          />
+        {zones.length > 0 && (
+          <>
+            <Text style={styles.sectionTitle}>DETALLE DE ZONA</Text>
+            <View style={styles.infoCard}>
+              <Picker
+                label="Zona de Trabajo"
+                value={selectedZone}
+                options={zones.map((z) => ({ label: z.name, value: z._id }))}
+                onChange={setSelectedZone}
+                placeholder="Seleccionar zona..."
+              />
+
+              {selectedZone && zones.find((z) => z._id === selectedZone)?.sections.length > 0 && (
+                <Picker
+                  label="Sección"
+                  value={selectedSection}
+                  options={
+                    zones
+                      .find((z) => z._id === selectedZone)
+                      ?.sections.map((s) => ({ label: s.name, value: s.id })) || []
+                  }
+                  onChange={setSelectedSection}
+                  placeholder="Seleccionar sección..."
+                />
+              )}
+            </View>
+          </>
         )}
 
         {/* Secciones de Control */}
+        <Text style={styles.sectionTitle}>CONTROLES DE ACTIVIDAD</Text>
         <ControlAcarreoSection items={controlAcarreo} onChange={setControlAcarreo} />
 
         <ControlMaterialSection items={controlMaterial} onChange={setControlMaterial} />
@@ -305,16 +324,6 @@ const ReportFormScreen = () => {
         <ControlAguaSection items={controlAgua} onChange={setControlAgua} />
 
         <ControlMaquinariaSection items={controlMaquinaria} onChange={setControlMaquinaria} />
-
-        {/* Mapa */}
-        {selectedProject?.mapa && (
-          <MapPinSelector
-            mapaBase64={selectedProject.mapa.imagen.data}
-            pin={mapPin || undefined}
-            onPinChange={(x, y) => setMapPin({ pinX: x, pinY: y })}
-            onPinRemove={() => setMapPin(null)}
-          />
-        )}
 
         <Text style={styles.sectionTitle}>OBSERVACIONES</Text>
 
@@ -378,21 +387,35 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: 'bold',
     color: COLORS.dark,
-    marginTop: 16,
+    marginTop: 20,
+    marginBottom: 10,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  infoCard: {
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    padding: 16,
     marginBottom: 12,
-    letterSpacing: 0.5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   inputGroup: {
-    marginBottom: 16,
+    marginBottom: 12,
   },
   label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: COLORS.dark,
-    marginBottom: 8,
+    fontSize: 11,
+    fontWeight: '700',
+    color: COLORS.secondary,
+    marginBottom: 6,
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
   input: {
     backgroundColor: COLORS.white,
