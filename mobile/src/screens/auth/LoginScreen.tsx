@@ -3,10 +3,9 @@ import {
   View,
   Text,
   StyleSheet,
-  Alert,
   KeyboardAvoidingView,
   Platform,
-  Image,
+  ImageBackground,
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { COLORS } from '../../constants/config';
@@ -14,10 +13,12 @@ import Input from '../../components/Input';
 import Button from '../../components/Button';
 import { showErrorAlert } from '../../utils/errorHandler';
 
+const LogoROD = require('../../../assets/Logo_ROD.png');
+
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({ email: '', password: '' });
   const { login } = useAuth();
 
@@ -46,109 +47,161 @@ const LoginScreen = () => {
   };
 
   const handleLogin = async () => {
-    if (!validate()) {
-      return;
-    }
+    if (!validate()) return;
 
-    setIsLoading(true);
+    setLoading(true);
     try {
       await login(email.toLowerCase().trim(), password);
     } catch (error: any) {
       showErrorAlert(error, 'Error al iniciar sesión');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Jefes en Frente</Text>
-          <Text style={styles.subtitle}>Sistema de Reportes Mineros</Text>
-        </View>
+    <ImageBackground source={LogoROD} style={styles.backgroundImage}>
+      <View style={styles.overlay} />
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <View style={styles.formContainer}>
+          <View style={styles.header}>
+            <Text style={styles.emoji}>🏗️</Text>
+            <Text style={styles.title}>JEFES EN FRENTE</Text>
+            <Text style={styles.subtitle}>SISTEMA INTEGRAL DE REPORTES MINEROS</Text>
+          </View>
 
-        <View style={styles.form}>
           <Input
-            label="Email"
-            placeholder="correo@ejemplo.com"
+            variant="login"
+            placeholder="Correo Electrónico"
             value={email}
             onChangeText={(text) => {
               setEmail(text);
               if (errors.email) setErrors({ ...errors, email: '' });
             }}
-            autoCapitalize="none"
             keyboardType="email-address"
-            editable={!isLoading}
-            required
-            icon="mail-outline"
+            autoCapitalize="none"
+            editable={!loading}
             error={errors.email}
+            containerStyle={styles.firstInput}
           />
-
           <Input
-            label="Contraseña"
-            placeholder="Ingresa tu contraseña"
+            variant="login"
+            placeholder="Contraseña"
             value={password}
             onChangeText={(text) => {
               setPassword(text);
               if (errors.password) setErrors({ ...errors, password: '' });
             }}
             secureTextEntry
-            editable={!isLoading}
-            required
-            icon="lock-closed-outline"
+            editable={!loading}
             error={errors.password}
-            helperText="Mínimo 6 caracteres"
+            containerStyle={styles.lastInput}
           />
 
           <Button
             title="Iniciar Sesión"
             onPress={handleLogin}
-            disabled={isLoading}
-            loading={isLoading}
-            icon="log-in-outline"
+            disabled={loading}
+            loading={loading}
+            variant="orange"
             fullWidth
-            size="large"
-            style={styles.loginButton}
+            uppercase
+            style={styles.button}
           />
+
+          <Text style={styles.footerText}>© 2024 DESARROLLOS ROD</Text>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </KeyboardAvoidingView>
+    </ImageBackground>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.light,
-  },
-  content: {
+  backgroundImage: {
     flex: 1,
     justifyContent: 'center',
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  formContainer: {
+    width: '100%',
+    maxWidth: 400,
+    backgroundColor: COLORS.white,
+    borderRadius: 12,
     padding: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 8,
   },
   header: {
     alignItems: 'center',
-    marginBottom: 48,
+    marginBottom: 24,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: COLORS.primary,
+  emoji: {
+    fontSize: 40,
     marginBottom: 8,
   },
+  title: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: COLORS.dark,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 4,
+  },
   subtitle: {
-    fontSize: 16,
+    fontSize: 12,
     color: COLORS.secondary,
+    fontWeight: '500',
   },
-  form: {
-    width: '100%',
+  firstInput: {
+    borderBottomWidth: 0,
+    borderBottomLeftRadius: 0,
+    borderBottomRightRadius: 0,
+    marginBottom: 0,
   },
-  loginButton: {
+  lastInput: {
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    marginBottom: 16,
+  },
+  button: {
+    paddingVertical: 14,
+    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 4,
+  },
+  buttonText: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  footerText: {
+    textAlign: 'center',
+    color: '#d1d5db',
+    fontSize: 10,
+    marginTop: 24,
   },
 });
 
