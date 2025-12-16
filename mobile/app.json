@@ -30,8 +30,7 @@
       "permissions": [
         "INTERNET",
         "ACCESS_NETWORK_STATE"
-      ],
-      "usesCleartextTraffic": true
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -48,6 +47,9 @@
     },
     "updates": {
       "url": "https://u.expo.dev/d6180a18-36e6-4a51-ba8e-b887c98fdb74"
-    }
+    },
+    "plugins": [
+      "expo-font"
+    ]
   }
 }

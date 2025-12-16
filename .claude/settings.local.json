@@ -30,7 +30,9 @@
       "Bash(xargs:*)",
       "Bash(timeout /t 30)",
       "Bash(find:*)",
-      "Bash(npm outdated:*)"
+      "Bash(npm outdated:*)",
+      "Bash(npm dedupe:*)",
+      "Bash(npx expo-doctor:*)"
     ],
     "deny": [],
     "ask": []
