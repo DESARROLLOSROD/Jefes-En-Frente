@@ -99,25 +99,23 @@ const ControlMaterialSection: React.FC<Props> = ({ items, onChange }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.sectionTitle}>Control de Material ({items.length})</Text>
-        <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
-          <Text style={styles.addButtonText}>+ AGREGAR MATERIAL</Text>
-        </TouchableOpacity>
-      </View>
-
-      {items.length === 0 ? (
-        <View style={styles.emptyCard}>
-          <Text style={styles.emptyText}>No hay registros. Presiona "AGREGAR MATERIAL" para comenzar.</Text>
+      <View style={styles.card}>
+        <View style={styles.header}>
+          <Text style={styles.sectionTitle}>CONTROL DE MATERIAL</Text>
+          <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
+            <Text style={styles.addButtonText}>+ AGREGAR MATERIAL</Text>
+          </TouchableOpacity>
         </View>
-      ) : (
+
         <View style={styles.tableContainer}>
           {/* Header de tabla */}
           <View style={styles.tableHeader}>
             <Text style={[styles.tableHeaderText, { flex: 2 }]}>MATERIAL</Text>
-            <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>CANTIDAD</Text>
-            <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>UNIDAD</Text>
-            <Text style={[styles.tableHeaderText, { width: 60 }]}></Text>
+            <Text style={[styles.tableHeaderText, { flex: 1.5, textAlign: 'center' }]}>UNIDAD</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1.5, textAlign: 'center' }]}>CANTIDAD</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1.5, textAlign: 'center' }]}>ZONA</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1.5, textAlign: 'center' }]}>ELEVACIÓN</Text>
+            <Text style={[styles.tableHeaderText, { width: 80, textAlign: 'center' }]}>ACCIONES</Text>
           </View>
 
           {/* Filas de datos */}
@@ -126,30 +124,30 @@ const ControlMaterialSection: React.FC<Props> = ({ items, onChange }) => {
               <Text style={[styles.tableCellText, { flex: 2 }]} numberOfLines={1}>
                 {item.material}
               </Text>
-              <Text style={[styles.tableCellText, { flex: 1, textAlign: 'center' }]}>
-                {item.cantidad}
-              </Text>
-              <Text style={[styles.tableCellText, { flex: 1, textAlign: 'center' }]}>
+              <Text style={[styles.tableCellText, { flex: 1.5, textAlign: 'center' }]}>
                 {item.unidad}
               </Text>
-              <View style={[styles.tableActions, { width: 60 }]}>
+              <Text style={[styles.tableCellText, { flex: 1.5, textAlign: 'center' }]}>
+                {item.cantidad}
+              </Text>
+              <Text style={[styles.tableCellText, { flex: 1.5, textAlign: 'center' }]}>
+                {item.zona || '-'}
+              </Text>
+              <Text style={[styles.tableCellText, { flex: 1.5, textAlign: 'center' }]}>
+                {item.elevacion || '-'}
+              </Text>
+              <View style={[styles.tableActions, { width: 80 }]}>
                 <TouchableOpacity onPress={() => openEditModal(index)}>
-                  <Text style={styles.actionIcon}>✏️</Text>
+                  <Text style={styles.actionLink}>EDITAR</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleDelete(index)}>
-                  <Text style={styles.actionIcon}>🗑️</Text>
+                  <Text style={styles.actionLinkDelete}>ELIMINAR</Text>
                 </TouchableOpacity>
               </View>
             </View>
           ))}
-
-          {/* Fila de totales */}
-          <View style={styles.tableFooter}>
-            <Text style={[styles.tableFooterText, { flex: 4 }]}>TOTAL REGISTROS: {items.length}</Text>
-            <View style={{ width: 60 }} />
-          </View>
         </View>
-      )}
+      </View>
 
       <Modal
         visible={modalVisible}
@@ -239,61 +237,57 @@ const ControlMaterialSection: React.FC<Props> = ({ items, onChange }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+  card: {
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: COLORS.dark,
+    letterSpacing: 0.5,
   },
   addButton: {
-    backgroundColor: '#4CAF50',
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 4,
+    backgroundColor: '#10b981',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
   },
   addButtonText: {
     color: COLORS.white,
-    fontWeight: '700',
-    fontSize: 11,
-    letterSpacing: 0.5,
-  },
-  emptyCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: 6,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: COLORS.gray,
-    borderStyle: 'dashed',
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: COLORS.secondary,
-    fontSize: 14,
+    fontWeight: '600',
+    fontSize: 12,
   },
   tableContainer: {
-    backgroundColor: COLORS.white,
-    borderRadius: 6,
-    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: COLORS.gray,
+    borderColor: '#e0e0e0',
+    borderRadius: 4,
+    overflow: 'hidden',
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#f5f5f5',
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    borderBottomWidth: 2,
-    borderBottomColor: COLORS.gray,
+    backgroundColor: '#f8f9fa',
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
   },
   tableHeaderText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     color: COLORS.dark,
     letterSpacing: 0.3,
@@ -301,36 +295,28 @@ const styles = StyleSheet.create({
   tableRow: {
     flexDirection: 'row',
     paddingVertical: 10,
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#f0f0f0',
     alignItems: 'center',
   },
   tableCellText: {
-    fontSize: 13,
+    fontSize: 11,
     color: COLORS.dark,
   },
   tableActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
+    flexDirection: 'column',
+    gap: 4,
   },
-  actionIcon: {
-    fontSize: 16,
-    padding: 4,
+  actionLink: {
+    fontSize: 10,
+    color: COLORS.primary,
+    fontWeight: '600',
   },
-  tableFooter: {
-    flexDirection: 'row',
-    backgroundColor: '#e3f2fd',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    alignItems: 'center',
-  },
-  tableFooterText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: COLORS.dark,
-    letterSpacing: 0.5,
+  actionLinkDelete: {
+    fontSize: 10,
+    color: '#ef4444',
+    fontWeight: '600',
   },
   modalOverlay: {
     flex: 1,

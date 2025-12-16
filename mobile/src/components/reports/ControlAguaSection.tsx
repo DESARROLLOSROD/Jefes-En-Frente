@@ -108,26 +108,24 @@ const ControlAguaSection: React.FC<Props> = ({ items, onChange }) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.sectionTitle}>Control de Agua ({items.length})</Text>
-        <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
-          <Text style={styles.addButtonText}>+ AGREGAR AGUA</Text>
-        </TouchableOpacity>
-      </View>
-
-      {items.length === 0 ? (
-        <View style={styles.emptyCard}>
-          <Text style={styles.emptyText}>No hay registros. Presiona "AGREGAR AGUA" para comenzar.</Text>
+      <View style={styles.card}>
+        <View style={styles.header}>
+          <Text style={styles.sectionTitle}>CONTROL DE AGUA</Text>
+          <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
+            <Text style={styles.addButtonText}>+ AGREGAR AGUA</Text>
+          </TouchableOpacity>
         </View>
-      ) : (
+
         <View style={styles.tableContainer}>
           {/* Header de tabla */}
           <View style={styles.tableHeader}>
             <Text style={[styles.tableHeaderText, { flex: 2 }]}>NO. ECONÓMICO</Text>
-            <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>VIAJE</Text>
-            <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>CAP. (m³)</Text>
-            <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>VOL. (m³)</Text>
-            <Text style={[styles.tableHeaderText, { width: 60 }]}></Text>
+            <Text style={[styles.tableHeaderText, { flex: 1.5, textAlign: 'center' }]}>VIAJES</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1.5, textAlign: 'center' }]}>CAPACIDAD</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1.5, textAlign: 'center' }]}>VOLUMEN</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1.5, textAlign: 'center' }]}>ORIGEN</Text>
+            <Text style={[styles.tableHeaderText, { flex: 1.5, textAlign: 'center' }]}>DESTINO</Text>
+            <Text style={[styles.tableHeaderText, { width: 80, textAlign: 'center' }]}>ACCIONES</Text>
           </View>
 
           {/* Filas de datos */}
@@ -136,21 +134,27 @@ const ControlAguaSection: React.FC<Props> = ({ items, onChange }) => {
               <Text style={[styles.tableCellText, { flex: 2 }]} numberOfLines={1}>
                 {item.noEconomico}
               </Text>
-              <Text style={[styles.tableCellText, { flex: 1, textAlign: 'center' }]}>
+              <Text style={[styles.tableCellText, { flex: 1.5, textAlign: 'center' }]}>
                 {item.viaje}
               </Text>
-              <Text style={[styles.tableCellText, { flex: 1, textAlign: 'center' }]}>
-                {item.capacidad}
+              <Text style={[styles.tableCellText, { flex: 1.5, textAlign: 'center' }]}>
+                {item.capacidad} M³
               </Text>
-              <Text style={[styles.tableCellText, { flex: 1, textAlign: 'center' }]}>
-                {item.volumen}
+              <Text style={[styles.tableCellText, styles.blueText, { flex: 1.5, textAlign: 'center' }]}>
+                {item.volumen} M³
               </Text>
-              <View style={[styles.tableActions, { width: 60 }]}>
+              <Text style={[styles.tableCellText, { flex: 1.5, textAlign: 'center' }]}>
+                {item.origen || '-'}
+              </Text>
+              <Text style={[styles.tableCellText, { flex: 1.5, textAlign: 'center' }]}>
+                {item.destino || '-'}
+              </Text>
+              <View style={[styles.tableActions, { width: 80 }]}>
                 <TouchableOpacity onPress={() => openEditModal(index)}>
-                  <Text style={styles.actionIcon}>✏️</Text>
+                  <Text style={styles.actionLink}>EDITAR</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleDelete(index)}>
-                  <Text style={styles.actionIcon}>🗑️</Text>
+                  <Text style={styles.actionLinkDelete}>ELIMINAR</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -158,14 +162,14 @@ const ControlAguaSection: React.FC<Props> = ({ items, onChange }) => {
 
           {/* Fila de totales */}
           <View style={styles.tableFooter}>
-            <Text style={[styles.tableFooterText, { flex: 4 }]}>TOTAL VOLUMEN:</Text>
-            <Text style={[styles.tableFooterValue, { flex: 1, textAlign: 'center' }]}>
-              {calcularTotal()} m³
+            <Text style={[styles.tableFooterText, { flex: 5 }]}>TOTAL VOLUMEN:</Text>
+            <Text style={[styles.tableFooterValue, { flex: 1.5, textAlign: 'center' }]}>
+              {calcularTotal()} M³
             </Text>
-            <View style={{ width: 60 }} />
+            <View style={{ flex: 5.5 }} />
           </View>
         </View>
-      )}
+      </View>
 
       <Modal
         visible={modalVisible}
@@ -256,61 +260,57 @@ const ControlAguaSection: React.FC<Props> = ({ items, onChange }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+  card: {
+    backgroundColor: COLORS.white,
+    borderRadius: 8,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     color: COLORS.dark,
+    letterSpacing: 0.5,
   },
   addButton: {
-    backgroundColor: '#2196F3',
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 4,
+    backgroundColor: '#06b6d4',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
   },
   addButtonText: {
     color: COLORS.white,
-    fontWeight: '700',
-    fontSize: 11,
-    letterSpacing: 0.5,
-  },
-  emptyCard: {
-    backgroundColor: COLORS.white,
-    borderRadius: 6,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: COLORS.gray,
-    borderStyle: 'dashed',
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: COLORS.secondary,
-    fontSize: 14,
+    fontWeight: '600',
+    fontSize: 12,
   },
   tableContainer: {
-    backgroundColor: COLORS.white,
-    borderRadius: 6,
-    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: COLORS.gray,
+    borderColor: '#e0e0e0',
+    borderRadius: 4,
+    overflow: 'hidden',
   },
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#f5f5f5',
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    borderBottomWidth: 2,
-    borderBottomColor: COLORS.gray,
+    backgroundColor: '#f8f9fa',
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e0e0e0',
   },
   tableHeaderText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '700',
     color: COLORS.dark,
     letterSpacing: 0.3,
@@ -318,39 +318,47 @@ const styles = StyleSheet.create({
   tableRow: {
     flexDirection: 'row',
     paddingVertical: 10,
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#f0f0f0',
     alignItems: 'center',
   },
   tableCellText: {
-    fontSize: 13,
+    fontSize: 11,
     color: COLORS.dark,
   },
-  tableActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
+  blueText: {
+    color: COLORS.primary,
+    fontWeight: '600',
   },
-  actionIcon: {
-    fontSize: 16,
-    padding: 4,
+  tableActions: {
+    flexDirection: 'column',
+    gap: 4,
+  },
+  actionLink: {
+    fontSize: 10,
+    color: COLORS.primary,
+    fontWeight: '600',
+  },
+  actionLinkDelete: {
+    fontSize: 10,
+    color: '#ef4444',
+    fontWeight: '600',
   },
   tableFooter: {
     flexDirection: 'row',
-    backgroundColor: '#e3f2fd',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
+    backgroundColor: '#f8f9fa',
+    paddingVertical: 10,
+    paddingHorizontal: 6,
     alignItems: 'center',
   },
   tableFooterText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: COLORS.dark,
-    letterSpacing: 0.5,
   },
   tableFooterValue: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold',
     color: COLORS.primary,
   },

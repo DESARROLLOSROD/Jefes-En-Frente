@@ -60,8 +60,8 @@ const ControlMaquinariaSection: React.FC<Props> = ({ items, onChange }) => {
   };
 
   const handleSave = () => {
-    if (!nombre || !tipo || !numeroEconomico || !operador || !actividad || !horometroInicial || !horometroFinal) {
-      Alert.alert('Error', 'Todos los campos son requeridos');
+    if (!nombre || !numeroEconomico || !horometroInicial || !horometroFinal) {
+      Alert.alert('Error', 'Vehículo, horómetro inicial y final son requeridos');
       return;
     }
 
@@ -110,70 +110,68 @@ const ControlMaquinariaSection: React.FC<Props> = ({ items, onChange }) => {
     );
   };
 
-  const calcularTotalHoras = () => {
-    return items.reduce((sum, item) => sum + item.horasOperacion, 0).toFixed(2);
-  };
-
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.sectionTitle}>Control de Maquinaria ({items.length})</Text>
-        <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
-          <Text style={styles.addButtonText}>+ AGREGAR MAQUINARIA</Text>
-        </TouchableOpacity>
-      </View>
-
-      {items.length === 0 ? (
-        <View style={styles.emptyCard}>
-          <Text style={styles.emptyText}>No hay registros. Presiona "AGREGAR MAQUINARIA" para comenzar.</Text>
+      <View style={styles.card}>
+        <View style={styles.header}>
+          <Text style={styles.sectionTitle}>CONTROL DE MAQUINARIA</Text>
+          <TouchableOpacity style={styles.addButton} onPress={openAddModal}>
+            <Text style={styles.addButtonText}>+ AGREGAR MAQUINARIA</Text>
+          </TouchableOpacity>
         </View>
-      ) : (
-        <View style={styles.tableContainer}>
-          {/* Header de tabla */}
-          <View style={styles.tableHeader}>
-            <Text style={[styles.tableHeaderText, { flex: 2 }]}>MÁQUINA</Text>
-            <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>NO. ECON.</Text>
-            <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>OPERADOR</Text>
-            <Text style={[styles.tableHeaderText, { flex: 1, textAlign: 'center' }]}>HRS</Text>
-            <Text style={[styles.tableHeaderText, { width: 60 }]}></Text>
-          </View>
 
-          {/* Filas de datos */}
-          {items.map((item, index) => (
-            <View key={index} style={styles.tableRow}>
-              <Text style={[styles.tableCellText, { flex: 2 }]} numberOfLines={1}>
-                {item.nombre}
-              </Text>
-              <Text style={[styles.tableCellText, { flex: 1, textAlign: 'center' }]}>
-                {item.numeroEconomico}
-              </Text>
-              <Text style={[styles.tableCellText, { flex: 1, textAlign: 'center' }]} numberOfLines={1}>
-                {item.operador}
-              </Text>
-              <Text style={[styles.tableCellText, { flex: 1, textAlign: 'center' }]}>
-                {item.horasOperacion.toFixed(1)}
-              </Text>
-              <View style={[styles.tableActions, { width: 60 }]}>
-                <TouchableOpacity onPress={() => openEditModal(index)}>
-                  <Text style={styles.actionIcon}>✏️</Text>
+        {items.map((item, index) => (
+          <View key={index} style={styles.machineCard}>
+            <View style={styles.machineHeader}>
+              <Text style={styles.machineTitle}>MAQUINA {index + 1}</Text>
+              <View style={styles.machineActions}>
+                <TouchableOpacity onPress={() => openEditModal(index)} style={styles.editButton}>
+                  <Text style={styles.editText}>Editar</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleDelete(index)}>
-                  <Text style={styles.actionIcon}>🗑️</Text>
+                  <Text style={styles.deleteText}>Eliminar</Text>
                 </TouchableOpacity>
               </View>
             </View>
-          ))}
 
-          {/* Fila de totales */}
-          <View style={styles.tableFooter}>
-            <Text style={[styles.tableFooterText, { flex: 4 }]}>TOTAL HORAS:</Text>
-            <Text style={[styles.tableFooterValue, { flex: 1, textAlign: 'center' }]}>
-              {calcularTotalHoras()} hrs
-            </Text>
-            <View style={{ width: 60 }} />
+            <View style={styles.machineBody}>
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>VEHÍCULO</Text>
+                <Text style={styles.fieldValue}>{item.nombre || item.numeroEconomico}</Text>
+              </View>
+
+              <View style={styles.fieldRow}>
+                <View style={[styles.field, styles.flexField]}>
+                  <Text style={styles.fieldLabel}>HORÓMETRO INICIAL</Text>
+                  <Text style={styles.fieldValue}>{item.horometroInicial}</Text>
+                </View>
+
+                <View style={[styles.field, styles.flexField]}>
+                  <Text style={styles.fieldLabel}>HORÓMETRO FINAL</Text>
+                  <Text style={styles.fieldValue}>{item.horometroFinal}</Text>
+                </View>
+              </View>
+
+              <View style={styles.fieldRow}>
+                <View style={[styles.field, styles.flexField]}>
+                  <Text style={styles.fieldLabel}>HORAS DE OPERACIÓN</Text>
+                  <Text style={styles.fieldValue}>{item.horasOperacion.toFixed(2)} hrs</Text>
+                </View>
+
+                <View style={[styles.field, styles.flexField]}>
+                  <Text style={styles.fieldLabel}>OPERADOR</Text>
+                  <Text style={styles.fieldValue}>{item.operador || '-'}</Text>
+                </View>
+              </View>
+
+              <View style={styles.field}>
+                <Text style={styles.fieldLabel}>ACTIVIDAD</Text>
+                <Text style={styles.fieldValue}>{item.actividad || '-'}</Text>
+              </View>
+            </View>
           </View>
-        </View>
-      )}
+        ))}
+      </View>
 
       <Modal
         visible={modalVisible}
@@ -189,7 +187,7 @@ const ControlMaquinariaSection: React.FC<Props> = ({ items, onChange }) => {
               </Text>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Nombre *</Text>
+                <Text style={styles.label}>Vehículo *</Text>
                 <TextInput
                   style={styles.input}
                   value={nombre}
@@ -199,44 +197,12 @@ const ControlMaquinariaSection: React.FC<Props> = ({ items, onChange }) => {
               </View>
 
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Tipo *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={tipo}
-                  onChangeText={setTipo}
-                  placeholder="Ej: Excavadora"
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Número Económico *</Text>
+                <Text style={styles.label}>Número Económico</Text>
                 <TextInput
                   style={styles.input}
                   value={numeroEconomico}
                   onChangeText={setNumeroEconomico}
                   placeholder="Ej: 001"
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Operador *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={operador}
-                  onChangeText={setOperador}
-                  placeholder="Nombre del operador"
-                />
-              </View>
-
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Actividad *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={actividad}
-                  onChangeText={setActividad}
-                  placeholder="Descripción de la actividad"
-                  multiline
-                  numberOfLines={3}
                 />
               </View>
 
@@ -273,6 +239,28 @@ const ControlMaquinariaSection: React.FC<Props> = ({ items, onChange }) => {
                 </View>
               )}
 
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Operador</Text>
+                <TextInput
+                  style={styles.input}
+                  value={operador}
+                  onChangeText={setOperador}
+                  placeholder="Nombre del operador"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Actividad</Text>
+                <TextInput
+                  style={styles.input}
+                  value={actividad}
+                  onChangeText={setActividad}
+                  placeholder="Descripción de la actividad"
+                  multiline
+                  numberOfLines={3}
+                />
+              </View>
+
               <View style={styles.modalActions}>
                 <TouchableOpacity
                   style={[styles.button, styles.buttonSecondary]}
@@ -295,103 +283,107 @@ const ControlMaquinariaSection: React.FC<Props> = ({ items, onChange }) => {
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+  card: {
+    backgroundColor: '#e9d5ff',
+    borderRadius: 8,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
-    color: COLORS.dark,
+    color: '#581c87',
+    letterSpacing: 0.5,
   },
   addButton: {
-    backgroundColor: '#FF9800',
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    borderRadius: 4,
+    backgroundColor: '#9333ea',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 6,
   },
   addButtonText: {
     color: COLORS.white,
-    fontWeight: '700',
-    fontSize: 11,
-    letterSpacing: 0.5,
+    fontWeight: '600',
+    fontSize: 12,
   },
-  emptyCard: {
+  machineCard: {
     backgroundColor: COLORS.white,
     borderRadius: 6,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: COLORS.gray,
-    borderStyle: 'dashed',
-  },
-  emptyText: {
-    textAlign: 'center',
-    color: COLORS.secondary,
-    fontSize: 14,
-  },
-  tableContainer: {
-    backgroundColor: COLORS.white,
-    borderRadius: 6,
+    marginBottom: 12,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: COLORS.gray,
   },
-  tableHeader: {
+  machineHeader: {
     flexDirection: 'row',
-    backgroundColor: '#f5f5f5',
-    paddingVertical: 10,
-    paddingHorizontal: 8,
-    borderBottomWidth: 2,
-    borderBottomColor: COLORS.gray,
-  },
-  tableHeaderText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.dark,
-    letterSpacing: 0.3,
-  },
-  tableRow: {
-    flexDirection: 'row',
-    paddingVertical: 10,
-    paddingHorizontal: 8,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#f3f4f6',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-    alignItems: 'center',
+    borderBottomColor: '#e5e7eb',
   },
-  tableCellText: {
-    fontSize: 13,
-    color: COLORS.dark,
-  },
-  tableActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  actionIcon: {
-    fontSize: 16,
-    padding: 4,
-  },
-  tableFooter: {
-    flexDirection: 'row',
-    backgroundColor: '#e3f2fd',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    alignItems: 'center',
-  },
-  tableFooterText: {
+  machineTitle: {
     fontSize: 12,
     fontWeight: '700',
     color: COLORS.dark,
-    letterSpacing: 0.5,
   },
-  tableFooterValue: {
-    fontSize: 14,
-    fontWeight: 'bold',
+  machineActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  editButton: {
+    marginRight: 4,
+  },
+  editText: {
+    fontSize: 11,
     color: COLORS.primary,
+    fontWeight: '600',
+  },
+  deleteText: {
+    fontSize: 11,
+    color: '#ef4444',
+    fontWeight: '600',
+  },
+  machineBody: {
+    padding: 12,
+  },
+  field: {
+    marginBottom: 12,
+  },
+  fieldRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  flexField: {
+    flex: 1,
+  },
+  fieldLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: COLORS.secondary,
+    marginBottom: 4,
+    letterSpacing: 0.3,
+  },
+  fieldValue: {
+    fontSize: 13,
+    color: COLORS.dark,
+    backgroundColor: '#f9fafb',
+    padding: 8,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
   },
   modalOverlay: {
     flex: 1,
@@ -438,7 +430,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
   },
   calculatedField: {
-    backgroundColor: COLORS.light,
+    backgroundColor: '#e0e7ff',
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
@@ -454,7 +446,7 @@ const styles = StyleSheet.create({
   calculatedValue: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: COLORS.primary,
+    color: '#4f46e5',
   },
   modalActions: {
     flexDirection: 'row',
