@@ -31,6 +31,7 @@ import ControlAguaSection from '../../components/reports/ControlAguaSection';
 import ControlMaquinariaSection from '../../components/reports/ControlMaquinariaSection';
 import MapPinSelector from '../../components/maps/MapPinSelector';
 import Picker from '../../components/common/Picker';
+import Section from '../../components/Section';
 
 type ReportFormNavigationProp = StackNavigationProp<RootStackParamList, 'ReportForm'>;
 type ReportFormRouteProp = RouteProp<RootStackParamList, 'ReportForm'>;
@@ -174,9 +175,7 @@ const ReportFormScreen = () => {
           </View>
         )}
 
-        <View style={styles.sectionContainerOrange}>
-          <Text style={styles.sectionTitleOrange}>INFORMACIÓN GENERAL</Text>
-
+        <Section variant="orange" title="INFORMACIÓN GENERAL">
           <View style={styles.row}>
             <View style={[styles.inputGroup, styles.flex1]}>
               <Text style={styles.label}>FECHA</Text>
@@ -194,11 +193,12 @@ const ReportFormScreen = () => {
             <View style={[styles.inputGroup, styles.flex1, styles.marginLeft]}>
               <Text style={styles.label}>TURNO</Text>
               <View style={styles.turnoButtonGroup}>
-                {TURNOS.map((t) => (
+                {TURNOS.map((t, index) => (
                   <TouchableOpacity
                     key={t.value}
                     style={[
                       styles.turnoButton,
+                      index === 0 ? styles.turnoButtonFirst : styles.turnoButtonLast,
                       turno === t.value && styles.turnoButtonSelected,
                     ]}
                     onPress={() => setTurno(t.value as any)}
@@ -272,24 +272,22 @@ const ReportFormScreen = () => {
               />
             </View>
           </View>
-        </View>
+        </Section>
 
         {/* Mapa del Proyecto */}
         {selectedProject?.mapa && (
-          <View style={styles.sectionContainerBlue}>
-            <Text style={styles.sectionTitleBlue}>UBICACIÓN EN MAPA DEL PROYECTO</Text>
+          <Section variant="blue" title="UBICACIÓN EN MAPA DEL PROYECTO">
             <MapPinSelector
               mapaBase64={selectedProject.mapa.imagen.data}
               pin={mapPin || undefined}
               onPinChange={(x, y) => setMapPin({ pinX: x, pinY: y })}
               onPinRemove={() => setMapPin(null)}
             />
-          </View>
+          </Section>
         )}
 
         {zones.length > 0 && (
-          <>
-            <Text style={styles.sectionTitle}>DETALLE DE ZONA</Text>
+          <Section variant="purple" title="DETALLE DE ZONA">
             <View style={styles.infoCard}>
               <Picker
                 label="Zona de Trabajo"
@@ -313,23 +311,26 @@ const ReportFormScreen = () => {
                 />
               )}
             </View>
-          </>
+          </Section>
         )}
 
         {/* Secciones de Control */}
-        <Text style={styles.sectionTitle}>CONTROLES DE ACTIVIDAD</Text>
-        <ControlAcarreoSection items={controlAcarreo} onChange={setControlAcarreo} />
+        <Section variant="green" title="CONTROL DE ACARREO">
+          <ControlAcarreoSection items={controlAcarreo} onChange={setControlAcarreo} />
+        </Section>
+        <Section variant="green" title="CONTROL DE MATERIAL EXTENDIDO">
+          <ControlMaterialSection items={controlMaterial} onChange={setControlMaterial} />
+        </Section>
+        <Section variant="green" title="CONTROL DE AGUA">
+          <ControlAguaSection items={controlAgua} onChange={setControlAgua} />
+        </Section>
+        <Section variant="green" title="CONTROL DE MAQUINARIA">
+          <ControlMaquinariaSection items={controlMaquinaria} onChange={setControlMaquinaria} />
+        </Section>
 
-        <ControlMaterialSection items={controlMaterial} onChange={setControlMaterial} />
-
-        <ControlAguaSection items={controlAgua} onChange={setControlAgua} />
-
-        <ControlMaquinariaSection items={controlMaquinaria} onChange={setControlMaquinaria} />
-
-        <Text style={styles.sectionTitle}>OBSERVACIONES</Text>
-
-        <View style={styles.inputGroup}>
-          <TextInput
+        <Section title="OBSERVACIONES">
+          <View style={styles.inputGroup}>
+            <TextInput
             style={[styles.input, styles.textArea]}
             value={observaciones}
             onChangeText={setObservaciones}
@@ -338,7 +339,8 @@ const ReportFormScreen = () => {
             numberOfLines={4}
             textAlignVertical="top"
           />
-        </View>
+          </View>
+        </Section>
 
         <TouchableOpacity
           style={[styles.submitButton, loading && styles.submitButtonDisabled]}
@@ -359,100 +361,61 @@ const ReportFormScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.light,
+    backgroundColor: THEME.colors.background,
   },
   content: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 24,
   },
   projectHeader: {
-    backgroundColor: COLORS.dark,
-    padding: 20,
-    marginBottom: 20,
-    borderRadius: 8,
+    marginBottom: 24,
     alignItems: 'center',
   },
   projectTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
-    color: COLORS.white,
-    letterSpacing: 1,
+    color: THEME.colors.text,
+    textAlign: 'center',
   },
   projectSubtitle: {
-    fontSize: 14,
-    color: COLORS.white,
+    fontSize: 16,
+    color: THEME.colors.text,
     marginTop: 4,
   },
   projectLocation: {
-    fontSize: 12,
-    color: COLORS.white,
+    fontSize: 14,
+    color: THEME.colors.text,
     marginTop: 8,
-  },
-  sectionTitle: {
-    fontSize: 15,
-    fontWeight: 'bold',
-    color: COLORS.dark,
-    marginTop: 20,
-    marginBottom: 10,
-    letterSpacing: 0.8,
-    textTransform: 'uppercase',
+    fontWeight: '600',
   },
   infoCard: {
-    ...THEME.card.base,
-    ...THEME.card.orange, // Default to orange style for general info
-  },
-  sectionContainerOrange: {
-    ...THEME.card.base,
-    ...THEME.card.orange,
-    padding: 16,
-    marginBottom: 20,
-  },
-  sectionTitleOrange: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.orange.text,
-    marginBottom: 16,
-    letterSpacing: 0.8,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.orange.border,
-    paddingBottom: 8,
-  },
-  sectionContainerBlue: {
-    ...THEME.card.base,
-    ...THEME.card.blue,
-    padding: 16,
-    marginBottom: 20,
-  },
-  sectionTitleBlue: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: COLORS.blue.text,
-    marginBottom: 16,
-    letterSpacing: 0.8,
-    borderBottomWidth: 1,
-    borderBottomColor: COLORS.blue.border,
-    paddingBottom: 8,
+    backgroundColor: 'transparent',
+    padding: 0,
+    borderWidth: 0,
   },
   inputGroup: {
-    marginBottom: 12,
+    marginBottom: 16,
   },
   label: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: COLORS.secondary,
-    marginBottom: 6,
-    letterSpacing: 0.5,
+    fontSize: 12,
+    fontWeight: '600',
+    color: THEME.colors.text,
+    marginBottom: 8,
     textTransform: 'uppercase',
   },
   input: {
-    backgroundColor: COLORS.white,
+    backgroundColor: THEME.colors.background,
     borderWidth: 1,
-    borderColor: COLORS.gray,
+    borderColor: THEME.colors.border,
     borderRadius: 8,
-    padding: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     fontSize: 16,
+    color: THEME.colors.text,
   },
   textArea: {
     minHeight: 100,
+    textAlignVertical: 'top',
   },
   row: {
     flexDirection: 'row',
@@ -461,84 +424,70 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   marginLeft: {
-    marginLeft: 12,
+    marginLeft: 16,
   },
   dateDisplay: {
-    backgroundColor: COLORS.white,
+    backgroundColor: THEME.colors.background,
     borderWidth: 1,
-    borderColor: COLORS.gray,
+    borderColor: THEME.colors.border,
     borderRadius: 8,
-    padding: 12,
-    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    justifyContent: 'center',
+    flex: 1,
   },
   dateText: {
     fontSize: 16,
-    color: COLORS.dark,
+    color: THEME.colors.text,
   },
   turnoButtonGroup: {
     flexDirection: 'row',
-    gap: 8,
   },
   turnoButton: {
     flex: 1,
     borderWidth: 1,
-    borderColor: COLORS.gray,
-    borderRadius: 8,
-    padding: 10,
+    borderColor: THEME.colors.border,
+    paddingVertical: 12,
     alignItems: 'center',
-    backgroundColor: COLORS.white,
+    backgroundColor: THEME.colors.background,
+  },
+  turnoButtonFirst: {
+    borderTopLeftRadius: 8,
+    borderBottomLeftRadius: 8,
+    borderRightWidth: 0.5,
+  },
+  turnoButtonLast: {
+    borderTopRightRadius: 8,
+    borderBottomRightRadius: 8,
+    borderLeftWidth: 0.5,
   },
   turnoButtonSelected: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
+    backgroundColor: THEME.colors.primary,
+    borderColor: THEME.colors.primary,
   },
   turnoText: {
-    fontSize: 13,
-    color: COLORS.dark,
+    fontSize: 14,
+    color: THEME.colors.text,
+    fontWeight: '600',
   },
   turnoTextSelected: {
-    color: COLORS.white,
-    fontWeight: '600',
-  },
-  radioGroup: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  radioButton: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: COLORS.gray,
-    borderRadius: 8,
-    padding: 12,
-    alignItems: 'center',
-    backgroundColor: COLORS.white,
-  },
-  radioButtonSelected: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
-  radioText: {
-    fontSize: 14,
-    color: COLORS.dark,
-  },
-  radioTextSelected: {
-    color: COLORS.white,
-    fontWeight: '600',
+    color: THEME.colors.white,
   },
   submitButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: THEME.colors.primary,
     borderRadius: 8,
     padding: 16,
     alignItems: 'center',
     marginVertical: 24,
   },
   submitButtonDisabled: {
-    opacity: 0.6,
+    opacity: 0.7,
   },
   submitButtonText: {
-    color: COLORS.white,
-    fontSize: 16,
+    color: THEME.colors.white,
+    fontSize: 18,
     fontWeight: 'bold',
+    textTransform: 'uppercase',
   },
   note: {
     fontSize: 12,
