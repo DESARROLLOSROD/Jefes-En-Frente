@@ -8,7 +8,7 @@ import LoginScreen from '../screens/auth/LoginScreen';
 import ProjectSelectionScreen from '../screens/projects/ProjectSelectionScreen';
 import ProjectDetailScreen from '../screens/projects/ProjectDetailScreen';
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
-import ReportFormScreen from '../screens/reports/ReportFormEnhanced';
+import ReportFormScreen from '../screens/reports/ReportFormWebStyle';
 import ReportListScreen from '../screens/reports/ReportListScreen';
 import ReportDetailScreen from '../screens/reports/ReportDetailScreen';
 import UserManagementScreen from '../screens/users/UserManagementEnhanced';
