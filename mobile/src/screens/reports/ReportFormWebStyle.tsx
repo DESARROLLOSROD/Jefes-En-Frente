@@ -246,18 +246,51 @@ const ReportFormWebStyle = () => {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
+        {/* SECCIÓN 1: INFORMACIÓN GENERAL */}
         <View style={[styles.section, styles.sectionOrange]}>
           <Text style={styles.sectionTitle}>INFORMACIÓN GENERAL</Text>
 
+          {/* Fila 1: Fecha, Turno, Inicio, Término (4 columnas) */}
+          <View style={styles.row}>
+            <View style={styles.quarterWidth}>
+              <Text style={styles.label}>FECHA</Text>
+              <View style={styles.inputDisabled}>
+                <Text style={styles.inputTextDisabled}>{fecha.toLocaleDateString('es-MX')}</Text>
+              </View>
+            </View>
+            <View style={styles.quarterWidth}>
+              <Text style={styles.label}>TURNO *</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={turno}
+                  onValueChange={(itemValue) => handleTurnoChange(itemValue)}
+                  style={styles.pickerSmall}
+                >
+                  <Picker.Item label="PRIMER TURNO" value="primer" />
+                  <Picker.Item label="SEGUNDO TURNO" value="segundo" />
+                </Picker>
+              </View>
+            </View>
+            <View style={styles.quarterWidth}>
+              <Text style={styles.label}>INICIO *</Text>
+              <TextInput style={styles.inputSmall} value={inicioActividades} onChangeText={setInicioActividades} placeholder="07:00" placeholderTextColor="#9CA3AF" />
+            </View>
+            <View style={styles.quarterWidth}>
+              <Text style={styles.label}>TÉRMINO *</Text>
+              <TextInput style={styles.inputSmall} value={terminoActividades} onChangeText={setTerminoActividades} placeholder="19:00" placeholderTextColor="#9CA3AF" />
+            </View>
+          </View>
+
+          {/* Fila 2: Zona y Sección (2 columnas) */}
           <View style={styles.row}>
             <View style={styles.halfWidth}>
-              <Text style={styles.label}>ZONA *</Text>
+              <Text style={styles.label}>ZONA DE TRABAJO *</Text>
               <View style={styles.pickerContainer}>
                 <Picker
                   selectedValue={selectedZone}
                   onValueChange={(itemValue) => {
                     setSelectedZone(itemValue);
-                    setSelectedSection(''); // Reset sección when zona changes
+                    setSelectedSection('');
                   }}
                   style={styles.picker}
                 >
@@ -269,7 +302,7 @@ const ReportFormWebStyle = () => {
               </View>
             </View>
             <View style={styles.halfWidth}>
-              <Text style={styles.label}>SECCIÓN *</Text>
+              <Text style={styles.label}>SECCIÓN DE TRABAJO *</Text>
               <View style={styles.pickerContainer}>
                 <Picker
                   selectedValue={selectedSection}
@@ -286,27 +319,7 @@ const ReportFormWebStyle = () => {
             </View>
           </View>
 
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>TURNO *</Text>
-            <View style={styles.turnoContainer}>
-              <TouchableOpacity style={[styles.turnoButton, turno === 'primer' && styles.turnoButtonActive]} onPress={() => handleTurnoChange('primer')}>
-                <Text style={[styles.turnoText, turno === 'primer' && styles.turnoTextActive]}>PRIMER TURNO</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[styles.turnoButton, turno === 'segundo' && styles.turnoButtonActive]} onPress={() => handleTurnoChange('segundo')}>
-                <Text style={[styles.turnoText, turno === 'segundo' && styles.turnoTextActive]}>SEGUNDO TURNO</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-          <View style={styles.row}>
-            <View style={styles.halfWidth}>
-              <Text style={styles.label}>INICIO ACTIVIDADES *</Text>
-              <TextInput style={styles.input} value={inicioActividades} onChangeText={setInicioActividades} placeholder="07:00" placeholderTextColor="#9CA3AF" keyboardType="numbers-and-punctuation" />
-            </View>
-            <View style={styles.halfWidth}>
-              <Text style={styles.label}>TÉRMINO ACTIVIDADES *</Text>
-              <TextInput style={styles.input} value={terminoActividades} onChangeText={setTerminoActividades} placeholder="19:00" placeholderTextColor="#9CA3AF" keyboardType="numbers-and-punctuation" />
-            </View>
-          </View>
+          {/* Fila 3: Jefe y Sobrestante (2 columnas) */}
           <View style={styles.row}>
             <View style={styles.halfWidth}>
               <Text style={styles.label}>JEFE DE FRENTE *</Text>
@@ -314,24 +327,32 @@ const ReportFormWebStyle = () => {
             </View>
             <View style={styles.halfWidth}>
               <Text style={styles.label}>SOBRESTANTE</Text>
+              <TextInput style={styles.input} value={sobrestante} onChangeText={(text) => setSobrestante(text.toUpperCase())} placeholder="NOMBRE DEL SOBRESTANTE" placeholderTextColor="#9CA3AF" autoCapitalize="characters" />
             </View>
           </View>
+        </View>
 
-          {/* Sección de Mapa - Integrada abajo de la información general */}
-          {selectedProject?.mapa && (
-            <View style={styles.mapContainerRefined}>
-              <View style={styles.mapHeader}>
-                <Text style={styles.sectionTitleSmall}>UBICACIÓN EN MAPA</Text>
+        {/* SECCIÓN 2: UBICACIÓN EN MAPA (Sección Azul separada) */}
+        {selectedProject?.mapa && (
+          <View style={[styles.section, styles.sectionMapBlue]}>
+            <View style={styles.mapHeaderRefined}>
+              <Text style={styles.mapTitleMain}>UBICACIÓN EN MAPA DEL PROYECTO</Text>
+              <View style={styles.multiPinToggleRow}>
+                <Text style={styles.miniToggleLabel}>MÚLTIPLES PINES: </Text>
                 <TouchableOpacity
-                  style={[styles.miniToggle, isMultiPin && styles.miniToggleActive]}
+                  style={[styles.miniToggleLarge, isMultiPin && styles.miniToggleActive]}
                   onPress={() => setIsMultiPin(!isMultiPin)}
                 >
                   <Text style={[styles.miniToggleText, isMultiPin && styles.miniToggleTextActive]}>
-                    PINES MÚLTIPLES: {isMultiPin ? 'SÍ' : 'NO'}
+                    {isMultiPin ? 'ACTIVADO' : 'DESACTIVADO'}
                   </Text>
                 </TouchableOpacity>
               </View>
+            </View>
 
+            <Text style={styles.mapInstructionUpper}>COLOQUE UN PIN EN EL MAPA PARA INDICAR DÓNDE SE REALIZÓ EL TRABAJO (OPCIONAL)</Text>
+
+            <View style={styles.mapFrame}>
               {isMultiPin ? (
                 <View style={{ height: 350 }}>
                   <ProjectMap
@@ -353,8 +374,9 @@ const ReportFormWebStyle = () => {
                 />
               )}
             </View>
-          )}
-        </View>
+            <Text style={styles.mapInstructionLower}>CLICK EN EL MAPA PARA COLOCAR EL PIN</Text>
+          </View>
+        )}
 
 
         <View style={[styles.section, styles.sectionGreen]}>
@@ -441,16 +463,23 @@ const styles = StyleSheet.create({
   sectionBlue: { borderColor: '#60A5FA', backgroundColor: '#EFF6FF' },
   sectionPurple: { borderColor: '#A78BFA', backgroundColor: '#F5F3FF' },
   sectionGray: { borderColor: '#9CA3AF', backgroundColor: '#F9FAFB' },
-  sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 16, paddingBottom: 12, borderBottomWidth: 2, borderBottomColor: 'rgba(0,0,0,0.1)', textTransform: 'uppercase', letterSpacing: 0.5 },
+  sectionMapBlue: { borderColor: '#BFDBFE', backgroundColor: '#EFF6FF', padding: 0, overflow: 'hidden' },
+  sectionTitle: { fontSize: 18, fontWeight: '700', color: '#9A3412', marginBottom: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(154,52,18,0.1)', textTransform: 'uppercase', letterSpacing: 0.5 },
   sectionTitleSmall: { fontSize: 14, fontWeight: '700', color: '#374151', textTransform: 'uppercase', letterSpacing: 0.5 },
+  mapTitleMain: { fontSize: 16, fontWeight: '700', color: '#1E40AF', textTransform: 'uppercase' },
   mapContainerRefined: { marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.1)' },
   formGroup: { marginBottom: 16 },
-  label: { fontSize: 12, fontWeight: '700', color: '#374151', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
+  label: { fontSize: 11, fontWeight: '700', color: '#374151', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
   input: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 6, padding: 12, fontSize: 14, fontWeight: '500', color: '#1F2937' },
+  inputSmall: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 6, padding: 8, fontSize: 12, fontWeight: '500', color: '#1F2937', height: 40 },
+  inputDisabled: { backgroundColor: '#F3F4F6', borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 6, padding: 8, height: 40, justifyContent: 'center' },
+  inputTextDisabled: { fontSize: 12, fontWeight: '500', color: '#6B7280' },
   pickerContainer: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 6, overflow: 'hidden' },
   picker: { height: 50, width: '100%', color: '#1F2937' },
-  row: { flexDirection: 'row', gap: 12, marginBottom: 16 },
+  pickerSmall: { height: 40, width: '100%', color: '#1F2937' },
+  row: { flexDirection: 'row', gap: 10, marginBottom: 12 },
   halfWidth: { flex: 1 },
+  quarterWidth: { flex: 1 },
   turnoContainer: { flexDirection: 'row', gap: 12 },
   turnoButton: { flex: 1, borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 6, padding: 12, backgroundColor: '#FFFFFF', alignItems: 'center' },
   turnoButtonActive: { backgroundColor: '#FB923C', borderColor: '#FB923C' },
@@ -468,19 +497,21 @@ const styles = StyleSheet.create({
   submitButton: { backgroundColor: '#10B981', borderRadius: 8, padding: 16, alignItems: 'center', marginTop: 8 },
   submitButtonDisabled: { backgroundColor: '#9CA3AF' },
   submitButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 },
-  mapHeader: {
+  mapHeaderRefined: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 2,
-    borderBottomColor: 'rgba(0,0,0,0.1)',
+    padding: 16,
+    backgroundColor: 'rgba(30,64,175,0.05)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(30,64,175,0.1)',
   },
-  miniToggle: {
-    backgroundColor: '#E5E7EB',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+  multiPinToggleRow: { flexDirection: 'row', alignItems: 'center' },
+  miniToggleLabel: { fontSize: 10, fontWeight: '700', color: '#64748B' },
+  miniToggleLarge: {
+    backgroundColor: '#E2E8F0',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
     borderRadius: 4,
   },
   miniToggleActive: {
@@ -488,12 +519,15 @@ const styles = StyleSheet.create({
   },
   miniToggleText: {
     fontSize: 10,
-    fontWeight: '700',
-    color: '#374151',
+    fontWeight: '800',
+    color: '#475569',
   },
   miniToggleTextActive: {
     color: '#FFFFFF',
   },
+  mapInstructionUpper: { fontSize: 11, fontWeight: '600', color: '#64748B', paddingHorizontal: 16, paddingTop: 12, textTransform: 'uppercase' },
+  mapInstructionLower: { fontSize: 11, fontWeight: '600', color: '#64748B', padding: 12, textTransform: 'uppercase', textAlign: 'center' },
+  mapFrame: { borderTopWidth: 1, borderBottomWidth: 1, borderColor: '#BFDBFE', backgroundColor: '#FFFFFF', marginVertical: 8 },
 });
 
 export default ReportFormWebStyle;
