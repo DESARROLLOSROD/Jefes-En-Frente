@@ -247,7 +247,7 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
                   >
                     <Picker.Item label="SELECCIONE CAPACIDAD..." value="" />
                     {capacidades.map((cap) => (
-                      <Picker.Item key={cap._id} label={cap.nombre} value={cap.nombre} />
+                      <Picker.Item key={cap._id} label={cap.etiqueta || `${cap.valor} M³`} value={cap.valor} />
                     ))}
                     <Picker.Item label="+ OTRA CAPACIDAD..." value="___NUEVO___" />
                   </Picker>

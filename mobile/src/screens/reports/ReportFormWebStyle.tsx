@@ -122,7 +122,7 @@ const ReportFormWebStyle = () => {
       return;
     }
 
-    const reporte: ReporteActividades = {
+    const reporte: any = {
       fecha,
       proyectoId: selectedProject!._id,
       usuarioId: user!._id,
@@ -142,12 +142,14 @@ const ReportFormWebStyle = () => {
         colocado: true
       } : undefined,
       pinesMapa: isMultiPin ? pinesMapa : [],
+      ubicacion: selectedProject?.nombre?.toUpperCase() || 'GENERAL',
     };
 
     if (selectedZone) {
       const zone = zones.find((z) => z._id === selectedZone);
       if (zone) {
         reporte.zonaTrabajo = { zonaId: zone._id, zonaNombre: zone.name };
+
         if (selectedSection) {
           const section = zone.sections.find((s) => s.id === selectedSection);
           if (section) {
@@ -155,6 +157,15 @@ const ReportFormWebStyle = () => {
           }
         }
       }
+    }
+
+    if (__DEV__) {
+      console.log('🚀 Enviando Reporte:', {
+        ubicacion: reporte.ubicacion,
+        zona: reporte.zonaTrabajo?.zonaNombre,
+        seccion: reporte.seccionTrabajo?.seccionNombre,
+        capacidadesAcarreo: reporte.controlAcarreo.map((a: any) => a.capacidad),
+      });
     }
 
     createReporteMutation.mutate(reporte, { onSuccess: () => navigation.goBack() });
@@ -183,9 +194,10 @@ const ReportFormWebStyle = () => {
       setSessionDestinos(prev => [...prev, { _id: Date.now().toString(), nombre: acarreo.destino }]);
       createDestinoMutation.mutate({ nombre: acarreo.destino });
     }
-    if (acarreo.capacidad && !allCapacidades.find(c => c.nombre === acarreo.capacidad)) {
-      setSessionCapacidades(prev => [...prev, { _id: Date.now().toString(), nombre: acarreo.capacidad }]);
-      createCapacidadMutation.mutate({ nombre: acarreo.capacidad });
+    if (acarreo.capacidad && !allCapacidades.find(c => (c.valor === acarreo.capacidad || c.nombre === acarreo.capacidad))) {
+      console.log('📦 Guardando nueva capacidad (Acarreo):', acarreo.capacidad);
+      setSessionCapacidades(prev => [...prev, { _id: Date.now().toString(), valor: acarreo.capacidad }]);
+      createCapacidadMutation.mutate({ valor: acarreo.capacidad });
     }
   };
 
@@ -210,9 +222,10 @@ const ReportFormWebStyle = () => {
       setSessionDestinos(prev => [...prev, { _id: Date.now().toString(), nombre: agua.destino }]);
       createDestinoMutation.mutate({ nombre: agua.destino });
     }
-    if (agua.capacidad && !allCapacidades.find(c => c.nombre === agua.capacidad)) {
-      setSessionCapacidades(prev => [...prev, { _id: Date.now().toString(), nombre: agua.capacidad }]);
-      createCapacidadMutation.mutate({ nombre: agua.capacidad });
+    if (agua.capacidad && !allCapacidades.find(c => (c.valor === agua.capacidad || c.nombre === agua.capacidad))) {
+      console.log('📦 Guardando nueva capacidad (Agua):', agua.capacidad);
+      setSessionCapacidades(prev => [...prev, { _id: Date.now().toString(), valor: agua.capacidad }]);
+      createCapacidadMutation.mutate({ valor: agua.capacidad });
     }
   };
 

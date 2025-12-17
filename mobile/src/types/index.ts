@@ -193,5 +193,7 @@ export interface Destino {
 
 export interface Capacidad {
   _id: string;
-  nombre: string;
+  valor: string;
+  etiqueta?: string;
+  activo?: boolean;
 }
