@@ -19,13 +19,14 @@ import {
   ControlAgua,
   ControlMaquinaria,
 } from '../../types';
-import { COLORS, TURNOS } from '../../constants/config';
+import { TURNOS } from '../../constants/config';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import Card from '../../components/Card';
 import { useCreateReporte } from '../../hooks/useReportes';
 import { useZonesByProject } from '../../hooks/useZones';
 import { useVehiculosByProyecto } from '../../hooks/useVehiculos';
+import { useTheme } from '../../contexts/ThemeContext';
 
 type ReportFormNavigationProp = StackNavigationProp<RootStackParamList, 'ReportForm'>;
 type ReportFormRouteProp = RouteProp<RootStackParamList, 'ReportForm'>;
@@ -34,6 +35,7 @@ const ReportFormEnhanced = () => {
   const navigation = useNavigation<ReportFormNavigationProp>();
   const route = useRoute<ReportFormRouteProp>();
   const { user, selectedProject } = useAuth();
+  const { theme } = useTheme();
 
   // React Query hooks
   const { data: zones = [] } = useZonesByProject(selectedProject?._id);
@@ -141,10 +143,10 @@ const ReportFormEnhanced = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.content}>
         <Card>
-          <Text style={styles.sectionTitle}>Información General</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Información General</Text>
 
           <Input
             label="Ubicación"
@@ -154,21 +156,24 @@ const ReportFormEnhanced = () => {
             required
           />
 
-          <Text style={styles.label}>Turno *</Text>
+          <Text style={[styles.label, { color: theme.text }]}>Turno *</Text>
           <View style={styles.radioGroup}>
             {TURNOS.map((t) => (
               <TouchableOpacity
                 key={t.value}
                 style={[
                   styles.radioButton,
-                  turno === t.value && styles.radioButtonSelected,
+                  {
+                    backgroundColor: turno === t.value ? theme.primary : theme.surface,
+                    borderColor: turno === t.value ? theme.primary : theme.border,
+                  },
                 ]}
                 onPress={() => setTurno(t.value as any)}
               >
                 <Text
                   style={[
                     styles.radioText,
-                    turno === t.value && styles.radioTextSelected,
+                    { color: turno === t.value ? theme.white : theme.text },
                   ]}
                 >
                   {t.label}
@@ -203,7 +208,7 @@ const ReportFormEnhanced = () => {
         </Card>
 
         <Card>
-          <Text style={styles.sectionTitle}>Personal</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Personal</Text>
 
           <Input
             label="Jefe de Frente"
@@ -222,35 +227,39 @@ const ReportFormEnhanced = () => {
 
         {/* Controles */}
         <Card>
-          <Text style={styles.sectionTitle}>Controles de Actividad</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Controles de Actividad</Text>
 
           <ControlSection
             title="Control de Acarreo"
             count={controlAcarreo.length}
             onAdd={() => setShowAcarreoModal(true)}
+            theme={theme}
           />
 
           <ControlSection
             title="Control de Material"
             count={controlMaterial.length}
             onAdd={() => setShowMaterialModal(true)}
+            theme={theme}
           />
 
           <ControlSection
             title="Control de Agua"
             count={controlAgua.length}
             onAdd={() => setShowAguaModal(true)}
+            theme={theme}
           />
 
           <ControlSection
             title="Control de Maquinaria"
             count={controlMaquinaria.length}
             onAdd={() => setShowMaquinariaModal(true)}
+            theme={theme}
           />
         </Card>
 
         <Card>
-          <Text style={styles.sectionTitle}>Observaciones</Text>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>Observaciones</Text>
 
           <Input
             value={observaciones}
@@ -279,15 +288,17 @@ const ControlSection = ({
   title,
   count,
   onAdd,
+  theme,
 }: {
   title: string;
   count: number;
   onAdd: () => void;
+  theme: any;
 }) => (
   <View style={styles.controlSection}>
     <View style={styles.controlHeader}>
-      <Text style={styles.controlTitle}>{title}</Text>
-      <Text style={styles.controlCount}>({count})</Text>
+      <Text style={[styles.controlTitle, { color: theme.text }]}>{title}</Text>
+      <Text style={[styles.controlCount, { color: theme.textSecondary }]}>({count})</Text>
     </View>
     <Button
       title="Agregar"
@@ -301,7 +312,6 @@ const ControlSection = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.light,
   },
   content: {
     padding: 16,
@@ -309,13 +319,11 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: COLORS.dark,
     marginBottom: 16,
   },
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: COLORS.dark,
     marginBottom: 8,
   },
   row: {
@@ -335,24 +343,16 @@ const styles = StyleSheet.create({
   radioButton: {
     flex: 1,
     borderWidth: 1,
-    borderColor: COLORS.gray,
     borderRadius: 8,
     padding: 12,
     alignItems: 'center',
-    backgroundColor: COLORS.white,
   },
-  radioButtonSelected: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
-  },
+  radioButtonSelected: {},
   radioText: {
     fontSize: 14,
-    color: COLORS.dark,
-  },
-  radioTextSelected: {
-    color: COLORS.white,
     fontWeight: '600',
   },
+  radioTextSelected: {},
   textArea: {
     minHeight: 100,
     textAlignVertical: 'top',
@@ -368,11 +368,9 @@ const styles = StyleSheet.create({
   controlTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: COLORS.dark,
   },
   controlCount: {
     fontSize: 14,
-    color: COLORS.secondary,
     marginLeft: 8,
   },
   addButton: {

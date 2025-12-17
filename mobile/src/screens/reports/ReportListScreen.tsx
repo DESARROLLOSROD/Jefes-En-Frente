@@ -13,14 +13,15 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { useAuth } from '../../contexts/AuthContext';
 import { ReporteActividades } from '../../types';
-import { COLORS } from '../../constants/config';
 import { useReportes } from '../../hooks/useReportes';
+import { useTheme } from '../../contexts/ThemeContext';
 
 type ReportListNavigationProp = StackNavigationProp<RootStackParamList, 'ReportList'>;
 
 const ReportListScreen = () => {
   const navigation = useNavigation<ReportListNavigationProp>();
   const { selectedProject } = useAuth();
+  const { theme } = useTheme();
 
   // Usar React Query hook
   const { data: reportes = [], isLoading, isRefetching, refetch } = useReportes(selectedProject?._id);
@@ -39,46 +40,46 @@ const ReportListScreen = () => {
 
   const renderReporte = ({ item }: { item: ReporteActividades }) => (
     <TouchableOpacity
-      style={styles.reportCard}
+      style={[styles.reportCard, { backgroundColor: theme.card, borderColor: theme.border }]}
       onPress={() => navigation.navigate('ReportDetail', { reportId: item._id! })}
     >
       <View style={styles.reportHeader}>
-        <Text style={styles.reportDate}>{formatDate(item.fecha)}</Text>
-        <Text style={styles.reportTurno}>{item.turno} turno</Text>
+        <Text style={[styles.reportDate, { color: theme.text }]}>{formatDate(item.fecha)}</Text>
+        <Text style={[styles.reportTurno, { backgroundColor: theme.primary, color: theme.white }]}>{item.turno} turno</Text>
       </View>
-      <Text style={styles.reportLocation}>{item.ubicacion}</Text>
-      <Text style={styles.reportTime}>
+      <Text style={[styles.reportLocation, { color: theme.textSecondary }]}>{item.ubicacion}</Text>
+      <Text style={[styles.reportTime, { color: theme.textSecondary }]}>
         {item.inicioActividades} - {item.terminoActividades}
       </Text>
       {item.jefeFrente && (
-        <Text style={styles.reportDetail}>Jefe: {item.jefeFrente}</Text>
+        <Text style={[styles.reportDetail, { color: theme.textSecondary }]}>Jefe: {item.jefeFrente}</Text>
       )}
     </TouchableOpacity>
   );
 
   if (isLoading) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={styles.loadingText}>Cargando reportes...</Text>
+      <View style={[styles.centerContainer, { backgroundColor: theme.background }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
+        <Text style={[styles.loadingText, { color: theme.textSecondary }]}>Cargando reportes...</Text>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       {reportes.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>
+          <Text style={[styles.emptyText, { color: theme.textSecondary }]}>
             {selectedProject
               ? `No hay reportes para el proyecto "${selectedProject.nombre}"`
               : 'No hay reportes disponibles'}
           </Text>
           <TouchableOpacity
-            style={styles.createButton}
+            style={[styles.createButton, { backgroundColor: theme.primary }]}
             onPress={() => navigation.navigate('ReportForm', {})}
           >
-            <Text style={styles.createButtonText}>Crear Primer Reporte</Text>
+            <Text style={[styles.createButtonText, { color: theme.white }]}>Crear Primer Reporte</Text>
           </TouchableOpacity>
         </View>
       ) : (
@@ -88,7 +89,12 @@ const ReportListScreen = () => {
           keyExtractor={(item) => item._id!}
           contentContainerStyle={styles.listContainer}
           refreshControl={
-            <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} />
+            <RefreshControl
+              refreshing={isRefetching}
+              onRefresh={onRefresh}
+              colors={[theme.primary]}
+              tintColor={theme.primary}
+            />
           }
         />
       )}
@@ -99,7 +105,6 @@ const ReportListScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.light,
   },
   centerContainer: {
     flex: 1,
@@ -109,13 +114,11 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 12,
     fontSize: 14,
-    color: COLORS.secondary,
   },
   listContainer: {
     padding: 16,
   },
   reportCard: {
-    backgroundColor: COLORS.white,
     borderRadius: 12,
     padding: 16,
     marginBottom: 12,
@@ -124,6 +127,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    borderWidth: 1,
   },
   reportHeader: {
     flexDirection: 'row',
@@ -134,30 +138,25 @@ const styles = StyleSheet.create({
   reportDate: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: COLORS.dark,
   },
   reportTurno: {
     fontSize: 12,
-    color: COLORS.white,
-    backgroundColor: COLORS.primary,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
     textTransform: 'capitalize',
+    overflow: 'hidden', // Fix for text shadow on android
   },
   reportLocation: {
     fontSize: 14,
-    color: COLORS.secondary,
     marginBottom: 4,
   },
   reportTime: {
     fontSize: 14,
-    color: COLORS.gray,
     marginBottom: 4,
   },
   reportDetail: {
     fontSize: 12,
-    color: COLORS.secondary,
   },
   emptyContainer: {
     flex: 1,
@@ -167,17 +166,15 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
-    color: COLORS.secondary,
     marginBottom: 20,
+    textAlign: 'center',
   },
   createButton: {
-    backgroundColor: COLORS.primary,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
   },
   createButtonText: {
-    color: COLORS.white,
     fontSize: 16,
     fontWeight: '600',
   },
