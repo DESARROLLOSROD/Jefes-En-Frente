@@ -6,14 +6,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   ImageBackground,
+  Image,
 } from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { COLORS } from '../../constants/config';
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 import { showErrorAlert } from '../../utils/errorHandler';
-
-const LogoROD = require('../../../assets/Logo_ROD.png');
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
@@ -60,7 +59,7 @@ const LoginScreen = () => {
   };
 
   return (
-    <ImageBackground source={LogoROD} style={styles.backgroundImage}>
+    <ImageBackground source={require('../../../assets/icon.png')} style={styles.backgroundImage}>
       <View style={styles.overlay} />
       <KeyboardAvoidingView
         style={styles.container}
