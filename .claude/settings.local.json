@@ -36,7 +36,8 @@
       "Bash(eas update:configure:*)",
       "Bash(npx tsc:*)",
       "Bash(npx expo export:*)",
-      "Bash(copy:*)"
+      "Bash(copy:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": [],
     "ask": []
