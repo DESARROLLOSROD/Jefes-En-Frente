@@ -250,15 +250,15 @@ const ReportFormWebStyle = () => {
         <View style={[styles.section, styles.sectionOrange]}>
           <Text style={styles.sectionTitle}>INFORMACIÓN GENERAL</Text>
 
-          {/* Fila 1: Fecha, Turno, Inicio, Término (4 columnas) */}
+          {/* Fila 1: Fecha y Turno (2 columnas) */}
           <View style={styles.row}>
-            <View style={styles.quarterWidth}>
+            <View style={styles.halfWidth}>
               <Text style={styles.label}>FECHA</Text>
               <View style={styles.inputDisabled}>
                 <Text style={styles.inputTextDisabled}>{fecha.toLocaleDateString('es-MX')}</Text>
               </View>
             </View>
-            <View style={styles.quarterWidth}>
+            <View style={styles.halfWidth}>
               <Text style={styles.label}>TURNO *</Text>
               <View style={styles.pickerContainer}>
                 <Picker
@@ -272,11 +272,15 @@ const ReportFormWebStyle = () => {
                 </Picker>
               </View>
             </View>
-            <View style={styles.quarterWidth}>
+          </View>
+
+          {/* Fila 2: Inicio y Término (2 columnas) */}
+          <View style={styles.row}>
+            <View style={styles.halfWidth}>
               <Text style={styles.label}>INICIO *</Text>
               <TextInput style={styles.inputSmall} value={inicioActividades} onChangeText={setInicioActividades} placeholder="07:00" placeholderTextColor="#9CA3AF" />
             </View>
-            <View style={styles.quarterWidth}>
+            <View style={styles.halfWidth}>
               <Text style={styles.label}>TÉRMINO *</Text>
               <TextInput style={styles.inputSmall} value={terminoActividades} onChangeText={setTerminoActividades} placeholder="19:00" placeholderTextColor="#9CA3AF" />
             </View>
@@ -477,7 +481,7 @@ const styles = StyleSheet.create({
   inputTextDisabled: { fontSize: 15, fontWeight: '700', color: '#718096' },
   pickerContainer: { backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: '#DEE2E6', borderRadius: 8, overflow: 'hidden' },
   picker: { height: 50, width: '100%', color: '#1F2937' },
-  pickerSmall: { height: 48, width: '100%', color: '#1F2937', marginLeft: -8 },
+  pickerSmall: { height: 48, width: '100%', color: '#1F2937' },
   row: { flexDirection: 'row', gap: 12, marginBottom: 16 },
   halfWidth: { flex: 1 },
   quarterWidth: { flex: 1 },
