@@ -2,7 +2,7 @@ import express from 'express';
 import ReporteActividades from '../models/ReporteActividades.js';
 import Vehiculo from '../models/Vehiculo.js';
 import { ApiResponse } from '../types/reporte.js';
-import { verificarToken, AuthRequest } from '../middleware/auth.middleware.js';
+import { verificarToken, verificarAdminOSupervisor, AuthRequest } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
