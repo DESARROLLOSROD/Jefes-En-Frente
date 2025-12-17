@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -12,41 +12,21 @@ import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { useAuth } from '../../contexts/AuthContext';
-import ApiService from '../../services/api';
 import { ReporteActividades } from '../../types';
 import { COLORS } from '../../constants/config';
+import { useReportes } from '../../hooks/useReportes';
 
 type ReportListNavigationProp = StackNavigationProp<RootStackParamList, 'ReportList'>;
 
 const ReportListScreen = () => {
   const navigation = useNavigation<ReportListNavigationProp>();
   const { selectedProject } = useAuth();
-  const [reportes, setReportes] = useState<ReporteActividades[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    loadReportes();
-  }, []);
-
-  const loadReportes = async () => {
-    try {
-      console.log('📋 Cargando reportes para proyecto:', selectedProject?._id);
-      const data = await ApiService.getReportes(selectedProject?._id);
-      console.log('✅ Reportes cargados:', data.length);
-      console.log('📊 Datos:', JSON.stringify(data, null, 2));
-      setReportes(data);
-    } catch (error) {
-      console.error('❌ Error al cargar reportes:', error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+  // Usar React Query hook
+  const { data: reportes = [], isLoading, isRefetching, refetch } = useReportes(selectedProject?._id);
 
   const onRefresh = () => {
-    setRefreshing(true);
-    loadReportes();
+    refetch();
   };
 
   const formatDate = (date: Date) => {
@@ -76,10 +56,11 @@ const ReportListScreen = () => {
     </TouchableOpacity>
   );
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color={COLORS.primary} />
+        <Text style={styles.loadingText}>Cargando reportes...</Text>
       </View>
     );
   }
@@ -107,7 +88,7 @@ const ReportListScreen = () => {
           keyExtractor={(item) => item._id!}
           contentContainerStyle={styles.listContainer}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} />
           }
         />
       )}
@@ -124,6 +105,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: COLORS.secondary,
   },
   listContainer: {
     padding: 16,

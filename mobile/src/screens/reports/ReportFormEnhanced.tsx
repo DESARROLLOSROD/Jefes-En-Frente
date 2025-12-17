@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -12,11 +12,8 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { useAuth } from '../../contexts/AuthContext';
-import ApiService from '../../services/api';
 import {
   ReporteActividades,
-  WorkZone,
-  Vehiculo,
   ControlAcarreo,
   ControlMaterial,
   ControlAgua,
@@ -26,6 +23,9 @@ import { COLORS, TURNOS } from '../../constants/config';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import Card from '../../components/Card';
+import { useCreateReporte } from '../../hooks/useReportes';
+import { useZonesByProject } from '../../hooks/useZones';
+import { useVehiculosByProyecto } from '../../hooks/useVehiculos';
 
 type ReportFormNavigationProp = StackNavigationProp<RootStackParamList, 'ReportForm'>;
 type ReportFormRouteProp = RouteProp<RootStackParamList, 'ReportForm'>;
@@ -35,9 +35,10 @@ const ReportFormEnhanced = () => {
   const route = useRoute<ReportFormRouteProp>();
   const { user, selectedProject } = useAuth();
 
-  const [loading, setLoading] = useState(false);
-  const [zones, setZones] = useState<WorkZone[]>([]);
-  const [vehiculos, setVehiculos] = useState<Vehiculo[]>([]);
+  // React Query hooks
+  const { data: zones = [] } = useZonesByProject(selectedProject?._id);
+  const { data: vehiculos = [] } = useVehiculosByProyecto(selectedProject?._id);
+  const createReporteMutation = useCreateReporte();
 
   // Estado del formulario básico
   const [fecha, setFecha] = useState(new Date());
@@ -63,27 +64,6 @@ const ReportFormEnhanced = () => {
   const [showAguaModal, setShowAguaModal] = useState(false);
   const [showMaquinariaModal, setShowMaquinariaModal] = useState(false);
 
-  useEffect(() => {
-    loadInitialData();
-  }, []);
-
-  const loadInitialData = async () => {
-    if (!selectedProject) return;
-
-    try {
-      const [zonesData, vehiculosData] = await Promise.all([
-        ApiService.getZonesByProject(selectedProject._id),
-        ApiService.getVehiculosByProyecto(selectedProject._id),
-      ]);
-
-      setZones(zonesData);
-      setVehiculos(vehiculosData);
-    } catch (error) {
-      console.error('Error al cargar datos:', error);
-      Alert.alert('Error', 'No se pudieron cargar los datos iniciales');
-    }
-  };
-
   // Agregar control de acarreo
   const addAcarreo = (data: ControlAcarreo) => {
     setControlAcarreo([...controlAcarreo, data]);
@@ -108,62 +88,56 @@ const ReportFormEnhanced = () => {
     setShowMaquinariaModal(false);
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = () => {
     if (!ubicacion || !inicioActividades || !terminoActividades) {
       Alert.alert('Error', 'Por favor completa los campos requeridos');
       return;
     }
 
-    setLoading(true);
-    try {
-      const reporte: ReporteActividades = {
-        fecha,
-        ubicacion,
-        proyectoId: selectedProject!._id,
-        usuarioId: user!._id,
-        turno,
-        inicioActividades,
-        terminoActividades,
-        jefeFrente,
-        sobrestante,
-        observaciones,
-        controlAcarreo,
-        controlMaterial,
-        controlAgua,
-        controlMaquinaria,
-        pinesMapa: [],
-      };
+    const reporte: ReporteActividades = {
+      fecha,
+      ubicacion,
+      proyectoId: selectedProject!._id,
+      usuarioId: user!._id,
+      turno,
+      inicioActividades,
+      terminoActividades,
+      jefeFrente,
+      sobrestante,
+      observaciones,
+      controlAcarreo,
+      controlMaterial,
+      controlAgua,
+      controlMaquinaria,
+      pinesMapa: [],
+    };
 
-      if (selectedZone) {
-        const zone = zones.find((z) => z._id === selectedZone);
-        if (zone) {
-          reporte.zonaTrabajo = {
-            zonaId: zone._id,
-            zonaNombre: zone.name,
-          };
+    if (selectedZone) {
+      const zone = zones.find((z) => z._id === selectedZone);
+      if (zone) {
+        reporte.zonaTrabajo = {
+          zonaId: zone._id,
+          zonaNombre: zone.name,
+        };
 
-          if (selectedSection) {
-            const section = zone.sections.find((s) => s.id === selectedSection);
-            if (section) {
-              reporte.seccionTrabajo = {
-                seccionId: section.id,
-                seccionNombre: section.name,
-              };
-            }
+        if (selectedSection) {
+          const section = zone.sections.find((s) => s.id === selectedSection);
+          if (section) {
+            reporte.seccionTrabajo = {
+              seccionId: section.id,
+              seccionNombre: section.name,
+            };
           }
         }
       }
-
-      await ApiService.createReporte(reporte);
-      Alert.alert('Éxito', 'Reporte creado exitosamente', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
-    } catch (error) {
-      console.error('Error al crear reporte:', error);
-      Alert.alert('Error', 'No se pudo crear el reporte');
-    } finally {
-      setLoading(false);
     }
+
+    // Usar mutation de React Query
+    createReporteMutation.mutate(reporte, {
+      onSuccess: () => {
+        navigation.goBack();
+      },
+    });
   };
 
   return (
@@ -291,8 +265,8 @@ const ReportFormEnhanced = () => {
         <Button
           title="Crear Reporte"
           onPress={handleSubmit}
-          loading={loading}
-          disabled={loading}
+          loading={createReporteMutation.isPending}
+          disabled={createReporteMutation.isPending}
         />
       </View>
 
