@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import BibliotecaMapa from '../models/BibliotecaMapa.js';
-import { authMiddleware as auth, AuthRequest } from '../middleware/auth.js';
+import { verificarToken as auth, AuthRequest } from '../middleware/auth.js';
 
 const router = Router();
 

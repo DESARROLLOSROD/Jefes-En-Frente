@@ -1,11 +1,11 @@
 import { Router, Request, Response } from 'express';
 import TipoVehiculo from '../models/TipoVehiculo.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { verificarToken } from '../middleware/auth.js';
 
 const router = Router();
 
 // Obtener todos los tipos activos
-router.get('/', authMiddleware, async (req: Request, res: Response) => {
+router.get('/', verificarToken, async (req: Request, res: Response) => {
     try {
         const tipos = await TipoVehiculo.find({ activo: true }).sort({ nombre: 1 });
         res.json({
@@ -21,7 +21,7 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
 });
 
 // Crear nuevo tipo
-router.post('/', authMiddleware, async (req: Request, res: Response) => {
+router.post('/', verificarToken, async (req: Request, res: Response) => {
     try {
         const { nombre } = req.body;
 
