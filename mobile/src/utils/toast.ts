@@ -107,7 +107,13 @@ export const handleApiError = (error: any, defaultMessage: string = 'Ocurrió un
   let errorMessage = defaultMessage;
   let errorTitle = '❌ Error';
 
-  // Error de red (sin conexión)
+  // Manejo de operación guardada offline (específico de nuestro ApiService)
+  if (error.isOffline) {
+    toast.offline(error.message);
+    return;
+  }
+
+  // Error de red (sin conexión detectado de forma genérica)
   if (error.message === 'Network Error' || error.code === 'ERR_NETWORK') {
     errorTitle = '📵 Sin Conexión';
     errorMessage = 'No hay conexión a internet. Verifica tu conexión.';

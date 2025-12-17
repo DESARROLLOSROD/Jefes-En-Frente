@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Alert } from 'react-native';
 import { useNetwork } from '../contexts/NetworkContext';
-import apiWithOffline from '../services/apiWithOffline';
+import ApiService from '../services/api';
 
 /**
  * Hook para sincronizar la cola offline automáticamente
@@ -13,7 +13,7 @@ export const useSyncQueue = () => {
 
   // Obtener cantidad de items pendientes
   const updatePendingCount = useCallback(async () => {
-    const count = await apiWithOffline.getQueueSize();
+    const count = await ApiService.getPendingCount();
     setPendingCount(count);
   }, []);
 
@@ -25,27 +25,27 @@ export const useSyncQueue = () => {
 
     setIsSyncing(true);
     try {
-      const initialCount = await apiWithOffline.getQueueSize();
+      const initialCount = await ApiService.getPendingCount();
 
       if (initialCount === 0) {
-        console.log('✅ No hay items pendientes para sincronizar');
+        if (__DEV__) console.log('✅ No hay items pendientes para sincronizar');
         return;
       }
 
-      console.log(`🔄 Sincronizando ${initialCount} items...`);
+      if (__DEV__) console.log(`🔄 Sincronizando ${initialCount} items...`);
 
       // Procesar la cola usando el servicio
-      const result = await apiWithOffline.processOfflineQueue();
+      const result = await ApiService.processOfflineQueue();
 
-      // Mostrar resultado
+      // Mostrar resultado si hubo éxitos
       if (result.success > 0) {
         Alert.alert(
           'Sincronización Completa',
-          `${result.success} acción(es) sincronizada(s) exitosamente.${
-            result.failed > 0 ? `\n${result.failed} acción(es) fallida(s).` : ''
+          `${result.success} acción(es) sincronizada(s) exitosamente.${result.failed > 0 ? `\n${result.failed} acción(es) fallida(s).` : ''
           }`
         );
       } else if (result.failed > 0) {
+        // Solo alertar de fallo si realmente hay algo que falló y no fue solo "no internet"
         Alert.alert(
           'Error de Sincronización',
           `No se pudieron sincronizar ${result.failed} acción(es). Se reintentará más tarde.`

@@ -1,7 +1,9 @@
-import axios, { AxiosInstance, AxiosError } from 'axios';
+import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import NetInfo from '@react-native-community/netinfo';
 import { API_URL, ENV } from '../constants/config';
 import { logError } from '../utils/errorHandler';
+import offlineQueue from '../utils/offlineQueue';
 import {
   LoginResponse,
   ReporteActividades,
@@ -17,6 +19,7 @@ import {
 
 class ApiService {
   private api: AxiosInstance;
+  private isOnline: boolean = true;
 
   constructor() {
     this.api = axios.create({
@@ -27,6 +30,27 @@ class ApiService {
       },
     });
 
+    this.setupNetworkListener();
+    this.setupInterceptors();
+  }
+
+  private setupNetworkListener() {
+    NetInfo.addEventListener((state) => {
+      const wasOffline = !this.isOnline;
+      this.isOnline = state.isConnected ?? false;
+
+      if (__DEV__) {
+        console.log('📶 NetInfo status:', this.isOnline ? 'ONLINE' : 'OFFLINE');
+      }
+
+      // Si volvemos a estar online, intentar procesar la cola
+      if (wasOffline && this.isOnline) {
+        this.processOfflineQueue();
+      }
+    });
+  }
+
+  private setupInterceptors() {
     // Interceptor para agregar el token a todas las peticiones
     this.api.interceptors.request.use(
       async (config) => {
@@ -58,9 +82,26 @@ class ApiService {
         return response;
       },
       async (error: AxiosError) => {
+        const config = error.config as AxiosRequestConfig & { _retry?: boolean };
         logError(error, 'API Response');
 
-        // Token expirado o inválido - limpiar storage
+        // Error de red (sin conexión o servidor caído)
+        if (!error.response && (error.message === 'Network Error' || error.code === 'ERR_NETWORK')) {
+          if (__DEV__) console.log('🔴 Network Error detectado');
+
+          // Solo encolar POST, PUT, DELETE (no GET)
+          if (config && config.method && ['post', 'put', 'delete'].includes(config.method.toLowerCase())) {
+            await this.enqueueRequest(config);
+            // Devolver un error específico que los componentes puedan reconocer
+            return Promise.reject({
+              ...error,
+              isOffline: true,
+              message: 'SIN CONEXIÓN. LA OPERACIÓN SE SINCRONIZARÁ AUTOMÁTICAMENTE CUANDO VUELVA LA SEÑAL.'
+            });
+          }
+        }
+
+        // Token expirado o inválido - limpiar storage (con logs mejorados de mi edición anterior)
         if (error.response?.status === 401) {
           console.warn('⚠️ 401 Unauthorized detected');
           console.warn('Response data:', error.response?.data);
@@ -76,6 +117,89 @@ class ApiService {
       }
     );
   }
+
+  /**
+   * Encola una petición fallida para intentarla más tarde
+   */
+  private async enqueueRequest(config: AxiosRequestConfig) {
+    try {
+      const endpoint = config.url || '/unknown';
+      const method = (config.method?.toUpperCase() as 'GET' | 'POST' | 'PUT' | 'DELETE') || 'POST';
+
+      // Determinar tipo de operación basado en el endpoint
+      let type: 'CREATE_REPORT' | 'UPDATE_REPORT' | 'DELETE_REPORT' | 'OTHER' = 'OTHER';
+      if (endpoint.includes('/reportes')) {
+        if (method === 'POST') type = 'CREATE_REPORT';
+        else if (method === 'PUT') type = 'UPDATE_REPORT';
+        else if (method === 'DELETE') type = 'DELETE_REPORT';
+      }
+
+      await offlineQueue.addToQueue({
+        type,
+        endpoint,
+        method,
+        data: config.data,
+      });
+
+      if (__DEV__) console.log('✅ Petición encolada para sincronización offline');
+    } catch (error) {
+      console.error('❌ Error al encolar petición:', error);
+    }
+  }
+
+  /**
+   * Procesa la cola de peticiones offline
+   */
+  async processOfflineQueue(): Promise<{ success: number; failed: number }> {
+    if (!this.isOnline) return { success: 0, failed: 0 };
+
+    const queue = await offlineQueue.getQueue();
+    if (queue.length === 0) return { success: 0, failed: 0 };
+
+    if (__DEV__) console.log(`🔄 Procesando cola offline (${queue.length} items)...`);
+
+    let successCount = 0;
+    let failedCount = 0;
+
+    for (const item of queue) {
+      try {
+        await this.api.request({
+          method: item.method,
+          url: item.endpoint,
+          data: item.data,
+        });
+
+        await offlineQueue.removeFromQueue(item.id);
+        successCount++;
+      } catch (error) {
+        console.error(`❌ Error al procesar item offline ${item.id}:`, error);
+        await offlineQueue.incrementRetry(item.id);
+
+        // Si ya falló muchas veces, podrías decidir conservarlo o borrarlo
+        // Por ahora lo conservamos hasta 5 intentos
+        const updatedQueue = await offlineQueue.getQueue();
+        const currentItem = updatedQueue.find(qi => qi.id === item.id);
+        if (currentItem && currentItem.retryCount >= 5) {
+          console.log(`🗑️ Eliminando item offline ${item.id} tras 5 intentos fallidos`);
+          await offlineQueue.removeFromQueue(item.id);
+        }
+
+        failedCount++;
+      }
+    }
+
+    if (__DEV__) {
+      console.log(`✅ Resultado de sincronización: ${successCount} éxitos, ${failedCount} fallos`);
+    }
+
+    return { success: successCount, failed: failedCount };
+  }
+
+  /**
+   * Helpers para la UI
+   */
+  getConnectivity() { return this.isOnline; }
+  async getPendingCount() { return await offlineQueue.getQueueSize(); }
 
   // Autenticación
   async login(email: string, password: string): Promise<LoginResponse> {

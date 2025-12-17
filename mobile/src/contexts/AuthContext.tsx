@@ -47,10 +47,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
         // Obtener proyectos actualizados
         try {
+          // Intentar primero cargar de cache para velocidad
+          const cachedProyectos = await AsyncStorage.getItem('proyectos');
+          if (cachedProyectos) {
+            setProyectos(JSON.parse(cachedProyectos));
+          }
+
           const proyectosData = await ApiService.getProyectosDisponibles();
           setProyectos(proyectosData);
+          // Guardar en cache
+          await AsyncStorage.setItem('proyectos', JSON.stringify(proyectosData));
         } catch (error) {
           console.error('Error al obtener proyectos:', error);
+          // Si falla (ej: offline), ya cargamos de cache arriba
         }
       }
     } catch (error) {
@@ -77,6 +86,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       await AsyncStorage.multiSet([
         ['token', response.token],
         ['user', JSON.stringify(response.usuario)],
+        ['proyectos', JSON.stringify(response.proyectos)],
       ]);
 
       // Si solo hay un proyecto, seleccionarlo automáticamente
