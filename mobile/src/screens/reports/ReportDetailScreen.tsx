@@ -171,6 +171,7 @@ const ReportDetailScreen = () => {
           </View>
 
           <InfoRow label="Fecha" value={new Date(reporte.fecha).toLocaleDateString()} theme={theme} />
+          <InfoRow label="Turno" value={reporte.turno} theme={theme} />
           <InfoRow
             label="Ubicación"
             value={reporte.zonaTrabajo?.zonaNombre || reporte.ubicacion}
@@ -179,7 +180,6 @@ const ReportDetailScreen = () => {
           {reporte.seccionTrabajo && (
             <InfoRow label="Sección" value={reporte.seccionTrabajo.seccionNombre} theme={theme} />
           )}
-          <InfoRow label="Turno" value={reporte.turno} theme={theme} />
           <InfoRow label="Horario" value={`${reporte.inicioActividades} - ${reporte.terminoActividades}`} theme={theme} />
 
           {(reporte.jefeFrente || reporte.sobrestante) && (
