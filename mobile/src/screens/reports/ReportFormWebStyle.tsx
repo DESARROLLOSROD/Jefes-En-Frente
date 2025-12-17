@@ -71,19 +71,26 @@ const ReportFormWebStyle = () => {
   const [isMultiPin, setIsMultiPin] = useState(false);
   const [pinesMapa, setPinesMapa] = useState<PinMapa[]>([]);
 
-  // Mock data - en producción estos vendrán de APIs
-  const [origenes] = useState([
+  // Listas de la sesión (se alimentan de nuevas entradas "al vuelo")
+  const [origenes, setOrigenes] = useState([
     { _id: '1', nombre: 'CANTERA NORTE' },
     { _id: '2', nombre: 'ZONA DE ACOPIO' },
+    { _id: '3', nombre: 'BANCO DE MATERIAL 1' },
   ]);
-  const [destinos] = useState([
+  const [destinos, setDestinos] = useState([
     { _id: '1', nombre: 'RELLENO SANITARIO' },
     { _id: '2', nombre: 'ZONA DE DESCARGA' },
+    { _id: '3', nombre: 'TALLER CENTRAL' },
   ]);
-  const [materiales] = useState([
+  const [materiales, setMateriales] = useState([
     { _id: '1', nombre: 'CONCRETO' },
     { _id: '2', nombre: 'ARENA' },
     { _id: '3', nombre: 'GRAVA' },
+  ]);
+  const [capacidades, setCapacidades] = useState([
+    { _id: '1', nombre: '7.00' },
+    { _id: '2', nombre: '14.00' },
+    { _id: '3', nombre: '20.00' },
   ]);
 
   const handleSubmit = () => {
@@ -140,14 +147,43 @@ const ReportFormWebStyle = () => {
   // Handlers para agregar controles
   const handleAgregarAcarreo = (acarreo: ControlAcarreo) => {
     setControlAcarreo([...controlAcarreo, acarreo]);
+
+    // Aprender nuevos valores para la sesión
+    if (acarreo.material && !materiales.find(m => m.nombre === acarreo.material)) {
+      setMateriales([...materiales, { _id: Date.now().toString(), nombre: acarreo.material }]);
+    }
+    if (acarreo.origen && !origenes.find(o => o.nombre === acarreo.origen)) {
+      setOrigenes([...origenes, { _id: Date.now().toString(), nombre: acarreo.origen }]);
+    }
+    if (acarreo.destino && !destinos.find(d => d.nombre === acarreo.destino)) {
+      setDestinos([...destinos, { _id: Date.now().toString(), nombre: acarreo.destino }]);
+    }
+    if (acarreo.capacidad && !capacidades.find(c => c.nombre === acarreo.capacidad)) {
+      setCapacidades([...capacidades, { _id: Date.now().toString(), nombre: acarreo.capacidad }]);
+    }
   };
 
   const handleAgregarMaterial = (material: ControlMaterial) => {
     setControlMaterial([...controlMaterial, material]);
+    // Si el material es nuevo, agregarlo a la lista de la sesión
+    if (material.material && !materiales.find(m => m.nombre === material.material)) {
+      setMateriales([...materiales, { _id: Date.now().toString(), nombre: material.material }]);
+    }
   };
 
   const handleAgregarAgua = (agua: ControlAgua) => {
     setControlAgua([...controlAgua, agua]);
+
+    // Aprender nuevos valores para la sesión
+    if (agua.origen && !origenes.find(o => o.nombre === agua.origen)) {
+      setOrigenes([...origenes, { _id: Date.now().toString(), nombre: agua.origen }]);
+    }
+    if (agua.destino && !destinos.find(d => d.nombre === agua.destino)) {
+      setDestinos([...destinos, { _id: Date.now().toString(), nombre: agua.destino }]);
+    }
+    if (agua.capacidad && !capacidades.find(c => c.nombre === agua.capacidad)) {
+      setCapacidades([...capacidades, { _id: Date.now().toString(), nombre: agua.capacidad }]);
+    }
   };
 
   const handleAgregarMaquinaria = (maquinaria: ControlMaquinaria) => {
@@ -296,10 +332,10 @@ const ReportFormWebStyle = () => {
         isOpen={showAcarreoModal}
         onClose={() => setShowAcarreoModal(false)}
         onSave={handleAgregarAcarreo}
-        vehiculos={vehiculos}
         origenes={origenes}
         destinos={destinos}
         materiales={materiales}
+        capacidades={capacidades}
         proyectoId={selectedProject?._id}
       />
 
@@ -317,6 +353,7 @@ const ReportFormWebStyle = () => {
         vehiculos={vehiculos}
         origenes={origenes}
         destinos={destinos}
+        capacidades={capacidades}
       />
 
       <ModalControlMaquinaria

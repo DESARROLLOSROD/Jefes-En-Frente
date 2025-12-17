@@ -19,6 +19,7 @@ interface ModalControlAguaProps {
   vehiculos: any[];
   origenes: any[];
   destinos: any[];
+  capacidades: any[];
 }
 
 const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
@@ -29,6 +30,7 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
   vehiculos,
   origenes,
   destinos,
+  capacidades,
 }) => {
   const [formData, setFormData] = useState<ControlAgua>({
     noEconomico: '',
@@ -41,6 +43,13 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [selectedVehiculo, setSelectedVehiculo] = useState<any>(null);
+
+  const [isManualOrigen, setIsManualOrigen] = useState(false);
+  const [manualOrigen, setManualOrigen] = useState('');
+  const [isManualDestino, setIsManualDestino] = useState(false);
+  const [manualDestino, setManualDestino] = useState('');
+  const [isManualCapacidad, setIsManualCapacidad] = useState(false);
+  const [manualCapacidad, setManualCapacidad] = useState('');
 
   useEffect(() => {
     if (aguaInicial) {
@@ -58,6 +67,12 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
       });
       setSelectedVehiculo(null);
     }
+    setIsManualOrigen(false);
+    setManualOrigen('');
+    setIsManualDestino(false);
+    setManualDestino('');
+    setIsManualCapacidad(false);
+    setManualCapacidad('');
     setErrors({});
   }, [aguaInicial, isOpen]);
 
@@ -76,9 +91,66 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
 
   const handleChange = (campo: keyof ControlAgua, valor: string | number) => {
     const valorFinal = typeof valor === 'string' ? valor.toUpperCase() : valor;
-    setFormData((prev) => ({ ...prev, [campo]: valorFinal }));
+
+    if (campo === 'origen') {
+      if (valorFinal === '___NUEVO___') {
+        setIsManualOrigen(true);
+        setFormData((prev) => ({ ...prev, origen: '' }));
+      } else {
+        setIsManualOrigen(false);
+        setManualOrigen('');
+        setFormData((prev) => ({ ...prev, origen: valorFinal as string }));
+      }
+    } else if (campo === 'destino') {
+      if (valorFinal === '___NUEVO___') {
+        setIsManualDestino(true);
+        setFormData((prev) => ({ ...prev, destino: '' }));
+      } else {
+        setIsManualDestino(false);
+        setManualDestino('');
+        setFormData((prev) => ({ ...prev, destino: valorFinal as string }));
+      }
+    } else if (campo === 'capacidad') {
+      if (valorFinal === '___NUEVO___') {
+        setIsManualCapacidad(true);
+        setFormData((prev) => ({ ...prev, capacidad: '' }));
+      } else {
+        setIsManualCapacidad(false);
+        setManualCapacidad('');
+        setFormData((prev) => ({ ...prev, capacidad: valorFinal as string }));
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [campo]: valorFinal }));
+    }
+
     if (errors[campo]) {
       setErrors((prev) => ({ ...prev, [campo]: '' }));
+    }
+  };
+
+  const handleManualOrigenChange = (text: string) => {
+    const valor = text.toUpperCase();
+    setManualOrigen(valor);
+    setFormData((prev) => ({ ...prev, origen: valor }));
+    if (errors.origen) {
+      setErrors((prev) => ({ ...prev, origen: '' }));
+    }
+  };
+
+  const handleManualDestinoChange = (text: string) => {
+    const valor = text.toUpperCase();
+    setManualDestino(valor);
+    setFormData((prev) => ({ ...prev, destino: valor }));
+    if (errors.destino) {
+      setErrors((prev) => ({ ...prev, destino: '' }));
+    }
+  };
+
+  const handleManualCapacidadChange = (text: string) => {
+    setManualCapacidad(text);
+    setFormData((prev) => ({ ...prev, capacidad: text }));
+    if (errors.capacidad) {
+      setErrors((prev) => ({ ...prev, capacidad: '' }));
     }
   };
 
@@ -167,14 +239,30 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
 
               <View style={styles.halfWidth}>
                 <Text style={styles.label}>CAPACIDAD (M³) *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData.capacidad}
-                  onChangeText={(text) => handleChange('capacidad', text)}
-                  keyboardType="numeric"
-                  placeholder="0.00"
-                  placeholderTextColor="#9CA3AF"
-                />
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={formData.capacidad}
+                    onValueChange={(value) => handleChange('capacidad', value)}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="SELECCIONE CAPACIDAD..." value="" />
+                    {capacidades.map((cap) => (
+                      <Picker.Item key={cap._id} label={cap.nombre} value={cap.nombre} />
+                    ))}
+                    <Picker.Item label="+ OTRA CAPACIDAD..." value="___NUEVO___" />
+                  </Picker>
+                </View>
+                {isManualCapacidad && (
+                  <TextInput
+                    style={[styles.input, { marginTop: 8 }]}
+                    value={manualCapacidad}
+                    onChangeText={handleManualCapacidadChange}
+                    keyboardType="numeric"
+                    placeholder="0.00"
+                    placeholderTextColor="#9CA3AF"
+                    autoFocus
+                  />
+                )}
                 {errors.capacidad && <Text style={styles.errorText}>{errors.capacidad}</Text>}
               </View>
             </View>
@@ -207,8 +295,20 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
                     {origenes.map((org) => (
                       <Picker.Item key={org._id} label={org.nombre} value={org.nombre} />
                     ))}
+                    <Picker.Item label="+ AGREGAR NUEVO ORIGEN..." value="___NUEVO___" />
                   </Picker>
                 </View>
+                {isManualOrigen && (
+                  <TextInput
+                    style={[styles.input, { marginTop: 8 }]}
+                    value={manualOrigen}
+                    onChangeText={handleManualOrigenChange}
+                    placeholder="NOMBRE DEL NUEVO ORIGEN..."
+                    placeholderTextColor="#9CA3AF"
+                    autoFocus
+                    autoCapitalize="characters"
+                  />
+                )}
                 <Text style={styles.helperText}>* Si el origen no existe, se le preguntará si desea agregarlo.</Text>
                 {errors.origen && <Text style={styles.errorText}>{errors.origen}</Text>}
               </View>
@@ -228,8 +328,20 @@ const ModalControlAgua: React.FC<ModalControlAguaProps> = ({
                     {destinos.map((dest) => (
                       <Picker.Item key={dest._id} label={dest.nombre} value={dest.nombre} />
                     ))}
+                    <Picker.Item label="+ AGREGAR NUEVO DESTINO..." value="___NUEVO___" />
                   </Picker>
                 </View>
+                {isManualDestino && (
+                  <TextInput
+                    style={[styles.input, { marginTop: 8 }]}
+                    value={manualDestino}
+                    onChangeText={handleManualDestinoChange}
+                    placeholder="NOMBRE DEL NUEVO DESTINO..."
+                    placeholderTextColor="#9CA3AF"
+                    autoFocus
+                    autoCapitalize="characters"
+                  />
+                )}
                 <Text style={styles.helperText}>* Si el destino no existe, se le preguntará si desea agregarlo.</Text>
                 {errors.destino && <Text style={styles.errorText}>{errors.destino}</Text>}
               </View>

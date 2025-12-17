@@ -36,6 +36,9 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
     elevacion: '',
   });
 
+  const [isManualMaterial, setIsManualMaterial] = useState(false);
+  const [manualMaterial, setManualMaterial] = useState('');
+
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
@@ -50,14 +53,38 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
         elevacion: '',
       });
     }
+    setIsManualMaterial(false);
+    setManualMaterial('');
     setErrors({});
   }, [materialInicial, isOpen]);
 
   const handleChange = (campo: keyof ControlMaterial, valor: string) => {
     const valorFinal = valor.toUpperCase();
-    setFormData((prev) => ({ ...prev, [campo]: valorFinal }));
+
+    if (campo === 'material') {
+      if (valorFinal === '___NUEVO___') {
+        setIsManualMaterial(true);
+        setFormData((prev) => ({ ...prev, material: '' }));
+      } else {
+        setIsManualMaterial(false);
+        setManualMaterial('');
+        setFormData((prev) => ({ ...prev, material: valorFinal }));
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [campo]: valorFinal }));
+    }
+
     if (errors[campo]) {
       setErrors((prev) => ({ ...prev, [campo]: '' }));
+    }
+  };
+
+  const handleManualMaterialChange = (text: string) => {
+    const valor = text.toUpperCase();
+    setManualMaterial(valor);
+    setFormData((prev) => ({ ...prev, material: valor }));
+    if (errors.material) {
+      setErrors((prev) => ({ ...prev, material: '' }));
     }
   };
 
@@ -116,8 +143,20 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
                     {materiales.map((mat) => (
                       <Picker.Item key={mat._id} label={mat.nombre} value={mat.nombre} />
                     ))}
+                    <Picker.Item label="+ AGREGAR NUEVO MATERIAL..." value="___NUEVO___" />
                   </Picker>
                 </View>
+                {isManualMaterial && (
+                  <TextInput
+                    style={[styles.input, { marginTop: 8 }]}
+                    value={manualMaterial}
+                    onChangeText={handleManualMaterialChange}
+                    placeholder="NOMBRE DEL NUEVO MATERIAL..."
+                    placeholderTextColor="#9CA3AF"
+                    autoFocus
+                    autoCapitalize="characters"
+                  />
+                )}
                 <Text style={styles.helperText}>* Si el material no existe, se le preguntará si desea agregarlo.</Text>
                 {errors.material && <Text style={styles.errorText}>{errors.material}</Text>}
               </View>

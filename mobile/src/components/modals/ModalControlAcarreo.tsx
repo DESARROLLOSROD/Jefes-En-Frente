@@ -17,10 +17,10 @@ interface ModalControlAcarreoProps {
   onClose: () => void;
   onSave: (acarreo: ControlAcarreo) => void;
   acarreoInicial?: ControlAcarreo | null;
-  vehiculos: any[];
   origenes: any[];
   destinos: any[];
   materiales: any[];
+  capacidades: any[];
   proyectoId?: string;
 }
 
@@ -29,10 +29,10 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
   onClose,
   onSave,
   acarreoInicial,
-  vehiculos,
   origenes,
   destinos,
   materiales,
+  capacidades,
   proyectoId,
 }) => {
   const [formData, setFormData] = useState<ControlAcarreo>({
@@ -47,14 +47,20 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
     elevacionAriza: '',
   });
 
+  const [isManualMaterial, setIsManualMaterial] = useState(false);
+  const [manualMaterial, setManualMaterial] = useState('');
+  const [isManualOrigen, setIsManualOrigen] = useState(false);
+  const [manualOrigen, setManualOrigen] = useState('');
+  const [isManualDestino, setIsManualDestino] = useState(false);
+  const [manualDestino, setManualDestino] = useState('');
+  const [isManualCapacidad, setIsManualCapacidad] = useState(false);
+  const [manualCapacidad, setManualCapacidad] = useState('');
+
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [selectedVehiculo, setSelectedVehiculo] = useState<any>(null);
 
   useEffect(() => {
     if (acarreoInicial) {
       setFormData(acarreoInicial);
-      const vehiculo = vehiculos.find((v) => v.noEconomico === acarreoInicial.noEconomico);
-      setSelectedVehiculo(vehiculo || null);
     } else {
       setFormData({
         noEconomico: '',
@@ -67,8 +73,15 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
         capaNo: '',
         elevacionAriza: '',
       });
-      setSelectedVehiculo(null);
     }
+    setIsManualMaterial(false);
+    setManualMaterial('');
+    setIsManualOrigen(false);
+    setManualOrigen('');
+    setIsManualDestino(false);
+    setManualDestino('');
+    setIsManualCapacidad(false);
+    setManualCapacidad('');
     setErrors({});
   }, [acarreoInicial, isOpen]);
 
@@ -87,40 +100,90 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
 
   const handleChange = (campo: keyof ControlAcarreo, valor: string | number) => {
     const valorFinal = typeof valor === 'string' ? valor.toUpperCase() : valor;
-    setFormData((prev) => ({ ...prev, [campo]: valorFinal }));
+
+    if (campo === 'material') {
+      if (valorFinal === '___NUEVO___') {
+        setIsManualMaterial(true);
+        setFormData((prev) => ({ ...prev, material: '' }));
+      } else {
+        setIsManualMaterial(false);
+        setManualMaterial('');
+        setFormData((prev) => ({ ...prev, material: valorFinal as string }));
+      }
+    } else if (campo === 'origen') {
+      if (valorFinal === '___NUEVO___') {
+        setIsManualOrigen(true);
+        setFormData((prev) => ({ ...prev, origen: '' }));
+      } else {
+        setIsManualOrigen(false);
+        setManualOrigen('');
+        setFormData((prev) => ({ ...prev, origen: valorFinal as string }));
+      }
+    } else if (campo === 'destino') {
+      if (valorFinal === '___NUEVO___') {
+        setIsManualDestino(true);
+        setFormData((prev) => ({ ...prev, destino: '' }));
+      } else {
+        setIsManualDestino(false);
+        setManualDestino('');
+        setFormData((prev) => ({ ...prev, destino: valorFinal as string }));
+      }
+    } else if (campo === 'capacidad') {
+      if (valorFinal === '___NUEVO___') {
+        setIsManualCapacidad(true);
+        setFormData((prev) => ({ ...prev, capacidad: '' }));
+      } else {
+        setIsManualCapacidad(false);
+        setManualCapacidad('');
+        setFormData((prev) => ({ ...prev, capacidad: valorFinal as string }));
+      }
+    } else {
+      setFormData((prev) => ({ ...prev, [campo]: valorFinal }));
+    }
+
     if (errors[campo]) {
       setErrors((prev) => ({ ...prev, [campo]: '' }));
     }
   };
 
-  const handleVehiculoChange = (vehiculoId: string) => {
-    if (!vehiculoId) {
-      setSelectedVehiculo(null);
-      setFormData((prev) => ({ ...prev, noEconomico: '', capacidad: '' }));
-      return;
+  const handleManualMaterialChange = (text: string) => {
+    const valor = text.toUpperCase();
+    setManualMaterial(valor);
+    setFormData((prev) => ({ ...prev, material: valor }));
+    if (errors.material) {
+      setErrors((prev) => ({ ...prev, material: '' }));
     }
+  };
 
-    const vehiculo = vehiculos.find((v) => v._id === vehiculoId);
-    if (vehiculo) {
-      setSelectedVehiculo(vehiculo);
-      const capacidad = vehiculo.capacidad || vehiculo.nombre.match(/(\d+)\s*M³/i)?.[1] || '';
-      setFormData((prev) => ({
-        ...prev,
-        noEconomico: vehiculo.noEconomico,
-        capacidad: capacidad,
-      }));
-      if (errors.noEconomico) {
-        setErrors((prev) => ({ ...prev, noEconomico: '' }));
-      }
+  const handleManualOrigenChange = (text: string) => {
+    const valor = text.toUpperCase();
+    setManualOrigen(valor);
+    setFormData((prev) => ({ ...prev, origen: valor }));
+    if (errors.origen) {
+      setErrors((prev) => ({ ...prev, origen: '' }));
+    }
+  };
+
+  const handleManualDestinoChange = (text: string) => {
+    const valor = text.toUpperCase();
+    setManualDestino(valor);
+    setFormData((prev) => ({ ...prev, destino: valor }));
+    if (errors.destino) {
+      setErrors((prev) => ({ ...prev, destino: '' }));
+    }
+  };
+
+  const handleManualCapacidadChange = (text: string) => {
+    setManualCapacidad(text);
+    setFormData((prev) => ({ ...prev, capacidad: text }));
+    if (errors.capacidad) {
+      setErrors((prev) => ({ ...prev, capacidad: '' }));
     }
   };
 
   const validateForm = (): boolean => {
     const newErrors: { [key: string]: string } = {};
 
-    if (!formData.noEconomico.trim()) {
-      newErrors.noEconomico = 'EL NÚMERO ECONÓMICO ES REQUERIDO';
-    }
     if (!formData.noViaje || formData.noViaje <= 0) {
       newErrors.noViaje = 'EL NÚMERO DE VIAJES DEBE SER MAYOR A 0';
     }
@@ -176,8 +239,20 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
                     {materiales.map((mat) => (
                       <Picker.Item key={mat._id} label={mat.nombre} value={mat.nombre} />
                     ))}
+                    <Picker.Item label="+ AGREGAR NUEVO MATERIAL..." value="___NUEVO___" />
                   </Picker>
                 </View>
+                {isManualMaterial && (
+                  <TextInput
+                    style={[styles.input, { marginTop: 8 }]}
+                    value={manualMaterial}
+                    onChangeText={handleManualMaterialChange}
+                    placeholder="NOMBRE DEL NUEVO MATERIAL..."
+                    placeholderTextColor="#9CA3AF"
+                    autoFocus
+                    autoCapitalize="characters"
+                  />
+                )}
                 <Text style={styles.helperText}>* Si el material no existe, se le preguntará si desea agregarlo.</Text>
                 {errors.material && <Text style={styles.errorText}>{errors.material}</Text>}
               </View>
@@ -200,14 +275,30 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
             <View style={styles.row}>
               <View style={styles.halfWidth}>
                 <Text style={styles.label}>CAPACIDAD (M³) *</Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData.capacidad}
-                  onChangeText={(text) => handleChange('capacidad', text)}
-                  keyboardType="numeric"
-                  placeholder="0.00"
-                  placeholderTextColor="#9CA3AF"
-                />
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={formData.capacidad}
+                    onValueChange={(value) => handleChange('capacidad', value)}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="SELECCIONE CAPACIDAD..." value="" />
+                    {capacidades.map((cap) => (
+                      <Picker.Item key={cap._id} label={cap.nombre} value={cap.nombre} />
+                    ))}
+                    <Picker.Item label="+ OTRA CAPACIDAD..." value="___NUEVO___" />
+                  </Picker>
+                </View>
+                {isManualCapacidad && (
+                  <TextInput
+                    style={[styles.input, { marginTop: 8 }]}
+                    value={manualCapacidad}
+                    onChangeText={handleManualCapacidadChange}
+                    keyboardType="numeric"
+                    placeholder="0.00"
+                    placeholderTextColor="#9CA3AF"
+                    autoFocus
+                  />
+                )}
                 <Text style={styles.helperText}>* Si la capacidad no existe, se le preguntará si desea agregarla.</Text>
                 {errors.capacidad && <Text style={styles.errorText}>{errors.capacidad}</Text>}
               </View>
@@ -264,8 +355,20 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
                     {origenes.map((org) => (
                       <Picker.Item key={org._id} label={org.nombre} value={org.nombre} />
                     ))}
+                    <Picker.Item label="+ AGREGAR NUEVO ORIGEN..." value="___NUEVO___" />
                   </Picker>
                 </View>
+                {isManualOrigen && (
+                  <TextInput
+                    style={[styles.input, { marginTop: 8 }]}
+                    value={manualOrigen}
+                    onChangeText={handleManualOrigenChange}
+                    placeholder="NOMBRE DEL NUEVO ORIGEN..."
+                    placeholderTextColor="#9CA3AF"
+                    autoFocus
+                    autoCapitalize="characters"
+                  />
+                )}
                 <Text style={styles.helperText}>* Si el origen no existe, se le preguntará si desea agregarlo.</Text>
                 {errors.origen && <Text style={styles.errorText}>{errors.origen}</Text>}
               </View>
@@ -282,35 +385,23 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
                     {destinos.map((dest) => (
                       <Picker.Item key={dest._id} label={dest.nombre} value={dest.nombre} />
                     ))}
+                    <Picker.Item label="+ AGREGAR NUEVO DESTINO..." value="___NUEVO___" />
                   </Picker>
                 </View>
+                {isManualDestino && (
+                  <TextInput
+                    style={[styles.input, { marginTop: 8 }]}
+                    value={manualDestino}
+                    onChangeText={handleManualDestinoChange}
+                    placeholder="NOMBRE DEL NUEVO DESTINO..."
+                    placeholderTextColor="#9CA3AF"
+                    autoFocus
+                    autoCapitalize="characters"
+                  />
+                )}
                 <Text style={styles.helperText}>* Si el destino no existe, se le preguntará si desea agregarlo.</Text>
                 {errors.destino && <Text style={styles.errorText}>{errors.destino}</Text>}
               </View>
-            </View>
-
-            {/* Fila Extra: Vehículo (Crítico para funcionalidad móvil) */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>VEHÍCULO (CAMIÓN) *</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={selectedVehiculo?._id || ''}
-                  onValueChange={handleVehiculoChange}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="SELECCIONE UN VEHÍCULO..." value="" />
-                  {vehiculos
-                    .filter((v) => v.tipo.toUpperCase().includes('CAMIÓN') && v.activo)
-                    .map((vehiculo) => (
-                      <Picker.Item
-                        key={vehiculo._id}
-                        label={`${vehiculo.noEconomico} - ${vehiculo.nombre}`}
-                        value={vehiculo._id}
-                      />
-                    ))}
-                </Picker>
-              </View>
-              {errors.noEconomico && <Text style={styles.errorText}>{errors.noEconomico}</Text>}
             </View>
           </ScrollView>
 
