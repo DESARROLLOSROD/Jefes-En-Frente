@@ -314,48 +314,48 @@ const ReportFormWebStyle = () => {
             </View>
             <View style={styles.halfWidth}>
               <Text style={styles.label}>SOBRESTANTE</Text>
-              <TextInput style={styles.input} value={sobrestante} onChangeText={(text) => setSobrestante(text.toUpperCase())} placeholder="NOMBRE DEL SOBRESTANTE" placeholderTextColor="#9CA3AF" autoCapitalize="characters" />
             </View>
           </View>
+
+          {/* Sección de Mapa - Integrada abajo de la información general */}
+          {selectedProject?.mapa && (
+            <View style={styles.mapContainerRefined}>
+              <View style={styles.mapHeader}>
+                <Text style={styles.sectionTitleSmall}>UBICACIÓN EN MAPA</Text>
+                <TouchableOpacity
+                  style={[styles.miniToggle, isMultiPin && styles.miniToggleActive]}
+                  onPress={() => setIsMultiPin(!isMultiPin)}
+                >
+                  <Text style={[styles.miniToggleText, isMultiPin && styles.miniToggleTextActive]}>
+                    PINES MÚLTIPLES: {isMultiPin ? 'SÍ' : 'NO'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {isMultiPin ? (
+                <View style={{ height: 350 }}>
+                  <ProjectMap
+                    proyecto={selectedProject}
+                    pins={pinesMapa}
+                    onPinAdd={handleAddMultiPin}
+                    onPinRemove={handleRemoveMultiPin}
+                    editable={true}
+                    showControls={true}
+                  />
+                </View>
+              ) : (
+                <MapPinSelector
+                  mapaImagen={`data:${selectedProject.mapa.imagen.contentType};base64,${selectedProject.mapa.imagen.data}`}
+                  pinX={pinX}
+                  pinY={pinY}
+                  onPinChange={handlePinChange}
+                  onPinRemove={handlePinRemove}
+                />
+              )}
+            </View>
+          )}
         </View>
 
-        {/* Sección de Mapa - Movida arriba para mejor flujo de ubicación */}
-        {selectedProject?.mapa && (
-          <View style={[styles.section, styles.sectionGray]}>
-            <View style={styles.mapHeader}>
-              <Text style={styles.sectionTitle}>UBICACIÓN EN MAPA</Text>
-              <TouchableOpacity
-                style={[styles.miniToggle, isMultiPin && styles.miniToggleActive]}
-                onPress={() => setIsMultiPin(!isMultiPin)}
-              >
-                <Text style={[styles.miniToggleText, isMultiPin && styles.miniToggleTextActive]}>
-                  PINES MÚLTIPLES: {isMultiPin ? 'SÍ' : 'NO'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {isMultiPin ? (
-              <View style={{ height: 400 }}>
-                <ProjectMap
-                  proyecto={selectedProject}
-                  pins={pinesMapa}
-                  onPinAdd={handleAddMultiPin}
-                  onPinRemove={handleRemoveMultiPin}
-                  editable={true}
-                  showControls={true}
-                />
-              </View>
-            ) : (
-              <MapPinSelector
-                mapaImagen={`data:${selectedProject.mapa.imagen.contentType};base64,${selectedProject.mapa.imagen.data}`}
-                pinX={pinX}
-                pinY={pinY}
-                onPinChange={handlePinChange}
-                onPinRemove={handlePinRemove}
-              />
-            )}
-          </View>
-        )}
 
         <View style={[styles.section, styles.sectionGreen]}>
           <Text style={styles.sectionTitle}>CONTROL DE ACARREO</Text>
@@ -442,6 +442,8 @@ const styles = StyleSheet.create({
   sectionPurple: { borderColor: '#A78BFA', backgroundColor: '#F5F3FF' },
   sectionGray: { borderColor: '#9CA3AF', backgroundColor: '#F9FAFB' },
   sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 16, paddingBottom: 12, borderBottomWidth: 2, borderBottomColor: 'rgba(0,0,0,0.1)', textTransform: 'uppercase', letterSpacing: 0.5 },
+  sectionTitleSmall: { fontSize: 14, fontWeight: '700', color: '#374151', textTransform: 'uppercase', letterSpacing: 0.5 },
+  mapContainerRefined: { marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(0,0,0,0.1)' },
   formGroup: { marginBottom: 16 },
   label: { fontSize: 12, fontWeight: '700', color: '#374151', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
   input: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 6, padding: 12, fontSize: 14, fontWeight: '500', color: '#1F2937' },

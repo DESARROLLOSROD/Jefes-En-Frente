@@ -17,7 +17,7 @@ export interface AuthRequest extends Request {
 /**
  * Middleware de autenticación que soporta tanto cookies como headers
  */
-export const authMiddleware = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const verificarToken = (req: AuthRequest, res: Response, next: NextFunction) => {
   // Intentar obtener el token desde cookie primero, luego desde header
   let token = req.cookies?.accessToken;
 
@@ -57,7 +57,7 @@ export const authMiddleware = (req: AuthRequest, res: Response, next: NextFuncti
  * Genera un access token (corta duración: 15 minutos)
  */
 export const generateAccessToken = (payload: { userId: string; email: string; rol: string; proyectos?: string[] }) => {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '15m' });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
 };
 
 /**

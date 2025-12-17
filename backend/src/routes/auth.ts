@@ -9,12 +9,15 @@ import {
   verifyRefreshToken,
   revokeRefreshToken,
   setAuthCookies,
-  clearAuthCookies
+  clearAuthCookies,
+  verificarToken,
+  AuthRequest
 } from '../middleware/auth.js';
 import { validateLogin } from '../middleware/validators.js';
 import { loginLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
+export { verificarToken, AuthRequest };
 const JWT_SECRET = process.env.JWT_SECRET || 'jefesenfrente_secret_2024';
 
 // Login con soporte de cookies y refresh tokens
@@ -213,28 +216,6 @@ router.get('/proyectos', async (req: Request, res: Response) => {
   }
 });
 
-// Middleware para verificar token JWT
-export const verificarToken = (req: any, res: any, next: any) => {
-  const token = req.header('Authorization')?.replace('Bearer ', '');
-
-  if (!token) {
-    return res.status(401).json({
-      success: false,
-      error: 'Token de acceso requerido'
-    });
-  }
-
-  try {
-    const decoded = jwt.verify(token, JWT_SECRET) as any;
-    req.user = decoded;
-    next();
-  } catch (error) {
-    res.status(401).json({
-      success: false,
-      error: 'Token inválido'
-    });
-  }
-};
 
 // Middleware para verificar que el usuario es admin
 export const verificarAdmin = (req: any, res: any, next: any) => {

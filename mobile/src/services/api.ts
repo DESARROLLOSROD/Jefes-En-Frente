@@ -62,6 +62,8 @@ class ApiService {
 
         // Token expirado o inválido - limpiar storage
         if (error.response?.status === 401) {
+          console.warn('⚠️ 401 Unauthorized detected');
+          console.warn('Response data:', error.response?.data);
           await AsyncStorage.multiRemove(['token', 'user', 'selectedProject']);
         }
 
