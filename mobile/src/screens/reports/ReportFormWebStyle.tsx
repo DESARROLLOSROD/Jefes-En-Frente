@@ -265,9 +265,10 @@ const ReportFormWebStyle = () => {
                   selectedValue={turno}
                   onValueChange={(itemValue) => handleTurnoChange(itemValue)}
                   style={styles.pickerSmall}
+                  mode="dropdown"
                 >
-                  <Picker.Item label="PRIMER TURNO" value="primer" />
-                  <Picker.Item label="SEGUNDO TURNO" value="segundo" />
+                  <Picker.Item label="1ER TURNO" value="primer" />
+                  <Picker.Item label="2DO TURNO" value="segundo" />
                 </Picker>
               </View>
             </View>
@@ -476,7 +477,7 @@ const styles = StyleSheet.create({
   inputTextDisabled: { fontSize: 15, fontWeight: '700', color: '#718096' },
   pickerContainer: { backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: '#DEE2E6', borderRadius: 8, overflow: 'hidden' },
   picker: { height: 50, width: '100%', color: '#1F2937' },
-  pickerSmall: { height: 48, width: '100%', color: '#1F2937' },
+  pickerSmall: { height: 48, width: '100%', color: '#1F2937', marginLeft: -8 },
   row: { flexDirection: 'row', gap: 12, marginBottom: 16 },
   halfWidth: { flex: 1 },
   quarterWidth: { flex: 1 },
