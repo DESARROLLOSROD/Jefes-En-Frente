@@ -357,5 +357,3 @@ const styles = StyleSheet.create({
 });
 
 export default ReportDetailScreen;
-
-export default ReportDetailScreen;
