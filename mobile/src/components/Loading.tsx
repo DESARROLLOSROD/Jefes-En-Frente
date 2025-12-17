@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, ActivityIndicator, Text, StyleSheet, Modal } from 'react-native';
-import { COLORS } from '../constants/config';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface LoadingProps {
   visible: boolean;
@@ -9,13 +9,15 @@ interface LoadingProps {
 }
 
 const Loading: React.FC<LoadingProps> = ({ visible, message, fullScreen = true }) => {
+  const { theme } = useTheme();
+
   if (!visible) return null;
 
   const content = (
-    <View style={[styles.container, !fullScreen && styles.inline]}>
-      <View style={styles.content}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-        {message && <Text style={styles.message}>{message}</Text>}
+    <View style={[styles.container, !fullScreen && styles.inline, fullScreen && { backgroundColor: theme.overlay }]}>
+      <View style={[styles.content, { backgroundColor: theme.surface }]}>
+        <ActivityIndicator size="large" color={theme.primary} />
+        {message && <Text style={[styles.message, { color: theme.text }]}>{message}</Text>}
       </View>
     </View>
   );
@@ -36,14 +38,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   inline: {
     backgroundColor: 'transparent',
     padding: 20,
   },
   content: {
-    backgroundColor: COLORS.white,
     borderRadius: 12,
     padding: 24,
     alignItems: 'center',
@@ -52,7 +52,6 @@ const styles = StyleSheet.create({
   message: {
     marginTop: 12,
     fontSize: 14,
-    color: COLORS.dark,
     textAlign: 'center',
   },
 });
