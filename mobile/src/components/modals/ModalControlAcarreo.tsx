@@ -43,6 +43,8 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
     material: '',
     origen: '',
     destino: '',
+    capaNo: '',
+    elevacionAriza: '',
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -62,6 +64,8 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
         material: '',
         origen: '',
         destino: '',
+        capaNo: '',
+        elevacionAriza: '',
       });
       setSelectedVehiculo(null);
     }
@@ -243,6 +247,30 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
               {errors.material && <Text style={styles.errorText}>{errors.material}</Text>}
             </View>
 
+            {/* Capa y Elevación (Lado a lado) */}
+            <View style={styles.row}>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>CAPA</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.capaNo}
+                  onChangeText={(text) => handleChange('capaNo', text)}
+                  placeholder="INGRESE LA CAPA..."
+                  placeholderTextColor="#9CA3AF"
+                />
+              </View>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>ELEVACIÓN</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.elevacionAriza}
+                  onChangeText={(text) => handleChange('elevacionAriza', text)}
+                  placeholder="EJ: 100.50 M"
+                  placeholderTextColor="#9CA3AF"
+                />
+              </View>
+            </View>
+
             {/* Origen */}
             <View style={styles.formGroup}>
               <Text style={styles.label}>ORIGEN *</Text>
@@ -352,6 +380,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
     color: '#1F2937',
+  },
+  row: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  halfWidth: {
+    flex: 1,
   },
   inputReadonly: {
     backgroundColor: '#F3F4F6',

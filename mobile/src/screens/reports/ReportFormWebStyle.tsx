@@ -18,6 +18,7 @@ import {
   ControlMaterial,
   ControlAgua,
   ControlMaquinaria,
+  PinMapa,
 } from '../../types';
 import { useCreateReporte } from '../../hooks/useReportes';
 import { useZonesByProject } from '../../hooks/useZones';
@@ -27,6 +28,7 @@ import ModalControlMaterial from '../../components/modals/ModalControlMaterial';
 import ModalControlAgua from '../../components/modals/ModalControlAgua';
 import ModalControlMaquinaria from '../../components/modals/ModalControlMaquinaria';
 import MapPinSelector from '../../components/MapPinSelector';
+import ProjectMap from '../../components/ProjectMap';
 
 type ReportFormNavigationProp = StackNavigationProp<RootStackParamList, 'ReportForm'>;
 type ReportFormRouteProp = RouteProp<RootStackParamList, 'ReportForm'>;
@@ -66,6 +68,8 @@ const ReportFormWebStyle = () => {
   // Pin del mapa
   const [pinX, setPinX] = useState<number | undefined>(undefined);
   const [pinY, setPinY] = useState<number | undefined>(undefined);
+  const [isMultiPin, setIsMultiPin] = useState(false);
+  const [pinesMapa, setPinesMapa] = useState<PinMapa[]>([]);
 
   // Mock data - en producción estos vendrán de APIs
   const [origenes] = useState([
@@ -103,7 +107,12 @@ const ReportFormWebStyle = () => {
       controlMaterial,
       controlAgua,
       controlMaquinaria,
-      pinesMapa: [],
+      ubicacionMapa: !isMultiPin && pinX !== undefined && pinY !== undefined ? {
+        pinX: pinX!,
+        pinY: pinY!,
+        colocado: true
+      } : undefined,
+      pinesMapa: isMultiPin ? pinesMapa : [],
     };
 
     if (selectedZone) {
@@ -154,6 +163,18 @@ const ReportFormWebStyle = () => {
   const handlePinRemove = () => {
     setPinX(undefined);
     setPinY(undefined);
+  };
+
+  const handleAddMultiPin = (pin: Omit<PinMapa, 'id'>) => {
+    const newPin: PinMapa = {
+      ...pin,
+      id: Date.now().toString(),
+    };
+    setPinesMapa([...pinesMapa, newPin]);
+  };
+
+  const handleRemoveMultiPin = (pinId: string) => {
+    setPinesMapa(pinesMapa.filter(p => p.id !== pinId));
   };
 
   return (
@@ -230,14 +251,38 @@ const ReportFormWebStyle = () => {
         {/* Sección de Mapa (si el proyecto tiene mapa) */}
         {selectedProject?.mapa && (
           <View style={[styles.section, styles.sectionGray]}>
-            <Text style={styles.sectionTitle}>UBICACIÓN EN MAPA</Text>
-            <MapPinSelector
-              mapaImagen={`data:${selectedProject.mapa.imagen.contentType};base64,${selectedProject.mapa.imagen.data}`}
-              pinX={pinX}
-              pinY={pinY}
-              onPinChange={handlePinChange}
-              onPinRemove={handlePinRemove}
-            />
+            <View style={styles.mapHeader}>
+              <Text style={styles.sectionTitle}>UBICACIÓN EN MAPA</Text>
+              <TouchableOpacity
+                style={[styles.miniToggle, isMultiPin && styles.miniToggleActive]}
+                onPress={() => setIsMultiPin(!isMultiPin)}
+              >
+                <Text style={[styles.miniToggleText, isMultiPin && styles.miniToggleTextActive]}>
+                  MÚLTIPLES PINS: {isMultiPin ? 'ACTIVADO' : 'DESACTIVADO'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {isMultiPin ? (
+              <View style={{ height: 400 }}>
+                <ProjectMap
+                  proyecto={selectedProject}
+                  pins={pinesMapa}
+                  onPinAdd={handleAddMultiPin}
+                  onPinRemove={handleRemoveMultiPin}
+                  editable={true}
+                  showControls={true}
+                />
+              </View>
+            ) : (
+              <MapPinSelector
+                mapaImagen={`data:${selectedProject.mapa.imagen.contentType};base64,${selectedProject.mapa.imagen.data}`}
+                pinX={pinX}
+                pinY={pinY}
+                onPinChange={handlePinChange}
+                onPinRemove={handlePinRemove}
+              />
+            )}
           </View>
         )}
 
@@ -317,6 +362,32 @@ const styles = StyleSheet.create({
   submitButton: { backgroundColor: '#10B981', borderRadius: 8, padding: 16, alignItems: 'center', marginTop: 8 },
   submitButtonDisabled: { backgroundColor: '#9CA3AF' },
   submitButtonText: { color: '#FFFFFF', fontSize: 16, fontWeight: '700', textTransform: 'uppercase', letterSpacing: 1 },
+  mapHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: 'rgba(0,0,0,0.1)',
+  },
+  miniToggle: {
+    backgroundColor: '#E5E7EB',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  miniToggleActive: {
+    backgroundColor: '#3B82F6',
+  },
+  miniToggleText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#374151',
+  },
+  miniToggleTextActive: {
+    color: '#FFFFFF',
+  },
 });
 
 export default ReportFormWebStyle;
