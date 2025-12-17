@@ -7,7 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'jefesenfrente_secret_2024';
 export interface AuthRequest extends Request {
     userId?: string;
     userEmail?: string;
-    userRol?: 'admin' | 'supervisor' | 'operador';
+    userRol?: 'admin' | 'supervisor' | 'jefe en frente' | 'operador';
     userProyectos?: string[];
 }
 
@@ -27,7 +27,7 @@ export const verificarToken = async (req: AuthRequest, res: Response, next: Next
         const decoded = jwt.verify(token, JWT_SECRET) as {
             userId: string;
             email: string;
-            rol: 'admin' | 'supervisor' | 'operador';
+            rol: 'admin' | 'supervisor' | 'jefe en frente' | 'operador';
             proyectos?: string[];
         };
 

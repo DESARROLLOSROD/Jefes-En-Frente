@@ -292,8 +292,8 @@ router.get('/:id', async (req: AuthRequest, res) => {
   }
 });
 
-// Actualizar reporte
-router.put('/:id', async (req: AuthRequest, res) => {
+// Actualizar reporte (Solo Admin/Supervisor)
+router.put('/:id', verificarAdminOSupervisor, async (req: AuthRequest, res) => {
   try {
     // 1. Obtener el reporte ANTES de la actualización
     const reporteAnterior = await ReporteActividades.findById(req.params.id);
@@ -366,8 +366,8 @@ router.put('/:id', async (req: AuthRequest, res) => {
   }
 });
 
-// Eliminar reporte
-router.delete('/:id', async (req: AuthRequest, res) => {
+// Eliminar reporte (Solo Admin/Supervisor)
+router.delete('/:id', verificarAdminOSupervisor, async (req: AuthRequest, res) => {
   try {
     const reporte = await ReporteActividades.findByIdAndDelete(req.params.id);
 
