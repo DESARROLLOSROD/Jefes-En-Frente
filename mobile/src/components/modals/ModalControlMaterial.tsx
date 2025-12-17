@@ -102,81 +102,88 @@ const ModalControlMaterial: React.FC<ModalControlMaterialProps> = ({
           </View>
 
           <ScrollView style={styles.body}>
-            {/* Material */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>MATERIAL *</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={formData.material}
-                  onValueChange={(value) => handleChange('material', value)}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="SELECCIONE MATERIAL..." value="" />
-                  {materiales.map((mat) => (
-                    <Picker.Item key={mat._id} label={mat.nombre} value={mat.nombre} />
-                  ))}
-                </Picker>
+            {/* Fila 1: Material y Unidad */}
+            <View style={styles.row}>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>MATERIAL *</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={formData.material}
+                    onValueChange={(value) => handleChange('material', value)}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="SELECCIONE MATERIAL..." value="" />
+                    {materiales.map((mat) => (
+                      <Picker.Item key={mat._id} label={mat.nombre} value={mat.nombre} />
+                    ))}
+                  </Picker>
+                </View>
+                <Text style={styles.helperText}>* Si el material no existe, se le preguntará si desea agregarlo.</Text>
+                {errors.material && <Text style={styles.errorText}>{errors.material}</Text>}
               </View>
-              {errors.material && <Text style={styles.errorText}>{errors.material}</Text>}
-            </View>
 
-            {/* Unidad */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>UNIDAD *</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={formData.unidad}
-                  onValueChange={(value) => handleChange('unidad', value)}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="SELECCIONE UNIDAD..." value="" />
-                  {UNIDADES_MEDIDA.map((unidad) => (
-                    <Picker.Item key={unidad} label={unidad} value={unidad} />
-                  ))}
-                </Picker>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>UNIDAD *</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={formData.unidad}
+                    onValueChange={(value) => handleChange('unidad', value)}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="SELECCIONE UNIDAD..." value="" />
+                    {UNIDADES_MEDIDA.map((unidad) => (
+                      <Picker.Item key={unidad} label={unidad} value={unidad} />
+                    ))}
+                  </Picker>
+                </View>
+                {errors.unidad && <Text style={styles.errorText}>{errors.unidad}</Text>}
               </View>
-              {errors.unidad && <Text style={styles.errorText}>{errors.unidad}</Text>}
             </View>
 
-            {/* Cantidad */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>CANTIDAD *</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.cantidad}
-                onChangeText={(text) => handleChange('cantidad', text)}
-                keyboardType="numeric"
-                placeholder="0.00"
-                placeholderTextColor="#9CA3AF"
-              />
-              {errors.cantidad && <Text style={styles.errorText}>{errors.cantidad}</Text>}
+            {/* Fila 2: Cantidad y Zona */}
+            <View style={styles.row}>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>CANTIDAD *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.cantidad}
+                  onChangeText={(text) => handleChange('cantidad', text)}
+                  keyboardType="numeric"
+                  placeholder="0.00"
+                  placeholderTextColor="#9CA3AF"
+                />
+                {errors.cantidad && <Text style={styles.errorText}>{errors.cantidad}</Text>}
+              </View>
+
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>ZONA *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.zona}
+                  onChangeText={(text) => handleChange('zona', text)}
+                  placeholder="EJ: ZONA A, TRAMO 1..."
+                  placeholderTextColor="#9CA3AF"
+                  autoCapitalize="characters"
+                />
+                <Text style={styles.helperText}>* Ingrese la zona</Text>
+                {errors.zona && <Text style={styles.errorText}>{errors.zona}</Text>}
+              </View>
             </View>
 
-            {/* Zona */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>ZONA *</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.zona}
-                onChangeText={(text) => handleChange('zona', text)}
-                placeholder="EJ: ZONA A, TRAMO 1..."
-                placeholderTextColor="#9CA3AF"
-                autoCapitalize="characters"
-              />
-              {errors.zona && <Text style={styles.errorText}>{errors.zona}</Text>}
-            </View>
-
-            {/* Elevación */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>ELEVACIÓN</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.elevacion}
-                onChangeText={(text) => handleChange('elevacion', text)}
-                placeholder="EJ: 100.50 M"
-                placeholderTextColor="#9CA3AF"
-                autoCapitalize="characters"
-              />
+            {/* Fila 3: Elevación */}
+            <View style={styles.row}>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>ELEVACIÓN</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.elevacion}
+                  onChangeText={(text) => handleChange('elevacion', text)}
+                  placeholder="EJ: 100.50 M"
+                  placeholderTextColor="#9CA3AF"
+                  autoCapitalize="characters"
+                />
+              </View>
+              <View style={styles.halfWidth} />
             </View>
           </ScrollView>
 
@@ -210,7 +217,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   header: {
-    backgroundColor: '#F87171',
+    backgroundColor: '#2563eb',
     padding: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -253,6 +260,14 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#1F2937',
   },
+  row: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  halfWidth: {
+    flex: 1,
+  },
   pickerContainer: {
     backgroundColor: '#FFFFFF',
     borderWidth: 1,
@@ -264,6 +279,11 @@ const styles = StyleSheet.create({
   },
   errorText: {
     color: '#EF4444',
+    fontSize: 11,
+    marginTop: 4,
+  },
+  helperText: {
+    color: '#6B7280',
     fontSize: 11,
     marginTop: 4,
   },
@@ -288,7 +308,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   saveButton: {
-    backgroundColor: '#F87171',
+    backgroundColor: '#2563eb',
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 24,

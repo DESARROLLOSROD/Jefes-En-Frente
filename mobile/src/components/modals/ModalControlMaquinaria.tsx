@@ -167,7 +167,7 @@ const ModalControlMaquinaria: React.FC<ModalControlMaquinariaProps> = ({
           </View>
 
           <ScrollView style={styles.body}>
-            {/* Selección de Vehículo/Maquinaria */}
+            {/* Fila 1: Selección de Maquinaria */}
             <View style={styles.formGroup}>
               <Text style={styles.label}>VEHÍCULO/MAQUINARIA *</Text>
               <View style={styles.pickerContainer}>
@@ -191,75 +191,82 @@ const ModalControlMaquinaria: React.FC<ModalControlMaquinariaProps> = ({
 
             {selectedVehiculo && (
               <View style={styles.infoBox}>
-                <Text style={styles.infoText}>
-                  <Text style={styles.infoLabel}>NOMBRE:</Text> {selectedVehiculo.nombre}
-                </Text>
-                <Text style={styles.infoText}>
-                  <Text style={styles.infoLabel}>TIPO:</Text> {selectedVehiculo.tipo}
-                </Text>
-                <Text style={styles.infoText}>
-                  <Text style={styles.infoLabel}>NO. ECONÓMICO:</Text> {selectedVehiculo.noEconomico}
-                </Text>
+                <View style={styles.row}>
+                  <View style={styles.halfWidth}>
+                    <Text style={styles.infoText}>
+                      <Text style={styles.infoLabel}>NOMBRE:</Text> {selectedVehiculo.nombre}
+                    </Text>
+                    <Text style={styles.infoText}>
+                      <Text style={styles.infoLabel}>TIPO:</Text> {selectedVehiculo.tipo}
+                    </Text>
+                  </View>
+                  <View style={styles.halfWidth}>
+                    <Text style={styles.infoText}>
+                      <Text style={styles.infoLabel}>NO. ECONÓMICO:</Text> {selectedVehiculo.noEconomico}
+                    </Text>
+                  </View>
+                </View>
               </View>
             )}
 
-            {/* Horómetro Inicial */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>HORÓMETRO INICIAL</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.horometroInicial.toString()}
-                onChangeText={(text) => handleChange('horometroInicial', Number(text))}
-                keyboardType="numeric"
-                placeholder="0"
-                placeholderTextColor="#9CA3AF"
-              />
+            {/* Fila 2: Horómetros */}
+            <View style={styles.row}>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>HORÓMETRO INICIAL</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.horometroInicial.toString()}
+                  onChangeText={(text) => handleChange('horometroInicial', Number(text))}
+                  keyboardType="numeric"
+                  placeholder="0"
+                  placeholderTextColor="#9CA3AF"
+                />
+              </View>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>HORÓMETRO FINAL *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.horometroFinal.toString()}
+                  onChangeText={(text) => handleChange('horometroFinal', Number(text))}
+                  keyboardType="numeric"
+                  placeholder="0"
+                  placeholderTextColor="#9CA3AF"
+                />
+                {errors.horometroFinal && <Text style={styles.errorText}>{errors.horometroFinal}</Text>}
+              </View>
             </View>
 
-            {/* Horómetro Final */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>HORÓMETRO FINAL *</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.horometroFinal.toString()}
-                onChangeText={(text) => handleChange('horometroFinal', Number(text))}
-                keyboardType="numeric"
-                placeholder="0"
-                placeholderTextColor="#9CA3AF"
-              />
-              {errors.horometroFinal && <Text style={styles.errorText}>{errors.horometroFinal}</Text>}
+            {/* Fila 3: Horas Operación y Operador */}
+            <View style={styles.row}>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>HORAS DE OPERACIÓN [CALCULADO]</Text>
+                <TextInput
+                  style={[styles.input, styles.inputReadonly]}
+                  value={formData.horasOperacion.toString()}
+                  editable={false}
+                  placeholder="0"
+                  placeholderTextColor="#9CA3AF"
+                />
+                <Text style={styles.helperText}>
+                  FÓRMULA: FINAL - INICIAL = {formData.horasOperacion} HRS
+                </Text>
+              </View>
+
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>OPERADOR *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.operador}
+                  onChangeText={(text) => handleChange('operador', text)}
+                  placeholder="NOMBRE DEL OPERADOR"
+                  placeholderTextColor="#9CA3AF"
+                  autoCapitalize="characters"
+                />
+                {errors.operador && <Text style={styles.errorText}>{errors.operador}</Text>}
+              </View>
             </View>
 
-            {/* Horas de Operación (Calculado) */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>HORAS DE OPERACIÓN [CALCULADO]</Text>
-              <TextInput
-                style={[styles.input, styles.inputReadonly]}
-                value={formData.horasOperacion.toString()}
-                editable={false}
-                placeholder="0"
-                placeholderTextColor="#9CA3AF"
-              />
-              <Text style={styles.helperText}>
-                FÓRMULA: HORÓMETRO FINAL - HORÓMETRO INICIAL = {formData.horasOperacion} HRS
-              </Text>
-            </View>
-
-            {/* Operador */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>OPERADOR *</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.operador}
-                onChangeText={(text) => handleChange('operador', text)}
-                placeholder="NOMBRE DEL OPERADOR"
-                placeholderTextColor="#9CA3AF"
-                autoCapitalize="characters"
-              />
-              {errors.operador && <Text style={styles.errorText}>{errors.operador}</Text>}
-            </View>
-
-            {/* Actividad */}
+            {/* Fila 4: Actividad */}
             <View style={styles.formGroup}>
               <Text style={styles.label}>ACTIVIDAD *</Text>
               <TextInput
@@ -307,7 +314,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   header: {
-    backgroundColor: '#A78BFA',
+    backgroundColor: '#2563eb',
     padding: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -350,9 +357,17 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#1F2937',
   },
+  row: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  halfWidth: {
+    flex: 1,
+  },
   inputReadonly: {
     backgroundColor: '#F3F4F6',
-    color: '#A78BFA',
+    color: '#2563eb',
     fontWeight: '700',
   },
   textArea: {
@@ -369,9 +384,9 @@ const styles = StyleSheet.create({
     height: 50,
   },
   infoBox: {
-    backgroundColor: '#F5F3FF',
+    backgroundColor: '#EFF6FF',
     borderWidth: 1,
-    borderColor: '#A78BFA',
+    borderColor: '#2563eb',
     borderRadius: 6,
     padding: 12,
     marginBottom: 16,
@@ -383,7 +398,7 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontWeight: '700',
-    color: '#6D28D9',
+    color: '#1E40AF',
   },
   errorText: {
     color: '#EF4444',
@@ -416,7 +431,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   saveButton: {
-    backgroundColor: '#A78BFA',
+    backgroundColor: '#2563eb',
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 24,

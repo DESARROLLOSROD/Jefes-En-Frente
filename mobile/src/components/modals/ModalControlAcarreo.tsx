@@ -162,7 +162,134 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
           </View>
 
           <ScrollView style={styles.body}>
-            {/* Selección de Vehículo */}
+            {/* Fila 1: Material y No. de Viajes */}
+            <View style={styles.row}>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>MATERIAL *</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={formData.material}
+                    onValueChange={(value) => handleChange('material', value)}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="SELECCIONE MATERIAL..." value="" />
+                    {materiales.map((mat) => (
+                      <Picker.Item key={mat._id} label={mat.nombre} value={mat.nombre} />
+                    ))}
+                  </Picker>
+                </View>
+                <Text style={styles.helperText}>* Si el material no existe, se le preguntará si desea agregarlo.</Text>
+                {errors.material && <Text style={styles.errorText}>{errors.material}</Text>}
+              </View>
+
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>NO. DE VIAJES *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.noViaje.toString()}
+                  onChangeText={(text) => handleChange('noViaje', Number(text))}
+                  keyboardType="numeric"
+                  placeholder="0"
+                  placeholderTextColor="#9CA3AF"
+                />
+                {errors.noViaje && <Text style={styles.errorText}>{errors.noViaje}</Text>}
+              </View>
+            </View>
+
+            {/* Fila 2: Capacidad y Volumen */}
+            <View style={styles.row}>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>CAPACIDAD (M³) *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.capacidad}
+                  onChangeText={(text) => handleChange('capacidad', text)}
+                  keyboardType="numeric"
+                  placeholder="0.00"
+                  placeholderTextColor="#9CA3AF"
+                />
+                <Text style={styles.helperText}>* Si la capacidad no existe, se le preguntará si desea agregarla.</Text>
+                {errors.capacidad && <Text style={styles.errorText}>{errors.capacidad}</Text>}
+              </View>
+
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>VOL. SUELTO (M³) [CALCULADO]</Text>
+                <TextInput
+                  style={[styles.input, styles.inputReadonly]}
+                  value={formData.volSuelto}
+                  editable={false}
+                  placeholder="0.00"
+                  placeholderTextColor="#9CA3AF"
+                />
+                <Text style={styles.helperText}>FÓRMULA: NO. VIAJES × CAPACIDAD = {formData.volSuelto || '0.00'} M³</Text>
+              </View>
+            </View>
+
+            {/* Fila 3: Capa y Elevación */}
+            <View style={styles.row}>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>CAPA</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.capaNo}
+                  onChangeText={(text) => handleChange('capaNo', text)}
+                  placeholder="INGRESE LA CAPA..."
+                  placeholderTextColor="#9CA3AF"
+                />
+                <Text style={styles.helperText}>* Ingrese la capa</Text>
+              </View>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>ELEVACIÓN</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formData.elevacionAriza}
+                  onChangeText={(text) => handleChange('elevacionAriza', text)}
+                  placeholder="EJ: 100.50 M"
+                  placeholderTextColor="#9CA3AF"
+                />
+              </View>
+            </View>
+
+            {/* Fila 4: Origen y Destino */}
+            <View style={styles.row}>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>ORIGEN *</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={formData.origen}
+                    onValueChange={(value) => handleChange('origen', value)}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="SELECCIONE ORIGEN..." value="" />
+                    {origenes.map((org) => (
+                      <Picker.Item key={org._id} label={org.nombre} value={org.nombre} />
+                    ))}
+                  </Picker>
+                </View>
+                <Text style={styles.helperText}>* Si el origen no existe, se le preguntará si desea agregarlo.</Text>
+                {errors.origen && <Text style={styles.errorText}>{errors.origen}</Text>}
+              </View>
+
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>DESTINO *</Text>
+                <View style={styles.pickerContainer}>
+                  <Picker
+                    selectedValue={formData.destino}
+                    onValueChange={(value) => handleChange('destino', value)}
+                    style={styles.picker}
+                  >
+                    <Picker.Item label="SELECCIONE DESTINO..." value="" />
+                    {destinos.map((dest) => (
+                      <Picker.Item key={dest._id} label={dest.nombre} value={dest.nombre} />
+                    ))}
+                  </Picker>
+                </View>
+                <Text style={styles.helperText}>* Si el destino no existe, se le preguntará si desea agregarlo.</Text>
+                {errors.destino && <Text style={styles.errorText}>{errors.destino}</Text>}
+              </View>
+            </View>
+
+            {/* Fila Extra: Vehículo (Crítico para funcionalidad móvil) */}
             <View style={styles.formGroup}>
               <Text style={styles.label}>VEHÍCULO (CAMIÓN) *</Text>
               <View style={styles.pickerContainer}>
@@ -184,127 +311,6 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
                 </Picker>
               </View>
               {errors.noEconomico && <Text style={styles.errorText}>{errors.noEconomico}</Text>}
-            </View>
-
-            {/* Número de Viajes */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>NO. DE VIAJES *</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.noViaje.toString()}
-                onChangeText={(text) => handleChange('noViaje', Number(text))}
-                keyboardType="numeric"
-                placeholder="0"
-                placeholderTextColor="#9CA3AF"
-              />
-              {errors.noViaje && <Text style={styles.errorText}>{errors.noViaje}</Text>}
-            </View>
-
-            {/* Capacidad */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>CAPACIDAD (M³) *</Text>
-              <TextInput
-                style={styles.input}
-                value={formData.capacidad}
-                onChangeText={(text) => handleChange('capacidad', text)}
-                keyboardType="numeric"
-                placeholder="0.00"
-                placeholderTextColor="#9CA3AF"
-              />
-              {errors.capacidad && <Text style={styles.errorText}>{errors.capacidad}</Text>}
-            </View>
-
-            {/* Volumen (Calculado) */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>VOLUMEN (M³) [CALCULADO]</Text>
-              <TextInput
-                style={[styles.input, styles.inputReadonly]}
-                value={formData.volSuelto}
-                editable={false}
-                placeholder="0.00"
-                placeholderTextColor="#9CA3AF"
-              />
-              <Text style={styles.helperText}>
-                FÓRMULA: NO. VIAJES × CAPACIDAD = {formData.volSuelto || '0.00'} M³
-              </Text>
-            </View>
-
-            {/* Material */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>MATERIAL *</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={formData.material}
-                  onValueChange={(value) => handleChange('material', value)}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="SELECCIONE MATERIAL..." value="" />
-                  {materiales.map((mat) => (
-                    <Picker.Item key={mat._id} label={mat.nombre} value={mat.nombre} />
-                  ))}
-                </Picker>
-              </View>
-              {errors.material && <Text style={styles.errorText}>{errors.material}</Text>}
-            </View>
-
-            {/* Capa y Elevación (Lado a lado) */}
-            <View style={styles.row}>
-              <View style={styles.halfWidth}>
-                <Text style={styles.label}>CAPA</Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData.capaNo}
-                  onChangeText={(text) => handleChange('capaNo', text)}
-                  placeholder="INGRESE LA CAPA..."
-                  placeholderTextColor="#9CA3AF"
-                />
-              </View>
-              <View style={styles.halfWidth}>
-                <Text style={styles.label}>ELEVACIÓN</Text>
-                <TextInput
-                  style={styles.input}
-                  value={formData.elevacionAriza}
-                  onChangeText={(text) => handleChange('elevacionAriza', text)}
-                  placeholder="EJ: 100.50 M"
-                  placeholderTextColor="#9CA3AF"
-                />
-              </View>
-            </View>
-
-            {/* Origen */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>ORIGEN *</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={formData.origen}
-                  onValueChange={(value) => handleChange('origen', value)}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="SELECCIONE ORIGEN..." value="" />
-                  {origenes.map((org) => (
-                    <Picker.Item key={org._id} label={org.nombre} value={org.nombre} />
-                  ))}
-                </Picker>
-              </View>
-              {errors.origen && <Text style={styles.errorText}>{errors.origen}</Text>}
-            </View>
-
-            {/* Destino */}
-            <View style={styles.formGroup}>
-              <Text style={styles.label}>DESTINO *</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={formData.destino}
-                  onValueChange={(value) => handleChange('destino', value)}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="SELECCIONE DESTINO..." value="" />
-                  {destinos.map((dest) => (
-                    <Picker.Item key={dest._id} label={dest.nombre} value={dest.nombre} />
-                  ))}
-                </Picker>
-              </View>
-              {errors.destino && <Text style={styles.errorText}>{errors.destino}</Text>}
             </View>
           </ScrollView>
 
@@ -338,7 +344,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   header: {
-    backgroundColor: '#4ADE80',
+    backgroundColor: '#2563eb',
     padding: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -391,7 +397,7 @@ const styles = StyleSheet.create({
   },
   inputReadonly: {
     backgroundColor: '#F3F4F6',
-    color: '#4ADE80',
+    color: '#2563eb',
     fontWeight: '700',
   },
   pickerContainer: {
@@ -434,7 +440,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   saveButton: {
-    backgroundColor: '#4ADE80',
+    backgroundColor: '#2563eb',
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 24,
