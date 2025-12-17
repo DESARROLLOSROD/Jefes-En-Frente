@@ -1,5 +1,4 @@
-import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle, View } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, ViewStyle, TextStyle, View, StyleProp } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { COLORS } from '../constants/config';
@@ -14,8 +13,8 @@ interface ButtonProps {
   icon?: keyof typeof Ionicons.glyphMap;
   iconPosition?: 'left' | 'right';
   fullWidth?: boolean;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
   uppercase?: boolean;
 }
 
@@ -36,7 +35,7 @@ const Button: React.FC<ButtonProps> = ({
   const { theme } = useTheme();
 
   const getButtonStyle = () => {
-    const baseStyle = [styles.button];
+    const baseStyle: ViewStyle[] = [styles.button];
 
     // Size variants
     switch (size) {
@@ -83,7 +82,7 @@ const Button: React.FC<ButtonProps> = ({
   };
 
   const getTextStyle = () => {
-    const baseStyle = [styles.buttonText];
+    const baseStyle: TextStyle[] = [styles.buttonText];
 
     // Size text
     switch (size) {
@@ -133,7 +132,7 @@ const Button: React.FC<ButtonProps> = ({
         {icon && iconPosition === 'left' && (
           <Ionicons name={icon} size={iconSize} color={getIconColor()} style={styles.iconLeft} />
         )}
-        <Text style={[...getTextStyle(), textStyle]}>{title}</Text>
+        <Text style={[getTextStyle(), textStyle]}>{title}</Text>
         {icon && iconPosition === 'right' && (
           <Ionicons name={icon} size={iconSize} color={getIconColor()} style={styles.iconRight} />
         )}
@@ -143,7 +142,7 @@ const Button: React.FC<ButtonProps> = ({
 
   return (
     <TouchableOpacity
-      style={[...getButtonStyle(), style]}
+      style={[getButtonStyle(), style]}
       onPress={onPress}
       disabled={disabled || loading}
       activeOpacity={0.7}

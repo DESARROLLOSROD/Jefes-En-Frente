@@ -70,14 +70,16 @@ export interface WorkZone {
 
 // Controles del reporte
 export interface ControlAcarreo {
-  material: string;
+  noEconomico: string;
   noViaje: number;
   capacidad: string;
   volSuelto: string;
-  capaNo: string;
-  elevacionAriza: string;
-  capaOrigen: string;
+  material: string;
+  origen: string;
   destino: string;
+  capaNo?: string;
+  elevacionAriza?: string;
+  capaOrigen?: string;
 }
 
 export interface ControlMaterial {

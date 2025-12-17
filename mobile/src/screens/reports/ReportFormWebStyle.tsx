@@ -8,7 +8,7 @@ import {
   Alert,
   TextInput,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import { useAuth } from '../../contexts/AuthContext';
@@ -29,9 +29,12 @@ import ModalControlMaquinaria from '../../components/modals/ModalControlMaquinar
 import MapPinSelector from '../../components/MapPinSelector';
 
 type ReportFormNavigationProp = StackNavigationProp<RootStackParamList, 'ReportForm'>;
+type ReportFormRouteProp = RouteProp<RootStackParamList, 'ReportForm'>;
 
 const ReportFormWebStyle = () => {
   const navigation = useNavigation<ReportFormNavigationProp>();
+  const route = useRoute<ReportFormRouteProp>();
+  const { reportId } = route.params || {};
   const { user, selectedProject } = useAuth();
 
   const { data: zones = [] } = useZonesByProject(selectedProject?._id);
@@ -229,7 +232,7 @@ const ReportFormWebStyle = () => {
           <View style={[styles.section, styles.sectionGray]}>
             <Text style={styles.sectionTitle}>UBICACIÓN EN MAPA</Text>
             <MapPinSelector
-              mapaImagen={selectedProject.mapa}
+              mapaImagen={`data:${selectedProject.mapa.imagen.contentType};base64,${selectedProject.mapa.imagen.data}`}
               pinX={pinX}
               pinY={pinY}
               onPinChange={handlePinChange}

@@ -182,13 +182,13 @@ class ApiService {
 
   // Vehículos
   async getVehiculos(): Promise<Vehiculo[]> {
-    const response = await this.api.get<{ success: boolean; data: Vehiculo[] }>('/vehiculos');
-    return response.data.data || response.data;
+    const response = await this.api.get<{ success: boolean; data: Vehiculo[] } | Vehiculo[]>('/vehiculos');
+    return Array.isArray(response.data) ? response.data : response.data.data;
   }
 
   async getVehiculosByProyecto(proyectoId: string): Promise<Vehiculo[]> {
-    const response = await this.api.get<{ success: boolean; data: Vehiculo[] }>(`/vehiculos/proyecto/${proyectoId}`);
-    return response.data.data || response.data;
+    const response = await this.api.get<{ success: boolean; data: Vehiculo[] } | Vehiculo[]>(`/vehiculos/proyecto/${proyectoId}`);
+    return Array.isArray(response.data) ? response.data : response.data.data;
   }
 
   async createVehiculo(vehiculo: Partial<Vehiculo>): Promise<Vehiculo> {
@@ -207,13 +207,15 @@ class ApiService {
 
   // Zonas de trabajo
   async getZonesByProject(projectId: string): Promise<WorkZone[]> {
-    const response = await this.api.get<{ success: boolean; data: WorkZone[] }>(`/projects/${projectId}/zones`);
-    return response.data.data || response.data;
+    const response = await this.api.get<{ success: boolean; data: WorkZone[] } | WorkZone[]>(`/projects/${projectId}/zones`);
+    return Array.isArray(response.data) ? response.data : response.data.data;
   }
 
   async getZoneById(zoneId: string): Promise<WorkZone> {
-    const response = await this.api.get<{ success: boolean; data: WorkZone }>(`/zones/${zoneId}`);
-    return response.data.data || response.data;
+    const response = await this.api.get<{ success: boolean; data: WorkZone } | WorkZone | WorkZone[]>(`/zones/${zoneId}`);
+    if (Array.isArray(response.data)) return response.data[0];
+    const body = response.data as any;
+    return body.data || body;
   }
 
   async createZone(zone: Partial<WorkZone>): Promise<WorkZone> {

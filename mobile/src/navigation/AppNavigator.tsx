@@ -8,7 +8,7 @@ import LoginScreen from '../screens/auth/LoginScreen';
 import ProjectSelectionScreen from '../screens/projects/ProjectSelectionScreen';
 import ProjectDetailScreen from '../screens/projects/ProjectDetailScreen';
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
-import ReportFormScreen from '../screens/reports/ReportFormWebStyle';
+import ReportFormWebStyle from '../screens/reports/ReportFormWebStyle';
 import ReportListScreen from '../screens/reports/ReportListScreen';
 import ReportDetailScreen from '../screens/reports/ReportDetailScreen';
 import UserManagementScreen from '../screens/users/UserManagementEnhanced';
@@ -41,6 +41,7 @@ const AppNavigator = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator
+        id="root"
         screenOptions={{
           headerStyle: {
             backgroundColor: '#2563eb',
@@ -79,7 +80,7 @@ const AppNavigator = () => {
             />
             <Stack.Screen
               name="ReportForm"
-              component={ReportFormScreen}
+              component={ReportFormWebStyle}
               options={{ title: 'Crear Reporte' }}
             />
             <Stack.Screen
