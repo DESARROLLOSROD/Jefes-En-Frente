@@ -8,6 +8,7 @@ import {
   Alert,
   TextInput,
 } from 'react-native';
+import { Picker } from '@react-native-picker/picker';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
@@ -23,6 +24,16 @@ import {
 import { useCreateReporte } from '../../hooks/useReportes';
 import { useZonesByProject } from '../../hooks/useZones';
 import { useVehiculosByProyecto } from '../../hooks/useVehiculos';
+import {
+  useMateriales,
+  useCreateMaterial,
+  useOrigenes,
+  useCreateOrigen,
+  useDestinos,
+  useCreateDestino,
+  useCapacidades,
+  useCreateCapacidad,
+} from '../../hooks/useGlobalFields';
 import ModalControlAcarreo from '../../components/modals/ModalControlAcarreo';
 import ModalControlMaterial from '../../components/modals/ModalControlMaterial';
 import ModalControlAgua from '../../components/modals/ModalControlAgua';
@@ -43,8 +54,18 @@ const ReportFormWebStyle = () => {
   const { data: vehiculos = [] } = useVehiculosByProyecto(selectedProject?._id);
   const createReporteMutation = useCreateReporte();
 
+  // Hooks para datos globales sincronizados
+  const { data: dbOrigenes = [] } = useOrigenes();
+  const { data: dbDestinos = [] } = useDestinos();
+  const { data: dbMateriales = [] } = useMateriales();
+  const { data: dbCapacidades = [] } = useCapacidades();
+
+  const createMaterialMutation = useCreateMaterial();
+  const createOrigenMutation = useCreateOrigen();
+  const createDestinoMutation = useCreateDestino();
+  const createCapacidadMutation = useCreateCapacidad();
+
   const [fecha, setFecha] = useState(new Date());
-  const [ubicacion, setUbicacion] = useState('');
   const [turno, setTurno] = useState<'primer' | 'segundo'>('primer');
   const [inicioActividades, setInicioActividades] = useState(turno === 'primer' ? '07:00' : '19:00');
   const [terminoActividades, setTerminoActividades] = useState(turno === 'primer' ? '19:00' : '07:00');
@@ -71,37 +92,38 @@ const ReportFormWebStyle = () => {
   const [isMultiPin, setIsMultiPin] = useState(false);
   const [pinesMapa, setPinesMapa] = useState<PinMapa[]>([]);
 
-  // Listas de la sesión (se alimentan de nuevas entradas "al vuelo")
-  const [origenes, setOrigenes] = useState([
-    { _id: '1', nombre: 'CANTERA NORTE' },
-    { _id: '2', nombre: 'ZONA DE ACOPIO' },
-    { _id: '3', nombre: 'BANCO DE MATERIAL 1' },
-  ]);
-  const [destinos, setDestinos] = useState([
-    { _id: '1', nombre: 'RELLENO SANITARIO' },
-    { _id: '2', nombre: 'ZONA DE DESCARGA' },
-    { _id: '3', nombre: 'TALLER CENTRAL' },
-  ]);
-  const [materiales, setMateriales] = useState([
-    { _id: '1', nombre: 'CONCRETO' },
-    { _id: '2', nombre: 'ARENA' },
-    { _id: '3', nombre: 'GRAVA' },
-  ]);
-  const [capacidades, setCapacidades] = useState([
-    { _id: '1', nombre: '7.00' },
-    { _id: '2', nombre: '14.00' },
-    { _id: '3', nombre: '20.00' },
-  ]);
+  // Listas de la sesión (se sincronizan con DB)
+  const [sessionOrigenes, setSessionOrigenes] = useState<any[]>([]);
+  const [sessionDestinos, setSessionDestinos] = useState<any[]>([]);
+  const [sessionMateriales, setSessionMateriales] = useState<any[]>([]);
+  const [sessionCapacidades, setSessionCapacidades] = useState<any[]>([]);
+
+  // Combinar datos de DB con los creados en la sesión actual
+  const allOrigenes = [...dbOrigenes, ...sessionOrigenes];
+  const allDestinos = [...dbDestinos, ...sessionDestinos];
+  const allMateriales = [...dbMateriales, ...sessionMateriales];
+  const allCapacidades = [...dbCapacidades, ...sessionCapacidades];
+
+  const availableSections = zones.find(z => z._id === selectedZone)?.sections || [];
 
   const handleSubmit = () => {
-    if (!ubicacion || !inicioActividades || !terminoActividades) {
+    if (!inicioActividades || !terminoActividades) {
       Alert.alert('Error', 'Por favor completa los campos requeridos');
+      return;
+    }
+
+    if (zones.length > 0 && !selectedZone) {
+      Alert.alert('Error', 'Por favor selecciona una Zona');
+      return;
+    }
+
+    if (selectedZone && availableSections.length > 0 && !selectedSection) {
+      Alert.alert('Error', 'Por favor selecciona una Sección');
       return;
     }
 
     const reporte: ReporteActividades = {
       fecha,
-      ubicacion,
       proyectoId: selectedProject!._id,
       usuarioId: user!._id,
       turno,
@@ -148,41 +170,49 @@ const ReportFormWebStyle = () => {
   const handleAgregarAcarreo = (acarreo: ControlAcarreo) => {
     setControlAcarreo([...controlAcarreo, acarreo]);
 
-    // Aprender nuevos valores para la sesión
-    if (acarreo.material && !materiales.find(m => m.nombre === acarreo.material)) {
-      setMateriales([...materiales, { _id: Date.now().toString(), nombre: acarreo.material }]);
+    // Persistir nuevos valores en MongoDB y actualizar sesión local
+    if (acarreo.material && !allMateriales.find(m => m.nombre === acarreo.material)) {
+      setSessionMateriales(prev => [...prev, { _id: Date.now().toString(), nombre: acarreo.material }]);
+      createMaterialMutation.mutate({ nombre: acarreo.material });
     }
-    if (acarreo.origen && !origenes.find(o => o.nombre === acarreo.origen)) {
-      setOrigenes([...origenes, { _id: Date.now().toString(), nombre: acarreo.origen }]);
+    if (acarreo.origen && !allOrigenes.find(o => o.nombre === acarreo.origen)) {
+      setSessionOrigenes(prev => [...prev, { _id: Date.now().toString(), nombre: acarreo.origen }]);
+      createOrigenMutation.mutate({ nombre: acarreo.origen });
     }
-    if (acarreo.destino && !destinos.find(d => d.nombre === acarreo.destino)) {
-      setDestinos([...destinos, { _id: Date.now().toString(), nombre: acarreo.destino }]);
+    if (acarreo.destino && !allDestinos.find(d => d.nombre === acarreo.destino)) {
+      setSessionDestinos(prev => [...prev, { _id: Date.now().toString(), nombre: acarreo.destino }]);
+      createDestinoMutation.mutate({ nombre: acarreo.destino });
     }
-    if (acarreo.capacidad && !capacidades.find(c => c.nombre === acarreo.capacidad)) {
-      setCapacidades([...capacidades, { _id: Date.now().toString(), nombre: acarreo.capacidad }]);
+    if (acarreo.capacidad && !allCapacidades.find(c => c.nombre === acarreo.capacidad)) {
+      setSessionCapacidades(prev => [...prev, { _id: Date.now().toString(), nombre: acarreo.capacidad }]);
+      createCapacidadMutation.mutate({ nombre: acarreo.capacidad });
     }
   };
 
   const handleAgregarMaterial = (material: ControlMaterial) => {
     setControlMaterial([...controlMaterial, material]);
-    // Si el material es nuevo, agregarlo a la lista de la sesión
-    if (material.material && !materiales.find(m => m.nombre === material.material)) {
-      setMateriales([...materiales, { _id: Date.now().toString(), nombre: material.material }]);
+    // Persistir materiales nuevos
+    if (material.material && !allMateriales.find(m => m.nombre === material.material)) {
+      setSessionMateriales(prev => [...prev, { _id: Date.now().toString(), nombre: material.material }]);
+      createMaterialMutation.mutate({ nombre: material.material });
     }
   };
 
   const handleAgregarAgua = (agua: ControlAgua) => {
     setControlAgua([...controlAgua, agua]);
 
-    // Aprender nuevos valores para la sesión
-    if (agua.origen && !origenes.find(o => o.nombre === agua.origen)) {
-      setOrigenes([...origenes, { _id: Date.now().toString(), nombre: agua.origen }]);
+    // Persistir orígenes, destinos y capacidades nuevos
+    if (agua.origen && !allOrigenes.find(o => o.nombre === agua.origen)) {
+      setSessionOrigenes(prev => [...prev, { _id: Date.now().toString(), nombre: agua.origen }]);
+      createOrigenMutation.mutate({ nombre: agua.origen });
     }
-    if (agua.destino && !destinos.find(d => d.nombre === agua.destino)) {
-      setDestinos([...destinos, { _id: Date.now().toString(), nombre: agua.destino }]);
+    if (agua.destino && !allDestinos.find(d => d.nombre === agua.destino)) {
+      setSessionDestinos(prev => [...prev, { _id: Date.now().toString(), nombre: agua.destino }]);
+      createDestinoMutation.mutate({ nombre: agua.destino });
     }
-    if (agua.capacidad && !capacidades.find(c => c.nombre === agua.capacidad)) {
-      setCapacidades([...capacidades, { _id: Date.now().toString(), nombre: agua.capacidad }]);
+    if (agua.capacidad && !allCapacidades.find(c => c.nombre === agua.capacidad)) {
+      setSessionCapacidades(prev => [...prev, { _id: Date.now().toString(), nombre: agua.capacidad }]);
+      createCapacidadMutation.mutate({ nombre: agua.capacidad });
     }
   };
 
@@ -218,10 +248,44 @@ const ReportFormWebStyle = () => {
       <View style={styles.content}>
         <View style={[styles.section, styles.sectionOrange]}>
           <Text style={styles.sectionTitle}>INFORMACIÓN GENERAL</Text>
-          <View style={styles.formGroup}>
-            <Text style={styles.label}>UBICACIÓN *</Text>
-            <TextInput style={styles.input} value={ubicacion} onChangeText={(text) => setUbicacion(text.toUpperCase())} placeholder="EJ: ZONA NORTE" placeholderTextColor="#9CA3AF" autoCapitalize="characters" />
+
+          <View style={styles.row}>
+            <View style={styles.halfWidth}>
+              <Text style={styles.label}>ZONA *</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={selectedZone}
+                  onValueChange={(itemValue) => {
+                    setSelectedZone(itemValue);
+                    setSelectedSection(''); // Reset sección when zona changes
+                  }}
+                  style={styles.picker}
+                >
+                  <Picker.Item label="SELECCIONAR ZONA..." value="" color="#9CA3AF" />
+                  {zones.map((zone) => (
+                    <Picker.Item key={zone._id} label={zone.name} value={zone._id} />
+                  ))}
+                </Picker>
+              </View>
+            </View>
+            <View style={styles.halfWidth}>
+              <Text style={styles.label}>SECCIÓN *</Text>
+              <View style={styles.pickerContainer}>
+                <Picker
+                  selectedValue={selectedSection}
+                  onValueChange={(itemValue) => setSelectedSection(itemValue)}
+                  style={styles.picker}
+                  enabled={!!selectedZone}
+                >
+                  <Picker.Item label="SELECCIONAR SECCIÓN..." value="" color="#9CA3AF" />
+                  {availableSections.map((section: any) => (
+                    <Picker.Item key={section.id} label={section.name} value={section.id} />
+                  ))}
+                </Picker>
+              </View>
+            </View>
           </View>
+
           <View style={styles.formGroup}>
             <Text style={styles.label}>TURNO *</Text>
             <View style={styles.turnoContainer}>
@@ -255,6 +319,44 @@ const ReportFormWebStyle = () => {
           </View>
         </View>
 
+        {/* Sección de Mapa - Movida arriba para mejor flujo de ubicación */}
+        {selectedProject?.mapa && (
+          <View style={[styles.section, styles.sectionGray]}>
+            <View style={styles.mapHeader}>
+              <Text style={styles.sectionTitle}>UBICACIÓN EN MAPA</Text>
+              <TouchableOpacity
+                style={[styles.miniToggle, isMultiPin && styles.miniToggleActive]}
+                onPress={() => setIsMultiPin(!isMultiPin)}
+              >
+                <Text style={[styles.miniToggleText, isMultiPin && styles.miniToggleTextActive]}>
+                  PINES MÚLTIPLES: {isMultiPin ? 'SÍ' : 'NO'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {isMultiPin ? (
+              <View style={{ height: 400 }}>
+                <ProjectMap
+                  proyecto={selectedProject}
+                  pins={pinesMapa}
+                  onPinAdd={handleAddMultiPin}
+                  onPinRemove={handleRemoveMultiPin}
+                  editable={true}
+                  showControls={true}
+                />
+              </View>
+            ) : (
+              <MapPinSelector
+                mapaImagen={`data:${selectedProject.mapa.imagen.contentType};base64,${selectedProject.mapa.imagen.data}`}
+                pinX={pinX}
+                pinY={pinY}
+                onPinChange={handlePinChange}
+                onPinRemove={handlePinRemove}
+              />
+            )}
+          </View>
+        )}
+
         <View style={[styles.section, styles.sectionGreen]}>
           <Text style={styles.sectionTitle}>CONTROL DE ACARREO</Text>
           <View style={styles.controlInfo}><Text style={styles.controlCount}>({controlAcarreo.length} REGISTROS)</Text></View>
@@ -284,43 +386,6 @@ const ReportFormWebStyle = () => {
           <TextInput style={[styles.input, styles.textArea]} value={observaciones} onChangeText={(text) => setObservaciones(text.toUpperCase())} placeholder="OBSERVACIONES ADICIONALES..." placeholderTextColor="#9CA3AF" multiline numberOfLines={4} textAlignVertical="top" autoCapitalize="characters" />
         </View>
 
-        {/* Sección de Mapa (si el proyecto tiene mapa) */}
-        {selectedProject?.mapa && (
-          <View style={[styles.section, styles.sectionGray]}>
-            <View style={styles.mapHeader}>
-              <Text style={styles.sectionTitle}>UBICACIÓN EN MAPA</Text>
-              <TouchableOpacity
-                style={[styles.miniToggle, isMultiPin && styles.miniToggleActive]}
-                onPress={() => setIsMultiPin(!isMultiPin)}
-              >
-                <Text style={[styles.miniToggleText, isMultiPin && styles.miniToggleTextActive]}>
-                  MÚLTIPLES PINS: {isMultiPin ? 'ACTIVADO' : 'DESACTIVADO'}
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {isMultiPin ? (
-              <View style={{ height: 400 }}>
-                <ProjectMap
-                  proyecto={selectedProject}
-                  pins={pinesMapa}
-                  onPinAdd={handleAddMultiPin}
-                  onPinRemove={handleRemoveMultiPin}
-                  editable={true}
-                  showControls={true}
-                />
-              </View>
-            ) : (
-              <MapPinSelector
-                mapaImagen={`data:${selectedProject.mapa.imagen.contentType};base64,${selectedProject.mapa.imagen.data}`}
-                pinX={pinX}
-                pinY={pinY}
-                onPinChange={handlePinChange}
-                onPinRemove={handlePinRemove}
-              />
-            )}
-          </View>
-        )}
 
         <TouchableOpacity style={[styles.submitButton, createReporteMutation.isPending && styles.submitButtonDisabled]} onPress={handleSubmit} disabled={createReporteMutation.isPending}>
           <Text style={styles.submitButtonText}>{createReporteMutation.isPending ? 'GUARDANDO...' : 'CREAR REPORTE'}</Text>
@@ -332,10 +397,10 @@ const ReportFormWebStyle = () => {
         isOpen={showAcarreoModal}
         onClose={() => setShowAcarreoModal(false)}
         onSave={handleAgregarAcarreo}
-        origenes={origenes}
-        destinos={destinos}
-        materiales={materiales}
-        capacidades={capacidades}
+        origenes={allOrigenes}
+        destinos={allDestinos}
+        materiales={allMateriales}
+        capacidades={allCapacidades}
         proyectoId={selectedProject?._id}
       />
 
@@ -343,7 +408,7 @@ const ReportFormWebStyle = () => {
         isOpen={showMaterialModal}
         onClose={() => setShowMaterialModal(false)}
         onSave={handleAgregarMaterial}
-        materiales={materiales}
+        materiales={allMateriales}
       />
 
       <ModalControlAgua
@@ -351,9 +416,9 @@ const ReportFormWebStyle = () => {
         onClose={() => setShowAguaModal(false)}
         onSave={handleAgregarAgua}
         vehiculos={vehiculos}
-        origenes={origenes}
-        destinos={destinos}
-        capacidades={capacidades}
+        origenes={allOrigenes}
+        destinos={allDestinos}
+        capacidades={allCapacidades}
       />
 
       <ModalControlMaquinaria
@@ -380,6 +445,8 @@ const styles = StyleSheet.create({
   formGroup: { marginBottom: 16 },
   label: { fontSize: 12, fontWeight: '700', color: '#374151', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.5 },
   input: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 6, padding: 12, fontSize: 14, fontWeight: '500', color: '#1F2937' },
+  pickerContainer: { backgroundColor: '#FFFFFF', borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 6, overflow: 'hidden' },
+  picker: { height: 50, width: '100%', color: '#1F2937' },
   row: { flexDirection: 'row', gap: 12, marginBottom: 16 },
   halfWidth: { flex: 1 },
   turnoContainer: { flexDirection: 'row', gap: 12 },

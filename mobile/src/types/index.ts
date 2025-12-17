@@ -126,7 +126,7 @@ export type Turno = 'primer' | 'segundo';
 export interface ReporteActividades {
   _id?: string;
   fecha: Date;
-  ubicacion: string;
+  ubicacion?: string;
   proyectoId: string;
   usuarioId: string;
   turno: Turno;
@@ -174,4 +174,24 @@ export interface AuthContextType {
   logout: () => Promise<void>;
   selectProject: (project: Proyecto) => void;
   checkAuth: () => Promise<void>;
+}
+
+export interface Material {
+  _id: string;
+  nombre: string;
+}
+
+export interface Origen {
+  _id: string;
+  nombre: string;
+}
+
+export interface Destino {
+  _id: string;
+  nombre: string;
+}
+
+export interface Capacidad {
+  _id: string;
+  nombre: string;
 }

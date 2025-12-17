@@ -9,6 +9,10 @@ import {
   User,
   Vehiculo,
   WorkZone,
+  Material,
+  Origen,
+  Destino,
+  Capacidad,
 } from '../types';
 
 class ApiService {
@@ -244,6 +248,54 @@ class ApiService {
 
   async deleteSection(zoneId: string, sectionId: string): Promise<void> {
     await this.api.delete(`/zones/${zoneId}/sections/${sectionId}`);
+  }
+
+  // Materiales
+  async getMateriales(): Promise<Material[]> {
+    const response = await this.api.get<{ success: boolean; data: Material[] } | Material[]>('/materiales');
+    return Array.isArray(response.data) ? response.data : response.data.data;
+  }
+
+  async createMaterial(material: Partial<Material>): Promise<Material> {
+    const response = await this.api.post<{ success: boolean; data: Material } | Material>('/materiales', material);
+    const body = response.data as any;
+    return body.data || body;
+  }
+
+  // Orígenes
+  async getOrigenes(): Promise<Origen[]> {
+    const response = await this.api.get<{ success: boolean; data: Origen[] } | Origen[]>('/origenes');
+    return Array.isArray(response.data) ? response.data : response.data.data;
+  }
+
+  async createOrigen(origen: Partial<Origen>): Promise<Origen> {
+    const response = await this.api.post<{ success: boolean; data: Origen } | Origen>('/origenes', origen);
+    const body = response.data as any;
+    return body.data || body;
+  }
+
+  // Destinos
+  async getDestinos(): Promise<Destino[]> {
+    const response = await this.api.get<{ success: boolean; data: Destino[] } | Destino[]>('/destinos');
+    return Array.isArray(response.data) ? response.data : response.data.data;
+  }
+
+  async createDestino(destino: Partial<Destino>): Promise<Destino> {
+    const response = await this.api.post<{ success: boolean; data: Destino } | Destino>('/destinos', destino);
+    const body = response.data as any;
+    return body.data || body;
+  }
+
+  // Capacidades
+  async getCapacidades(): Promise<Capacidad[]> {
+    const response = await this.api.get<{ success: boolean; data: Capacidad[] } | Capacidad[]>('/capacidades');
+    return Array.isArray(response.data) ? response.data : response.data.data;
+  }
+
+  async createCapacidad(capacidad: Partial<Capacidad>): Promise<Capacidad> {
+    const response = await this.api.post<{ success: boolean; data: Capacidad } | Capacidad>('/capacidades', capacidad);
+    const body = response.data as any;
+    return body.data || body;
   }
 }
 
