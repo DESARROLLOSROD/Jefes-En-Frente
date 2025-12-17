@@ -30,7 +30,7 @@ router.post('/login', loginLimiter, validateLogin, async (req: Request, res: Res
     // Buscar usuario con debug
     console.log('📋 Buscando usuario en la base de datos...');
     const usuario = await Usuario.findOne({ email, activo: true })
-      .populate('proyectos', 'nombre ubicacion descripcion');
+      .populate('proyectos', 'nombre ubicacion descripcion mapa');
 
     if (!usuario) {
       console.log('❌ Usuario no encontrado:', email);
@@ -119,7 +119,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
     // Verificar refresh token
     const tokenData = await verifyRefreshToken(refreshToken);
     const usuario = await Usuario.findById(tokenData.userId)
-      .populate('proyectos', 'nombre ubicacion descripcion');
+      .populate('proyectos', 'nombre ubicacion descripcion mapa');
 
     if (!usuario || !usuario.activo) {
       return res.status(401).json({
