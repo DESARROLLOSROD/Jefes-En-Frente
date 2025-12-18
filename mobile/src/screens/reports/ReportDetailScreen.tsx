@@ -120,6 +120,114 @@ const ReportDetailScreen = () => {
               <div class="row"><div class="label">Sobrestante:</div><div class="value">${reporte.sobrestante || 'N/A'}</div></div>
             </div>
 
+            ${reporte.controlAcarreo && reporte.controlAcarreo.length > 0 ? `
+            <div class="section">
+              <div class="section-title">Control de Acarreo (${reporte.controlAcarreo.length} registros)</div>
+              <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                <thead>
+                  <tr style="background-color: #f1f5f9;">
+                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: left;">Material</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">No. Viajes</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">Capacidad</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">Vol. Suelto</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: left;">Origen</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: left;">Destino</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${reporte.controlAcarreo.map(item => `
+                    <tr>
+                      <td style="border: 1px solid #e2e8f0; padding: 6px;">${item.material || 'N/A'}</td>
+                      <td style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">${item.noViaje || 0}</td>
+                      <td style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">${item.capacidad || 'N/A'}</td>
+                      <td style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">${item.volSuelto || 'N/A'}</td>
+                      <td style="border: 1px solid #e2e8f0; padding: 6px;">${item.origen || 'N/A'}</td>
+                      <td style="border: 1px solid #e2e8f0; padding: 6px;">${item.destino || 'N/A'}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+            ` : ''}
+
+            ${reporte.controlMaterial && reporte.controlMaterial.length > 0 ? `
+            <div class="section">
+              <div class="section-title">Control de Material (${reporte.controlMaterial.length} registros)</div>
+              <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                <thead>
+                  <tr style="background-color: #f1f5f9;">
+                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: left;">Material</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">Cantidad</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">Unidad</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${reporte.controlMaterial.map(item => `
+                    <tr>
+                      <td style="border: 1px solid #e2e8f0; padding: 6px;">${item.material || 'N/A'}</td>
+                      <td style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">${item.cantidad || 0}</td>
+                      <td style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">${item.unidad || 'N/A'}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+            ` : ''}
+
+            ${reporte.controlAgua && reporte.controlAgua.length > 0 ? `
+            <div class="section">
+              <div class="section-title">Control de Agua (${reporte.controlAgua.length} registros)</div>
+              <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                <thead>
+                  <tr style="background-color: #f1f5f9;">
+                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: left;">Vehículo</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">No. Viajes</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">Capacidad</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: left;">Origen</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: left;">Destino</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${reporte.controlAgua.map(item => `
+                    <tr>
+                      <td style="border: 1px solid #e2e8f0; padding: 6px;">${item.noEconomico || 'N/A'}</td>
+                      <td style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">${item.viaje || 0}</td>
+                      <td style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">${item.capacidad || 'N/A'}</td>
+                      <td style="border: 1px solid #e2e8f0; padding: 6px;">${item.origen || 'N/A'}</td>
+                      <td style="border: 1px solid #e2e8f0; padding: 6px;">${item.destino || 'N/A'}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+            ` : ''}
+
+            ${reporte.controlMaquinaria && reporte.controlMaquinaria.length > 0 ? `
+            <div class="section">
+              <div class="section-title">Control de Maquinaria (${reporte.controlMaquinaria.length} registros)</div>
+              <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                <thead>
+                  <tr style="background-color: #f1f5f9;">
+                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: left;">Vehículo</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">Horario</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">Horas Trabajadas</th>
+                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: left;">Actividad</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${reporte.controlMaquinaria.map(item => `
+                    <tr>
+                      <td style="border: 1px solid #e2e8f0; padding: 6px;">${item.numeroEconomico || item.nombre || 'N/A'}</td>
+                      <td style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">${item.horometroInicial || 0} - ${item.horometroFinal || 0}</td>
+                      <td style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">${item.horasOperacion || 0}</td>
+                      <td style="border: 1px solid #e2e8f0; padding: 6px;">${item.actividad || 'N/A'}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+            ` : ''}
+
             ${reporte.observaciones ? `
             <div class="section">
               <div class="section-title">Observaciones</div>
@@ -207,6 +315,80 @@ const ReportDetailScreen = () => {
                 />
               </View>
             </View>
+          )}
+
+          {/* Control de Acarreo */}
+          {reporte.controlAcarreo && reporte.controlAcarreo.length > 0 && (
+            <>
+              <Text style={[styles.title, { color: theme.primary, marginTop: 24 }]}>
+                Control de Acarreo ({reporte.controlAcarreo.length} registros)
+              </Text>
+              {reporte.controlAcarreo.map((item, index) => (
+                <View key={index} style={[styles.controlCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                  <InfoRow label="Material" value={item.material || 'N/A'} theme={theme} />
+                  <InfoRow label="No. Viajes" value={String(item.noViaje || 0)} theme={theme} />
+                  <InfoRow label="Capacidad" value={item.capacidad || 'N/A'} theme={theme} />
+                  <InfoRow label="Vol. Suelto" value={item.volSuelto || 'N/A'} theme={theme} />
+                  <InfoRow label="Origen" value={item.origen || 'N/A'} theme={theme} />
+                  <InfoRow label="Destino" value={item.destino || 'N/A'} theme={theme} />
+                </View>
+              ))}
+            </>
+          )}
+
+          {/* Control de Material */}
+          {reporte.controlMaterial && reporte.controlMaterial.length > 0 && (
+            <>
+              <Text style={[styles.title, { color: theme.primary, marginTop: 24 }]}>
+                Control de Material ({reporte.controlMaterial.length} registros)
+              </Text>
+              {reporte.controlMaterial.map((item, index) => (
+                <View key={index} style={[styles.controlCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                  <InfoRow label="Material" value={item.material || 'N/A'} theme={theme} />
+                  <InfoRow label="Cantidad" value={String(item.cantidad || 0)} theme={theme} />
+                  <InfoRow label="Unidad" value={item.unidad || 'N/A'} theme={theme} />
+                </View>
+              ))}
+            </>
+          )}
+
+          {/* Control de Agua */}
+          {reporte.controlAgua && reporte.controlAgua.length > 0 && (
+            <>
+              <Text style={[styles.title, { color: theme.primary, marginTop: 24 }]}>
+                Control de Agua ({reporte.controlAgua.length} registros)
+              </Text>
+              {reporte.controlAgua.map((item, index) => (
+                <View key={index} style={[styles.controlCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                  <InfoRow label="Vehículo" value={item.noEconomico || 'N/A'} theme={theme} />
+                  <InfoRow label="No. Viajes" value={String(item.viaje || 0)} theme={theme} />
+                  <InfoRow label="Capacidad" value={item.capacidad || 'N/A'} theme={theme} />
+                  <InfoRow label="Volumen" value={item.volumen || 'N/A'} theme={theme} />
+                  <InfoRow label="Origen" value={item.origen || 'N/A'} theme={theme} />
+                  <InfoRow label="Destino" value={item.destino || 'N/A'} theme={theme} />
+                </View>
+              ))}
+            </>
+          )}
+
+          {/* Control de Maquinaria */}
+          {reporte.controlMaquinaria && reporte.controlMaquinaria.length > 0 && (
+            <>
+              <Text style={[styles.title, { color: theme.primary, marginTop: 24 }]}>
+                Control de Maquinaria ({reporte.controlMaquinaria.length} registros)
+              </Text>
+              {reporte.controlMaquinaria.map((item, index) => (
+                <View key={index} style={[styles.controlCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
+                  <InfoRow label="Vehículo" value={item.numeroEconomico || item.nombre || 'N/A'} theme={theme} />
+                  <InfoRow label="Tipo" value={item.tipo || 'N/A'} theme={theme} />
+                  <InfoRow label="Horómetro Inicial" value={String(item.horometroInicial || 0)} theme={theme} />
+                  <InfoRow label="Horómetro Final" value={String(item.horometroFinal || 0)} theme={theme} />
+                  <InfoRow label="Horas Operación" value={String(item.horasOperacion || 0)} theme={theme} />
+                  <InfoRow label="Operador" value={item.operador || 'N/A'} theme={theme} />
+                  <InfoRow label="Actividad" value={item.actividad || 'N/A'} theme={theme} />
+                </View>
+              ))}
+            </>
           )}
 
           {reporte.observaciones && (
@@ -321,6 +503,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     fontStyle: 'italic',
+  },
+  controlCard: {
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: 12,
+    marginBottom: 8,
   },
   actionsContainer: {
     marginTop: 32,
