@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, Alert, Share } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import ApiService from '../../services/api';
-import { ReporteActividades, Proyecto } from '../../types';
-import { COLORS } from '../../constants/config';
+import { ReporteActividades } from '../../types';
 import MapPinSelector from '../../components/maps/MapPinSelector';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -25,7 +24,6 @@ const ReportDetailScreen = () => {
   const [reporte, setReporte] = useState<ReporteActividades | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Permisos: Admin y Supervisor pueden editar/borrar
   const canManage = user?.rol === 'admin' || user?.rol === 'supervisor';
 
   useEffect(() => {
@@ -78,170 +76,9 @@ const ReportDetailScreen = () => {
 
   const handleDownloadPDF = async () => {
     if (!reporte) return;
-
     try {
       toast.info('Generando PDF...');
-
-      const html = `
-        <html>
-          <head>
-            <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
-            <style>
-              body { font-family: 'Helvetica', 'Arial', sans-serif; padding: 20px; color: #333; }
-              .header { text-align: center; border-bottom: 2px solid #2563eb; padding-bottom: 10px; margin-bottom: 20px; }
-              .title { color: #2563eb; font-size: 24px; margin-bottom: 5px; }
-              .subtitle { font-size: 14px; color: #666; }
-              .section { margin-bottom: 20px; }
-              .section-title { font-size: 18px; font-weight: bold; background: #f1f5f9; padding: 8px; border-radius: 4px; margin-bottom: 15px; color: #1e40af; }
-              .row { display: flex; flex-direction: row; margin-bottom: 10px; }
-              .label { font-weight: bold; width: 140px; color: #475569; }
-              .value { flex: 1; }
-              .observaciones { background: #f8fafc; padding: 15px; border-radius: 8px; font-style: italic; font-size: 14px; }
-              .footer { margin-top: 40px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #e2e8f0; padding-top: 20px; }
-            </style>
-          </head>
-          <body>
-            <div class="header">
-              <div class="title">REPORTE DIARIO DE ACTIVIDADES</div>
-              <div class="subtitle">Proyecto: ${selectedProject?.nombre || 'N/A'}</div>
-            </div>
-
-            <div class="section">
-              <div class="section-title">Información General</div>
-              <div class="row"><div class="label">Fecha:</div><div class="value">${new Date(reporte.fecha).toLocaleDateString()}</div></div>
-              <div class="row"><div class="label">Turno:</div><div class="value">${reporte.turno}</div></div>
-              <div class="row"><div class="label">Ubicación:</div><div class="value">${reporte.zonaTrabajo?.zonaNombre || reporte.ubicacion || 'N/A'}</div></div>
-              <div class="row"><div class="label">Horario:</div><div class="value">${reporte.inicioActividades} - ${reporte.terminoActividades}</div></div>
-            </div>
-
-            <div class="section">
-              <div class="section-title">Personal Responsable</div>
-              <div class="row"><div class="label">Jefe de Frente:</div><div class="value">${reporte.jefeFrente || 'N/A'}</div></div>
-              <div class="row"><div class="label">Sobrestante:</div><div class="value">${reporte.sobrestante || 'N/A'}</div></div>
-            </div>
-
-            ${reporte.controlAcarreo && reporte.controlAcarreo.length > 0 ? `
-            <div class="section">
-              <div class="section-title">Control de Acarreo (${reporte.controlAcarreo.length} registros)</div>
-              <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-                <thead>
-                  <tr style="background-color: #f1f5f9;">
-                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: left;">Material</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">No. Viajes</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">Capacidad</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">Vol. Suelto</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: left;">Origen</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: left;">Destino</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${reporte.controlAcarreo.map(item => `
-                    <tr>
-                      <td style="border: 1px solid #e2e8f0; padding: 6px;">${item.material || 'N/A'}</td>
-                      <td style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">${item.noViaje || 0}</td>
-                      <td style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">${item.capacidad || 'N/A'}</td>
-                      <td style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">${item.volSuelto || 'N/A'}</td>
-                      <td style="border: 1px solid #e2e8f0; padding: 6px;">${item.origen || 'N/A'}</td>
-                      <td style="border: 1px solid #e2e8f0; padding: 6px;">${item.destino || 'N/A'}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-            ` : ''}
-
-            ${reporte.controlMaterial && reporte.controlMaterial.length > 0 ? `
-            <div class="section">
-              <div class="section-title">Control de Material (${reporte.controlMaterial.length} registros)</div>
-              <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-                <thead>
-                  <tr style="background-color: #f1f5f9;">
-                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: left;">Material</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">Cantidad</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">Unidad</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${reporte.controlMaterial.map(item => `
-                    <tr>
-                      <td style="border: 1px solid #e2e8f0; padding: 6px;">${item.material || 'N/A'}</td>
-                      <td style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">${item.cantidad || 0}</td>
-                      <td style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">${item.unidad || 'N/A'}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-            ` : ''}
-
-            ${reporte.controlAgua && reporte.controlAgua.length > 0 ? `
-            <div class="section">
-              <div class="section-title">Control de Agua (${reporte.controlAgua.length} registros)</div>
-              <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-                <thead>
-                  <tr style="background-color: #f1f5f9;">
-                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: left;">Vehículo</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">No. Viajes</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">Capacidad</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: left;">Origen</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: left;">Destino</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${reporte.controlAgua.map(item => `
-                    <tr>
-                      <td style="border: 1px solid #e2e8f0; padding: 6px;">${item.noEconomico || 'N/A'}</td>
-                      <td style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">${item.viaje || 0}</td>
-                      <td style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">${item.capacidad || 'N/A'}</td>
-                      <td style="border: 1px solid #e2e8f0; padding: 6px;">${item.origen || 'N/A'}</td>
-                      <td style="border: 1px solid #e2e8f0; padding: 6px;">${item.destino || 'N/A'}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-            ` : ''}
-
-            ${reporte.controlMaquinaria && reporte.controlMaquinaria.length > 0 ? `
-            <div class="section">
-              <div class="section-title">Control de Maquinaria (${reporte.controlMaquinaria.length} registros)</div>
-              <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-                <thead>
-                  <tr style="background-color: #f1f5f9;">
-                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: left;">Vehículo</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">Horario</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">Horas Trabajadas</th>
-                    <th style="border: 1px solid #e2e8f0; padding: 6px; text-align: left;">Actividad</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${reporte.controlMaquinaria.map(item => `
-                    <tr>
-                      <td style="border: 1px solid #e2e8f0; padding: 6px;">${item.numeroEconomico || item.nombre || 'N/A'}</td>
-                      <td style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">${item.horometroInicial || 0} - ${item.horometroFinal || 0}</td>
-                      <td style="border: 1px solid #e2e8f0; padding: 6px; text-align: center;">${item.horasOperacion || 0}</td>
-                      <td style="border: 1px solid #e2e8f0; padding: 6px;">${item.actividad || 'N/A'}</td>
-                    </tr>
-                  `).join('')}
-                </tbody>
-              </table>
-            </div>
-            ` : ''}
-
-            ${reporte.observaciones ? `
-            <div class="section">
-              <div class="section-title">Observaciones</div>
-              <div class="observaciones">${reporte.observaciones}</div>
-            </div>
-            ` : ''}
-
-            <div class="footer">
-              Generado desde App Jefes en Frente - ${new Date().toLocaleString()}
-            </div>
-          </body>
-        </html>
-      `;
-
+      const html = generatePDFHTML(reporte, selectedProject?.nombre || 'N/A');
       const { uri } = await Print.printToFileAsync({ html });
       await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
       toast.success('PDF generado con éxito');
@@ -270,136 +107,272 @@ const ReportDetailScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={[styles.content, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <View style={styles.header}>
-            <Text style={[styles.title, { color: theme.primary }]}>Información General</Text>
-            <TouchableOpacity onPress={handleDownloadPDF} style={styles.pdfIcon}>
-              <Ionicons name="document-text" size={24} color={theme.primary} />
-            </TouchableOpacity>
+        {/* Header principal con iconos */}
+        <View style={[styles.headerCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <View style={styles.headerIcons}>
+            <MaterialCommunityIcons name="hard-hat" size={36} color={theme.primary} />
+            <MaterialCommunityIcons name="safety-goggles" size={36} color={theme.primary} />
+          </View>
+          <Text style={[styles.mainTitle, { color: theme.text }]}>REPORTE DE ACTIVIDADES DIARIAS</Text>
+          <Text style={[styles.projectName, { color: theme.primary }]}>
+            {selectedProject?.nombre || 'N/A'}
+          </Text>
+          <View style={[styles.divider, { backgroundColor: theme.primary }]} />
+        </View>
+
+        {/* Información General */}
+        <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <View style={styles.infoGrid}>
+            <View style={styles.infoColumn}>
+              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Fecha:</Text>
+              <Text style={[styles.infoValue, { color: theme.text }]}>
+                {new Date(reporte.fecha).toLocaleDateString('es-ES', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric'
+                })}
+              </Text>
+            </View>
+            <View style={styles.infoColumn}>
+              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Turno:</Text>
+              <Text style={[styles.infoValue, { color: theme.text }]}>{reporte.turno}</Text>
+            </View>
           </View>
 
-          <InfoRow label="Fecha" value={new Date(reporte.fecha).toLocaleDateString()} theme={theme} />
-          <InfoRow label="Turno" value={reporte.turno} theme={theme} />
-          <InfoRow
-            label="Ubicación"
-            value={reporte.zonaTrabajo?.zonaNombre || reporte.ubicacion}
-            theme={theme}
-          />
+          <View style={styles.infoRow}>
+            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Ubicación:</Text>
+            <Text style={[styles.infoValue, { color: theme.text }]}>
+              {reporte.zonaTrabajo?.zonaNombre || reporte.ubicacion}
+              {reporte.seccionTrabajo ? ` - ${reporte.seccionTrabajo.seccionNombre}` : ''}
+            </Text>
+          </View>
+
+          <View style={styles.infoRow}>
+            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Zona de Trabajo:</Text>
+            <Text style={[styles.infoValue, { color: theme.text }]}>
+              {reporte.zonaTrabajo?.zonaNombre || 'N/A'}
+            </Text>
+          </View>
+
           {reporte.seccionTrabajo && (
-            <InfoRow label="Sección" value={reporte.seccionTrabajo.seccionNombre} theme={theme} />
-          )}
-          <InfoRow label="Horario" value={`${reporte.inicioActividades} - ${reporte.terminoActividades}`} theme={theme} />
-
-          {(reporte.jefeFrente || reporte.sobrestante) && (
-            <>
-              <Text style={[styles.title, { color: theme.primary, marginTop: 24 }]}>Personal</Text>
-              {reporte.jefeFrente && <InfoRow label="Jefe de Frente" value={reporte.jefeFrente} theme={theme} />}
-              {reporte.sobrestante && <InfoRow label="Sobrestante" value={reporte.sobrestante} theme={theme} />}
-            </>
-          )}
-
-          {/* Mapa con ubicación */}
-          {reporte.ubicacionMapa && selectedProject?.mapa && (
-            <View style={styles.mapSection}>
-              <Text style={[styles.title, { color: theme.primary, marginTop: 24 }]}>Ubicación en Mapa</Text>
-              <View style={[styles.mapContainer, { borderColor: theme.border }]}>
-                <MapPinSelector
-                  mapaBase64={selectedProject.mapa.imagen.data}
-                  pin={{
-                    pinX: reporte.ubicacionMapa.pinX,
-                    pinY: reporte.ubicacionMapa.pinY,
-                  }}
-                  onPinChange={() => { }}
-                  onPinRemove={() => { }}
-                  readOnly={true}
-                />
-              </View>
+            <View style={styles.infoRow}>
+              <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Sección de Trabajo:</Text>
+              <Text style={[styles.infoValue, { color: theme.text }]}>
+                {reporte.seccionTrabajo.seccionNombre}
+              </Text>
             </View>
           )}
 
-          {/* Control de Acarreo */}
-          {reporte.controlAcarreo && reporte.controlAcarreo.length > 0 && (
-            <>
-              <Text style={[styles.title, { color: theme.primary, marginTop: 24 }]}>
-                Control de Acarreo ({reporte.controlAcarreo.length} registros)
-              </Text>
-              {reporte.controlAcarreo.map((item, index) => (
-                <View key={index} style={[styles.controlCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                  <InfoRow label="Material" value={item.material || 'N/A'} theme={theme} />
-                  <InfoRow label="No. Viajes" value={String(item.noViaje || 0)} theme={theme} />
-                  <InfoRow label="Capacidad" value={item.capacidad || 'N/A'} theme={theme} />
-                  <InfoRow label="Vol. Suelto" value={item.volSuelto || 'N/A'} theme={theme} />
-                  <InfoRow label="Origen" value={item.origen || 'N/A'} theme={theme} />
-                  <InfoRow label="Destino" value={item.destino || 'N/A'} theme={theme} />
-                </View>
-              ))}
-            </>
-          )}
+          <View style={styles.infoRow}>
+            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Jefe de Frente:</Text>
+            <Text style={[styles.infoValue, { color: theme.text }]}>
+              {reporte.jefeFrente || '-'}
+            </Text>
+          </View>
 
-          {/* Control de Material */}
-          {reporte.controlMaterial && reporte.controlMaterial.length > 0 && (
-            <>
-              <Text style={[styles.title, { color: theme.primary, marginTop: 24 }]}>
-                Control de Material ({reporte.controlMaterial.length} registros)
-              </Text>
-              {reporte.controlMaterial.map((item, index) => (
-                <View key={index} style={[styles.controlCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                  <InfoRow label="Material" value={item.material || 'N/A'} theme={theme} />
-                  <InfoRow label="Cantidad" value={String(item.cantidad || 0)} theme={theme} />
-                  <InfoRow label="Unidad" value={item.unidad || 'N/A'} theme={theme} />
-                </View>
-              ))}
-            </>
-          )}
-
-          {/* Control de Agua */}
-          {reporte.controlAgua && reporte.controlAgua.length > 0 && (
-            <>
-              <Text style={[styles.title, { color: theme.primary, marginTop: 24 }]}>
-                Control de Agua ({reporte.controlAgua.length} registros)
-              </Text>
-              {reporte.controlAgua.map((item, index) => (
-                <View key={index} style={[styles.controlCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                  <InfoRow label="Vehículo" value={item.noEconomico || 'N/A'} theme={theme} />
-                  <InfoRow label="No. Viajes" value={String(item.viaje || 0)} theme={theme} />
-                  <InfoRow label="Capacidad" value={item.capacidad || 'N/A'} theme={theme} />
-                  <InfoRow label="Volumen" value={item.volumen || 'N/A'} theme={theme} />
-                  <InfoRow label="Origen" value={item.origen || 'N/A'} theme={theme} />
-                  <InfoRow label="Destino" value={item.destino || 'N/A'} theme={theme} />
-                </View>
-              ))}
-            </>
-          )}
-
-          {/* Control de Maquinaria */}
-          {reporte.controlMaquinaria && reporte.controlMaquinaria.length > 0 && (
-            <>
-              <Text style={[styles.title, { color: theme.primary, marginTop: 24 }]}>
-                Control de Maquinaria ({reporte.controlMaquinaria.length} registros)
-              </Text>
-              {reporte.controlMaquinaria.map((item, index) => (
-                <View key={index} style={[styles.controlCard, { backgroundColor: theme.surface, borderColor: theme.border }]}>
-                  <InfoRow label="Vehículo" value={item.numeroEconomico || item.nombre || 'N/A'} theme={theme} />
-                  <InfoRow label="Tipo" value={item.tipo || 'N/A'} theme={theme} />
-                  <InfoRow label="Horómetro Inicial" value={String(item.horometroInicial || 0)} theme={theme} />
-                  <InfoRow label="Horómetro Final" value={String(item.horometroFinal || 0)} theme={theme} />
-                  <InfoRow label="Horas Operación" value={String(item.horasOperacion || 0)} theme={theme} />
-                  <InfoRow label="Operador" value={item.operador || 'N/A'} theme={theme} />
-                  <InfoRow label="Actividad" value={item.actividad || 'N/A'} theme={theme} />
-                </View>
-              ))}
-            </>
-          )}
-
-          {reporte.observaciones && (
-            <>
-              <Text style={[styles.title, { color: theme.primary, marginTop: 24 }]}>Observaciones</Text>
-              <View style={[styles.observacionesContainer, { backgroundColor: theme.background }]}>
-                <Text style={[styles.observaciones, { color: theme.text }]}>{reporte.observaciones}</Text>
-              </View>
-            </>
-          )}
+          <View style={styles.infoRow}>
+            <Text style={[styles.infoLabel, { color: theme.textSecondary }]}>Sobrestante:</Text>
+            <Text style={[styles.infoValue, { color: theme.text }]}>
+              {reporte.sobrestante || '-'}
+            </Text>
+          </View>
         </View>
+
+        {/* Mapa */}
+        {reporte.ubicacionMapa && selectedProject?.mapa && (
+          <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>UBICACIÓN EN MAPA DEL PROYECTO</Text>
+            <Text style={[styles.sectionSubtitle, { color: theme.textSecondary }]}>
+              ZONA: {reporte.zonaTrabajo?.zonaNombre || 'N/A'} | SECCIÓN: {reporte.seccionTrabajo?.seccionNombre || 'N/A'}
+            </Text>
+            <View style={[styles.mapContainer, { borderColor: theme.border }]}>
+              <MapPinSelector
+                mapaBase64={selectedProject.mapa.imagen.data}
+                pin={{
+                  pinX: reporte.ubicacionMapa.pinX,
+                  pinY: reporte.ubicacionMapa.pinY,
+                }}
+                onPinChange={() => { }}
+                onPinRemove={() => { }}
+                readOnly={true}
+              />
+            </View>
+          </View>
+        )}
+
+        {/* Control de Acarreos */}
+        <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>CONTROL DE ACARREOS</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+            <View style={styles.tableContainer}>
+              <View style={[styles.tableHeader, { backgroundColor: theme.primary }]}>
+                <Text style={[styles.tableHeaderText, styles.colNum]}>#</Text>
+                <Text style={[styles.tableHeaderText, styles.colMaterial]}>Material</Text>
+                <Text style={[styles.tableHeaderText, styles.colMedium]}>No. Viaje</Text>
+                <Text style={[styles.tableHeaderText, styles.colMedium]}>Capacidad</Text>
+                <Text style={[styles.tableHeaderText, styles.colMedium]}>Vol. Suelto</Text>
+                <Text style={[styles.tableHeaderText, styles.colSmall]}>Capa</Text>
+                <Text style={[styles.tableHeaderText, styles.colSmall]}>Elevación</Text>
+                <Text style={[styles.tableHeaderText, styles.colSmall]}>Origen</Text>
+                <Text style={[styles.tableHeaderText, styles.colSmall]}>Destino</Text>
+              </View>
+              {reporte.controlAcarreo && reporte.controlAcarreo.length > 0 ? (
+                <>
+                  {reporte.controlAcarreo.map((item: any, index: number) => (
+                    <View key={index} style={[styles.tableRow, { borderBottomColor: theme.border }]}>
+                      <Text style={[styles.tableCell, styles.colNum, { color: theme.text }]}>{index + 1}</Text>
+                      <Text style={[styles.tableCell, styles.colMaterial, { color: theme.text }]}>{item.material || 'N/A'}</Text>
+                      <Text style={[styles.tableCell, styles.colMedium, { color: theme.text }]}>{item.noViaje || 0}</Text>
+                      <Text style={[styles.tableCell, styles.colMedium, { color: theme.text }]}>{item.capacidad || 'N/A'}</Text>
+                      <Text style={[styles.tableCell, styles.colMedium, { color: theme.text }]}>{item.volSuelto || 'N/A'}</Text>
+                      <Text style={[styles.tableCell, styles.colSmall, { color: theme.text }]}>{item.capa || '-'}</Text>
+                      <Text style={[styles.tableCell, styles.colSmall, { color: theme.text }]}>{item.elevacion || '-'}</Text>
+                      <Text style={[styles.tableCell, styles.colSmall, { color: theme.text }]}>{item.origen || 'N/A'}</Text>
+                      <Text style={[styles.tableCell, styles.colSmall, { color: theme.text }]}>{item.destino || 'N/A'}</Text>
+                    </View>
+                  ))}
+                  <View style={[styles.tableTotalRow, { backgroundColor: theme.surface }]}>
+                    <Text style={[styles.tableTotalLabel, { color: theme.text }]}>TOTAL VOLUMEN:</Text>
+                    <Text style={[styles.tableTotalValue, { color: theme.text }]}>
+                      {reporte.controlAcarreo.reduce((sum: number, item: any) => {
+                        const vol = parseFloat(String(item.volSuelto).replace(/[^\d.]/g, '')) || 0;
+                        return sum + vol;
+                      }, 0).toFixed(2)} m³
+                    </Text>
+                  </View>
+                </>
+              ) : (
+                <View style={styles.emptyRow}>
+                  <Text style={[styles.emptyText, { color: theme.textSecondary }]}>Sin registros</Text>
+                </View>
+              )}
+            </View>
+          </ScrollView>
+        </View>
+
+        {/* Control de Material */}
+        <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>CONTROL DE MATERIAL</Text>
+          <View style={styles.tableContainer}>
+            <View style={[styles.tableHeader, { backgroundColor: theme.primary }]}>
+              <Text style={[styles.tableHeaderText, styles.colMaterial]}>Material</Text>
+              <Text style={[styles.tableHeaderText, styles.colSmall]}>Unidad</Text>
+              <Text style={[styles.tableHeaderText, styles.colSmall]}>Cantidad</Text>
+              <Text style={[styles.tableHeaderText, styles.colMedium]}>Zona</Text>
+              <Text style={[styles.tableHeaderText, styles.colSmall]}>Elevación</Text>
+            </View>
+            {reporte.controlMaterial && reporte.controlMaterial.length > 0 ? (
+              reporte.controlMaterial.map((item: any, index: number) => (
+                <View key={index} style={[styles.tableRow, { borderBottomColor: theme.border }]}>
+                  <Text style={[styles.tableCell, styles.colMaterial, { color: theme.text }]}>{item.material || 'N/A'}</Text>
+                  <Text style={[styles.tableCell, styles.colSmall, { color: theme.text }]}>{item.unidad || 'N/A'}</Text>
+                  <Text style={[styles.tableCell, styles.colSmall, { color: theme.text }]}>{item.cantidad || 0}</Text>
+                  <Text style={[styles.tableCell, styles.colMedium, { color: theme.text }]}>{item.zona || '-'}</Text>
+                  <Text style={[styles.tableCell, styles.colSmall, { color: theme.text }]}>{item.elevacion || '-'}</Text>
+                </View>
+              ))
+            ) : (
+              <View style={styles.emptyRow}>
+                <Text style={[styles.emptyText, { color: theme.textSecondary }]}>Sin registros</Text>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* Control de Agua */}
+        <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>CONTROL DE AGUA</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+            <View style={styles.tableContainer}>
+              <View style={[styles.tableHeader, { backgroundColor: theme.primary }]}>
+                <Text style={[styles.tableHeaderText, styles.colMedium]}>No. Económico</Text>
+                <Text style={[styles.tableHeaderText, styles.colSmall]}>Viaje</Text>
+                <Text style={[styles.tableHeaderText, styles.colMedium]}>Capacidad</Text>
+                <Text style={[styles.tableHeaderText, styles.colMedium]}>Volumen</Text>
+                <Text style={[styles.tableHeaderText, styles.colMedium]}>Origen</Text>
+                <Text style={[styles.tableHeaderText, styles.colMedium]}>Destino</Text>
+              </View>
+              {reporte.controlAgua && reporte.controlAgua.length > 0 ? (
+                <>
+                  {reporte.controlAgua.map((item: any, index: number) => (
+                    <View key={index} style={[styles.tableRow, { borderBottomColor: theme.border }]}>
+                      <Text style={[styles.tableCell, styles.colMedium, { color: theme.text }]}>{item.noEconomico || 'N/A'}</Text>
+                      <Text style={[styles.tableCell, styles.colSmall, { color: theme.text }]}>{item.viaje || 0}</Text>
+                      <Text style={[styles.tableCell, styles.colMedium, { color: theme.text }]}>{item.capacidad || 'N/A'}</Text>
+                      <Text style={[styles.tableCell, styles.colMedium, { color: theme.text }]}>{item.volumen || 'N/A'}</Text>
+                      <Text style={[styles.tableCell, styles.colMedium, { color: theme.text }]}>{item.origen || 'N/A'}</Text>
+                      <Text style={[styles.tableCell, styles.colMedium, { color: theme.text }]}>{item.destino || 'N/A'}</Text>
+                    </View>
+                  ))}
+                  <View style={[styles.tableTotalRow, { backgroundColor: theme.surface }]}>
+                    <Text style={[styles.tableTotalLabel, { color: theme.text }]}>TOTAL VOLUMEN:</Text>
+                    <Text style={[styles.tableTotalValue, { color: theme.text }]}>
+                      {reporte.controlAgua.reduce((sum: number, item: any) => {
+                        const vol = parseFloat(String(item.volumen).replace(/[^\d.]/g, '')) || 0;
+                        return sum + vol;
+                      }, 0).toFixed(2)} m³
+                    </Text>
+                  </View>
+                </>
+              ) : (
+                <View style={styles.emptyRow}>
+                  <Text style={[styles.emptyText, { color: theme.textSecondary }]}>Sin registros</Text>
+                </View>
+              )}
+            </View>
+          </ScrollView>
+        </View>
+
+        {/* Control de Maquinaria */}
+        <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.border }]}>
+          <Text style={[styles.sectionTitle, { color: theme.text }]}>CONTROL DE MAQUINARIA</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={true}>
+            <View style={styles.tableContainer}>
+              <View style={[styles.tableHeader, { backgroundColor: theme.primary }]}>
+                <Text style={[styles.tableHeaderText, styles.colMedium]}>Tipo</Text>
+                <Text style={[styles.tableHeaderText, styles.colMedium]}>No. Económico</Text>
+                <Text style={[styles.tableHeaderText, styles.colMedium]}>Horómetro Inicial</Text>
+                <Text style={[styles.tableHeaderText, styles.colMedium]}>Horómetro Final</Text>
+                <Text style={[styles.tableHeaderText, styles.colSmall]}>Horas</Text>
+                <Text style={[styles.tableHeaderText, styles.colMedium]}>Operador</Text>
+                <Text style={[styles.tableHeaderText, styles.colLarge]}>Actividad</Text>
+              </View>
+              {reporte.controlMaquinaria && reporte.controlMaquinaria.length > 0 ? (
+                reporte.controlMaquinaria.map((item: any, index: number) => (
+                  <View key={index} style={[styles.tableRow, { borderBottomColor: theme.border }]}>
+                    <Text style={[styles.tableCell, styles.colMedium, { color: theme.text }]}>{item.tipo || 'N/A'}</Text>
+                    <Text style={[styles.tableCell, styles.colMedium, { color: theme.text }]}>{item.numeroEconomico || item.nombre || 'N/A'}</Text>
+                    <Text style={[styles.tableCell, styles.colMedium, { color: theme.text }]}>{item.horometroInicial || 0}</Text>
+                    <Text style={[styles.tableCell, styles.colMedium, { color: theme.text }]}>{item.horometroFinal || 0}</Text>
+                    <Text style={[styles.tableCell, styles.colSmall, { color: theme.text }]}>{item.horasOperacion || 0}</Text>
+                    <Text style={[styles.tableCell, styles.colMedium, { color: theme.text }]}>{item.operador || 'N/A'}</Text>
+                    <Text style={[styles.tableCell, styles.colLarge, { color: theme.text }]}>{item.actividad || 'N/A'}</Text>
+                  </View>
+                ))
+              ) : (
+                <View style={styles.emptyRow}>
+                  <Text style={[styles.emptyText, { color: theme.textSecondary }]}>Sin registros</Text>
+                </View>
+              )}
+            </View>
+          </ScrollView>
+        </View>
+
+        {/* Observaciones */}
+        {reporte.observaciones && (
+          <View style={[styles.section, { backgroundColor: theme.card, borderColor: theme.border }]}>
+            <Text style={[styles.sectionTitle, { color: theme.text }]}>OBSERVACIONES</Text>
+            <View style={[styles.observacionesContainer, { backgroundColor: theme.surface }]}>
+              <Text style={[styles.observaciones, { color: theme.text }]}>{reporte.observaciones}</Text>
+            </View>
+          </View>
+        )}
+
+        {/* Botón de PDF */}
+        <TouchableOpacity onPress={handleDownloadPDF} style={[styles.pdfButton, { backgroundColor: theme.primary }]}>
+          <Ionicons name="document-text" size={20} color="#fff" />
+          <Text style={styles.pdfButtonText}>Descargar PDF</Text>
+        </TouchableOpacity>
 
         {/* Acciones Administrativas */}
         {canManage && (
@@ -408,12 +381,12 @@ const ReportDetailScreen = () => {
               style={[styles.actionButton, styles.editButton, { backgroundColor: theme.primary }]}
               onPress={handleEdit}
             >
-              <Ionicons name="create" size={20} color={theme.white} />
-              <Text style={[styles.actionButtonText, { color: theme.white }]}>Editar Reporte</Text>
+              <Ionicons name="create" size={20} color="#fff" />
+              <Text style={styles.actionButtonText}>Editar Reporte</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[styles.actionButton, styles.deleteButton, { backgroundColor: 'transparent', borderColor: theme.danger }]}
+              style={[styles.actionButton, styles.deleteButton, { borderColor: theme.danger }]}
               onPress={handleDelete}
             >
               <Ionicons name="trash" size={20} color={theme.danger} />
@@ -426,12 +399,159 @@ const ReportDetailScreen = () => {
   );
 };
 
-const InfoRow = ({ label, value, theme }: { label: string; value: string; theme: any }) => (
-  <View style={[styles.infoRow, { borderBottomColor: theme.divider }]}>
-    <Text style={[styles.label, { color: theme.textSecondary }]}>{label}:</Text>
-    <Text style={[styles.value, { color: theme.text }]}>{value}</Text>
-  </View>
-);
+const generatePDFHTML = (reporte: ReporteActividades, projectName: string) => {
+  return `
+    <html>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <style>
+          body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+          .header { text-align: center; border-bottom: 3px solid #4F46E5; padding-bottom: 15px; margin-bottom: 20px; }
+          .title { font-size: 20px; font-weight: bold; margin-bottom: 10px; }
+          .project { color: #4F46E5; font-size: 16px; font-weight: bold; }
+          .section { margin-bottom: 20px; page-break-inside: avoid; }
+          .section-title { font-size: 14px; font-weight: bold; background: #4F46E5; color: white; padding: 8px; margin-bottom: 10px; }
+          .info-row { display: flex; margin-bottom: 5px; font-size: 12px; }
+          .info-label { font-weight: bold; width: 150px; }
+          .info-value { flex: 1; }
+          table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
+          th { background: #4F46E5; color: white; padding: 8px; text-align: left; font-weight: bold; }
+          td { border: 1px solid #ddd; padding: 6px; }
+          tr:nth-child(even) { background: #f9fafb; }
+          .total-row { background: #e0e7ff !important; font-weight: bold; }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div class="title">REPORTE DE ACTIVIDADES DIARIAS</div>
+          <div class="project">${projectName}</div>
+        </div>
+
+        <div class="section">
+          <div class="info-row">
+            <div class="info-label">Fecha:</div>
+            <div class="info-value">${new Date(reporte.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+            <div class="info-label" style="margin-left: 20px;">Turno:</div>
+            <div class="info-value">${reporte.turno}</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Ubicación:</div>
+            <div class="info-value">${reporte.zonaTrabajo?.zonaNombre || reporte.ubicacion}${reporte.seccionTrabajo ? ` - ${reporte.seccionTrabajo.seccionNombre}` : ''}</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Jefe de Frente:</div>
+            <div class="info-value">${reporte.jefeFrente || '-'}</div>
+          </div>
+          <div class="info-row">
+            <div class="info-label">Sobrestante:</div>
+            <div class="info-value">${reporte.sobrestante || '-'}</div>
+          </div>
+        </div>
+
+        ${reporte.controlAcarreo && reporte.controlAcarreo.length > 0 ? `
+          <div class="section">
+            <div class="section-title">CONTROL DE ACARREOS</div>
+            <table>
+              <tr>
+                <th>#</th><th>Material</th><th>No. Viaje</th><th>Capacidad</th><th>Vol. Suelto</th>
+                <th>Capa</th><th>Elevación</th><th>Origen</th><th>Destino</th>
+              </tr>
+              ${reporte.controlAcarreo.map((item: any, i: number) => `
+                <tr>
+                  <td>${i + 1}</td>
+                  <td>${item.material || 'N/A'}</td>
+                  <td>${item.noViaje || 0}</td>
+                  <td>${item.capacidad || 'N/A'}</td>
+                  <td>${item.volSuelto || 'N/A'}</td>
+                  <td>${item.capa || '-'}</td>
+                  <td>${item.elevacion || '-'}</td>
+                  <td>${item.origen || 'N/A'}</td>
+                  <td>${item.destino || 'N/A'}</td>
+                </tr>
+              `).join('')}
+              <tr class="total-row">
+                <td colspan="4">TOTAL VOLUMEN:</td>
+                <td colspan="5">${reporte.controlAcarreo.reduce((sum: number, item: any) => sum + (parseFloat(String(item.volSuelto).replace(/[^\d.]/g, '')) || 0), 0).toFixed(2)} m³</td>
+              </tr>
+            </table>
+          </div>
+        ` : '<div class="section"><div class="section-title">CONTROL DE ACARREOS</div><p>Sin registros</p></div>'}
+
+        ${reporte.controlMaterial && reporte.controlMaterial.length > 0 ? `
+          <div class="section">
+            <div class="section-title">CONTROL DE MATERIAL</div>
+            <table>
+              <tr><th>Material</th><th>Unidad</th><th>Cantidad</th><th>Zona</th><th>Elevación</th></tr>
+              ${reporte.controlMaterial.map((item: any) => `
+                <tr>
+                  <td>${item.material || 'N/A'}</td>
+                  <td>${item.unidad || 'N/A'}</td>
+                  <td>${item.cantidad || 0}</td>
+                  <td>${item.zona || '-'}</td>
+                  <td>${item.elevacion || '-'}</td>
+                </tr>
+              `).join('')}
+            </table>
+          </div>
+        ` : ''}
+
+        ${reporte.controlAgua && reporte.controlAgua.length > 0 ? `
+          <div class="section">
+            <div class="section-title">CONTROL DE AGUA</div>
+            <table>
+              <tr><th>No. Económico</th><th>Viaje</th><th>Capacidad</th><th>Volumen</th><th>Origen</th><th>Destino</th></tr>
+              ${reporte.controlAgua.map((item: any) => `
+                <tr>
+                  <td>${item.noEconomico || 'N/A'}</td>
+                  <td>${item.viaje || 0}</td>
+                  <td>${item.capacidad || 'N/A'}</td>
+                  <td>${item.volumen || 'N/A'}</td>
+                  <td>${item.origen || 'N/A'}</td>
+                  <td>${item.destino || 'N/A'}</td>
+                </tr>
+              `).join('')}
+              <tr class="total-row">
+                <td colspan="3">TOTAL VOLUMEN:</td>
+                <td colspan="3">${reporte.controlAgua.reduce((sum: number, item: any) => sum + (parseFloat(String(item.volumen).replace(/[^\d.]/g, '')) || 0), 0).toFixed(2)} m³</td>
+              </tr>
+            </table>
+          </div>
+        ` : ''}
+
+        ${reporte.controlMaquinaria && reporte.controlMaquinaria.length > 0 ? `
+          <div class="section">
+            <div class="section-title">CONTROL DE MAQUINARIA</div>
+            <table>
+              <tr><th>Tipo</th><th>No. Econ.</th><th>Hor. Inicial</th><th>Hor. Final</th><th>Horas</th><th>Operador</th><th>Actividad</th></tr>
+              ${reporte.controlMaquinaria.map((item: any) => `
+                <tr>
+                  <td>${item.tipo || 'N/A'}</td>
+                  <td>${item.numeroEconomico || item.nombre || 'N/A'}</td>
+                  <td>${item.horometroInicial || 0}</td>
+                  <td>${item.horometroFinal || 0}</td>
+                  <td>${item.horasOperacion || 0}</td>
+                  <td>${item.operador || 'N/A'}</td>
+                  <td>${item.actividad || 'N/A'}</td>
+                </tr>
+              `).join('')}
+            </table>
+          </div>
+        ` : ''}
+
+        ${reporte.observaciones ? `
+          <div class="section">
+            <div class="section-title">OBSERVACIONES</div>
+            <p style="padding: 10px; background: #f9fafb; border-radius: 5px;">${reporte.observaciones}</p>
+          </div>
+        ` : ''}
+
+        <div style="margin-top: 30px; text-align: center; font-size: 10px; color: #666;">
+          Generado: ${new Date().toLocaleString('es-ES')}
+        </div>
+      </body>
+    </html>
+  `;
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -446,73 +566,182 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  content: {
+  headerCard: {
     padding: 20,
     borderRadius: 16,
     borderWidth: 1,
+    marginBottom: 16,
     elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  header: {
+  headerIcons: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  pdfIcon: {
-    padding: 8,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '700',
+    justifyContent: 'center',
+    gap: 20,
     marginBottom: 12,
   },
-  infoRow: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
+  mainTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 8,
   },
-  label: {
-    fontSize: 14,
+  projectName: {
+    fontSize: 16,
     fontWeight: '600',
-    width: 120,
+    textAlign: 'center',
+    marginBottom: 12,
   },
-  value: {
-    fontSize: 14,
-    flex: 1,
-    fontWeight: '500',
-  },
-  mapSection: {
+  divider: {
+    height: 3,
+    borderRadius: 2,
     marginTop: 8,
   },
-  mapContainer: {
+  section: {
+    padding: 16,
     borderRadius: 12,
+    borderWidth: 1,
+    marginBottom: 16,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    letterSpacing: 0.5,
+  },
+  sectionSubtitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 12,
+  },
+  infoGrid: {
+    flexDirection: 'row',
+    marginBottom: 12,
+    gap: 16,
+  },
+  infoColumn: {
+    flex: 1,
+  },
+  infoRow: {
+    marginBottom: 10,
+  },
+  infoLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  infoValue: {
+    fontSize: 13,
+    fontWeight: '400',
+  },
+  mapContainer: {
+    borderRadius: 8,
     borderWidth: 1,
     overflow: 'hidden',
     marginTop: 8,
+    height: 300,
+  },
+  tableContainer: {
+    marginTop: 8,
+    minWidth: '100%',
+  },
+  tableHeader: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+  },
+  tableHeaderText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 11,
+    textAlign: 'center',
+  },
+  tableRow: {
+    flexDirection: 'row',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderBottomWidth: 1,
+  },
+  tableCell: {
+    fontSize: 11,
+    textAlign: 'center',
+  },
+  tableTotalRow: {
+    flexDirection: 'row',
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  tableTotalLabel: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  tableTotalValue: {
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  emptyRow: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 12,
+    fontStyle: 'italic',
+  },
+  colNum: {
+    width: 40,
+  },
+  colSmall: {
+    width: 70,
+  },
+  colMedium: {
+    width: 100,
+  },
+  colMaterial: {
+    width: 120,
+  },
+  colLarge: {
+    width: 150,
   },
   observacionesContainer: {
-    padding: 16,
-    borderRadius: 12,
+    padding: 12,
+    borderRadius: 8,
     marginTop: 8,
   },
   observaciones: {
-    fontSize: 14,
+    fontSize: 13,
     lineHeight: 20,
     fontStyle: 'italic',
   },
-  controlCard: {
-    padding: 16,
+  pdfButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
     borderRadius: 12,
-    borderWidth: 1,
-    marginTop: 12,
-    marginBottom: 8,
+    gap: 8,
+    marginBottom: 16,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+  pdfButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
   },
   actionsContainer: {
-    marginTop: 32,
     gap: 12,
   },
   actionButton: {
@@ -533,9 +762,11 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
   },
   deleteButton: {
-    borderWidth: 1,
+    backgroundColor: 'transparent',
+    borderWidth: 2,
   },
   actionButtonText: {
+    color: '#fff',
     fontSize: 16,
     fontWeight: '700',
   },
