@@ -9,8 +9,9 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  Modal,
+  FlatList,
 } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
@@ -87,6 +88,8 @@ const ReportFormWebStyle = () => {
   const [showMaterialModal, setShowMaterialModal] = useState(false);
   const [showAguaModal, setShowAguaModal] = useState(false);
   const [showMaquinariaModal, setShowMaquinariaModal] = useState(false);
+  const [showZoneModal, setShowZoneModal] = useState(false);
+  const [showSectionModal, setShowSectionModal] = useState(false);
 
   // Pin del mapa
   const [pinX, setPinX] = useState<number | undefined>(undefined);
@@ -284,16 +287,39 @@ const ReportFormWebStyle = () => {
             </View>
             <View style={styles.halfWidth}>
               <Text style={styles.label}>TURNO *</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={turno}
-                  onValueChange={(itemValue) => handleTurnoChange(itemValue)}
-                  style={styles.pickerSmall}
-                  mode="dropdown"
+              <View style={styles.turnoContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.turnoButton,
+                    turno === 'primer' && styles.turnoButtonActive,
+                  ]}
+                  onPress={() => handleTurnoChange('primer')}
                 >
-                  <Picker.Item label="1ER TURNO" value="primer" />
-                  <Picker.Item label="2DO TURNO" value="segundo" />
-                </Picker>
+                  <Text
+                    style={[
+                      styles.turnoText,
+                      turno === 'primer' && styles.turnoTextActive,
+                    ]}
+                  >
+                    1ER TURNO
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.turnoButton,
+                    turno === 'segundo' && styles.turnoButtonActive,
+                  ]}
+                  onPress={() => handleTurnoChange('segundo')}
+                >
+                  <Text
+                    style={[
+                      styles.turnoText,
+                      turno === 'segundo' && styles.turnoTextActive,
+                    ]}
+                  >
+                    2DO TURNO
+                  </Text>
+                </TouchableOpacity>
               </View>
             </View>
           </View>
@@ -314,37 +340,28 @@ const ReportFormWebStyle = () => {
           <View style={styles.row}>
             <View style={styles.halfWidth}>
               <Text style={styles.label}>ZONA DE TRABAJO *</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={selectedZone}
-                  onValueChange={(itemValue) => {
-                    setSelectedZone(itemValue);
-                    setSelectedSection('');
-                  }}
-                  style={styles.picker}
-                >
-                  <Picker.Item label="SELECCIONAR ZONA..." value="" color="#9CA3AF" />
-                  {zones.map((zone) => (
-                    <Picker.Item key={zone._id} label={zone.name} value={zone._id} />
-                  ))}
-                </Picker>
-              </View>
+              <TouchableOpacity
+                style={styles.selectButton}
+                onPress={() => setShowZoneModal(true)}
+              >
+                <Text style={selectedZone ? styles.selectButtonTextSelected : styles.selectButtonTextPlaceholder}>
+                  {selectedZone ? zones.find(z => z._id === selectedZone)?.name : 'SELECCIONAR ZONA...'}
+                </Text>
+                <Text style={styles.selectButtonIcon}>▼</Text>
+              </TouchableOpacity>
             </View>
             <View style={styles.halfWidth}>
               <Text style={styles.label}>SECCIÓN DE TRABAJO *</Text>
-              <View style={styles.pickerContainer}>
-                <Picker
-                  selectedValue={selectedSection}
-                  onValueChange={(itemValue) => setSelectedSection(itemValue)}
-                  style={styles.picker}
-                  enabled={!!selectedZone}
-                >
-                  <Picker.Item label="SELECCIONAR SECCIÓN..." value="" color="#9CA3AF" />
-                  {availableSections.map((section: any) => (
-                    <Picker.Item key={section.id} label={section.name} value={section.id} />
-                  ))}
-                </Picker>
-              </View>
+              <TouchableOpacity
+                style={[styles.selectButton, !selectedZone && styles.selectButtonDisabled]}
+                onPress={() => selectedZone && setShowSectionModal(true)}
+                disabled={!selectedZone}
+              >
+                <Text style={selectedSection ? styles.selectButtonTextSelected : styles.selectButtonTextPlaceholder}>
+                  {selectedSection ? availableSections.find((s: any) => s.id === selectedSection)?.name : 'SELECCIONAR SECCIÓN...'}
+                </Text>
+                <Text style={styles.selectButtonIcon}>▼</Text>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -442,6 +459,67 @@ const ReportFormWebStyle = () => {
           <Text style={styles.submitButtonText}>{createReporteMutation.isPending ? 'GUARDANDO...' : 'CREAR REPORTE'}</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Modal de Selección de Zona */}
+      <Modal visible={showZoneModal} animationType="slide" transparent onRequestClose={() => setShowZoneModal(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>SELECCIONAR ZONA</Text>
+              <TouchableOpacity onPress={() => setShowZoneModal(false)}>
+                <Text style={styles.modalCloseButton}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={zones}
+              keyExtractor={(item) => item._id}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.modalItem}
+                  onPress={() => {
+                    setSelectedZone(item._id);
+                    setSelectedSection('');
+                    setShowZoneModal(false);
+                  }}
+                >
+                  <Text style={styles.modalItemText}>{item.name}</Text>
+                  {selectedZone === item._id && <Text style={styles.modalItemCheck}>✓</Text>}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal de Selección de Sección */}
+      <Modal visible={showSectionModal} animationType="slide" transparent onRequestClose={() => setShowSectionModal(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>SELECCIONAR SECCIÓN</Text>
+              <TouchableOpacity onPress={() => setShowSectionModal(false)}>
+                <Text style={styles.modalCloseButton}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <FlatList
+              data={availableSections}
+              keyExtractor={(item: any) => item.id}
+              renderItem={({ item }: any) => (
+                <TouchableOpacity
+                  style={styles.modalItem}
+                  onPress={() => {
+                    setSelectedSection(item.id);
+                    setShowSectionModal(false);
+                  }}
+                >
+                  <Text style={styles.modalItemText}>{item.name}</Text>
+                  {selectedSection === item.id && <Text style={styles.modalItemCheck}>✓</Text>}
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+        </View>
+      </Modal>
 
       {/* Modales */}
       <ModalControlAcarreo
@@ -558,6 +636,87 @@ const styles = StyleSheet.create({
   mapInstructionUpper: { fontSize: 11, fontWeight: '600', color: '#64748B', paddingHorizontal: 16, paddingTop: 12, textTransform: 'uppercase' },
   mapInstructionLower: { fontSize: 11, fontWeight: '600', color: '#64748B', padding: 12, textTransform: 'uppercase', textAlign: 'center' },
   mapFrame: { borderTopWidth: 1, borderBottomWidth: 1, borderColor: '#BFDBFE', backgroundColor: '#FFFFFF', marginVertical: 8 },
+  // Estilos para selectores personalizados
+  selectButton: {
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: '#DEE2E6',
+    borderRadius: 8,
+    padding: 14,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    minHeight: 50,
+  },
+  selectButtonDisabled: {
+    backgroundColor: '#F3F4F6',
+    borderColor: '#E5E7EB',
+  },
+  selectButtonTextSelected: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1F2937',
+  },
+  selectButtonTextPlaceholder: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#9CA3AF',
+  },
+  selectButtonIcon: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginLeft: 8,
+  },
+  // Estilos para modales de selección
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '70%',
+    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#1F2937',
+    textTransform: 'uppercase',
+  },
+  modalCloseButton: {
+    fontSize: 28,
+    fontWeight: '300',
+    color: '#6B7280',
+  },
+  modalItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 18,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  modalItemText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  modalItemCheck: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#10B981',
+  },
 });
 
 export default ReportFormWebStyle;
