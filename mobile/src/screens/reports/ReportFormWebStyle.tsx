@@ -7,6 +7,8 @@ import {
   StyleSheet,
   Alert,
   TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
@@ -257,8 +259,17 @@ const ReportFormWebStyle = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.content}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    >
+      <ScrollView
+        style={styles.container}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.content}>
         {/* SECCIÓN 1: INFORMACIÓN GENERAL */}
         <View style={[styles.section, styles.sectionOrange]}>
           <Text style={styles.sectionTitle}>INFORMACIÓN GENERAL</Text>
@@ -467,7 +478,8 @@ const ReportFormWebStyle = () => {
         onSave={handleAgregarMaquinaria}
         vehiculos={vehiculos}
       />
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -495,11 +507,11 @@ const styles = StyleSheet.create({
   pickerContainer: { backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: '#DEE2E6', borderRadius: 8, overflow: 'hidden' },
   picker: { height: 50, width: '100%', color: '#1F2937' },
   pickerSmall: { height: 48, width: '100%', color: '#1F2937' },
-  row: { flexDirection: 'row', gap: 12, marginBottom: 16 },
-  halfWidth: { flex: 1 },
+  row: { flexDirection: 'row', marginBottom: 16, marginHorizontal: -6 },
+  halfWidth: { flex: 1, marginHorizontal: 6 },
   quarterWidth: { flex: 1 },
-  turnoContainer: { flexDirection: 'row', gap: 12 },
-  turnoButton: { flex: 1, borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 6, padding: 12, backgroundColor: '#FFFFFF', alignItems: 'center' },
+  turnoContainer: { flexDirection: 'row', marginHorizontal: -6 },
+  turnoButton: { flex: 1, borderWidth: 1, borderColor: '#D1D5DB', borderRadius: 6, padding: 12, backgroundColor: '#FFFFFF', alignItems: 'center', marginHorizontal: 6 },
   turnoButtonActive: { backgroundColor: '#FB923C', borderColor: '#FB923C' },
   turnoText: { fontSize: 13, fontWeight: '700', color: '#6B7280', textTransform: 'uppercase' },
   turnoTextActive: { color: '#FFFFFF' },
