@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, ActivityIndicator, TouchableOpacity, Alert, Image } from 'react-native';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import ApiService from '../../services/api';
 import { ReporteActividades } from '../../types';
@@ -107,11 +107,14 @@ const ReportDetailScreen = () => {
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header principal con iconos */}
+        {/* Header principal con logo */}
         <View style={[styles.headerCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
-          <View style={styles.headerIcons}>
-            <MaterialCommunityIcons name="hard-hat" size={36} color={theme.primary} />
-            <MaterialCommunityIcons name="safety-goggles" size={36} color={theme.primary} />
+          <View style={styles.logoContainer}>
+            <Image
+              source={require('../../Logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
           </View>
           <Text style={[styles.mainTitle, { color: theme.text }]}>REPORTE DE ACTIVIDADES DIARIAS</Text>
           <Text style={[styles.projectName, { color: theme.primary }]}>
@@ -577,11 +580,13 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
   },
-  headerIcons: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 20,
-    marginBottom: 12,
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  logo: {
+    width: 120,
+    height: 120,
   },
   mainTitle: {
     fontSize: 18,
