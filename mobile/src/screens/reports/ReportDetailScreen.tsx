@@ -76,6 +76,21 @@ const ReportDetailScreen = () => {
     );
   };
 
+  const generateMapWithPin = (mapaBase64: string, pinX: number, pinY: number): string => {
+    // Generar SVG con el pin superpuesto
+    const pinSvg = `
+      <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
+        <image href="${mapaBase64}" width="100" height="100" />
+        <g transform="translate(${pinX}, ${pinY})">
+          <circle cx="0" cy="0" r="3" fill="white" stroke="#EF4444" stroke-width="0.5"/>
+          <circle cx="0" cy="0" r="2" fill="#EF4444"/>
+          <path d="M 0,-2 L -1.5,-5 L 0,-8 L 1.5,-5 Z" fill="#EF4444" stroke="white" stroke-width="0.3"/>
+        </g>
+      </svg>
+    `;
+    return `data:image/svg+xml;base64,${btoa(pinSvg)}`;
+  };
+
   const handleDownloadPDF = async () => {
     if (!reporte) return;
     try {
@@ -96,10 +111,15 @@ const ReportDetailScreen = () => {
         console.log('Error loading logo:', err);
       }
 
-      // Convertir mapa a base64 si existe
+      // Convertir mapa a base64 si existe y agregar el pin
       let mapaBase64 = '';
       if (reporte.ubicacionMapa && selectedProject?.mapa?.imagen?.data) {
-        mapaBase64 = `data:image/png;base64,${selectedProject.mapa.imagen.data}`;
+        const baseMapUrl = `data:image/png;base64,${selectedProject.mapa.imagen.data}`;
+        mapaBase64 = generateMapWithPin(
+          baseMapUrl,
+          reporte.ubicacionMapa.pinX,
+          reporte.ubicacionMapa.pinY
+        );
       }
 
       const html = generatePDFHTML(
