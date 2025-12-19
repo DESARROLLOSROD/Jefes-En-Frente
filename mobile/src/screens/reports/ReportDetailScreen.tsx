@@ -77,18 +77,20 @@ const ReportDetailScreen = () => {
   };
 
   const generateMapWithPin = (mapaBase64: string, pinX: number, pinY: number): string => {
-    // Generar SVG con el pin superpuesto
-    const pinSvg = `
-      <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
-        <image href="${mapaBase64}" width="100" height="100" />
-        <g transform="translate(${pinX}, ${pinY})">
-          <circle cx="0" cy="0" r="3" fill="white" stroke="#EF4444" stroke-width="0.5"/>
-          <circle cx="0" cy="0" r="2" fill="#EF4444"/>
-          <path d="M 0,-2 L -1.5,-5 L 0,-8 L 1.5,-5 Z" fill="#EF4444" stroke="white" stroke-width="0.3"/>
-        </g>
-      </svg>
+    // Generar HTML con el mapa y el pin superpuesto usando CSS
+    const mapWithPin = `
+      <div style="position: relative; display: inline-block; width: 100%; max-width: 600px;">
+        <img src="${mapaBase64}" style="width: 100%; height: auto; display: block;" />
+        <div style="position: absolute; left: ${pinX}%; top: ${pinY}%; transform: translate(-50%, -100%);">
+          <svg width="30" height="40" viewBox="0 0 30 40">
+            <circle cx="15" cy="15" r="8" fill="white" stroke="#EF4444" stroke-width="2"/>
+            <circle cx="15" cy="15" r="5" fill="#EF4444"/>
+            <path d="M 15,20 L 10,30 L 15,40 L 20,30 Z" fill="#EF4444" stroke="white" stroke-width="1"/>
+          </svg>
+        </div>
+      </div>
     `;
-    return `data:image/svg+xml;base64,${btoa(pinSvg)}`;
+    return mapWithPin;
   };
 
   const handleDownloadPDF = async () => {
@@ -644,7 +646,7 @@ const generatePDFHTML = (reporte: ReporteActividades, projectName: string, logoB
           <div class="section">
             <div class="section-title">UBICACIÓN EN MAPA DEL PROYECTO</div>
             <div class="map-container">
-              <img src="${mapaBase64}" class="map-image" />
+              ${mapaBase64}
               <div class="map-info">ZONA: ${reporte.zonaTrabajo?.zonaNombre || 'N/A'} | SECCIÓN: ${reporte.seccionTrabajo?.seccionNombre || 'N/A'}</div>
             </div>
           </div>
