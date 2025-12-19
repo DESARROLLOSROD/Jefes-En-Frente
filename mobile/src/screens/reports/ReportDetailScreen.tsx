@@ -4,6 +4,7 @@ import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import { readAsStringAsync } from 'expo-file-system/legacy';
 import { Ionicons } from '@expo/vector-icons';
 import { RootStackParamList } from '../../navigation/AppNavigator';
 import ApiService from '../../services/api';
@@ -12,6 +13,7 @@ import MapPinSelector from '../../components/maps/MapPinSelector';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import toast from '../../utils/toast';
+import { Asset } from 'expo-asset';
 
 type ReportDetailRouteProp = RouteProp<RootStackParamList, 'ReportDetail'>;
 type ReportDetailNavigationProp = StackNavigationProp<RootStackParamList, 'ReportDetail'>;
@@ -79,19 +81,33 @@ const ReportDetailScreen = () => {
     try {
       toast.info('Generando PDF...');
 
-      // Convertir logo a base64 para incluir en el PDF
-      const logoBase64 = await fetch(require('../../Logo.png'))
-        .then(response => response.blob())
-        .then(blob => {
-          return new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
-            reader.readAsDataURL(blob);
+      // Convertir logo a base64
+      let logoBase64 = '';
+      try {
+        const asset = Asset.fromModule(require('../../Logo.png'));
+        await asset.downloadAsync();
+        if (asset.localUri) {
+          const base64 = await readAsStringAsync(asset.localUri, {
+            encoding: 'base64',
           });
-        })
-        .catch(() => '');
+          logoBase64 = `data:image/png;base64,${base64}`;
+        }
+      } catch (err) {
+        console.log('Error loading logo:', err);
+      }
 
-      const html = generatePDFHTML(reporte, selectedProject?.nombre || 'N/A', logoBase64 as string);
+      // Convertir mapa a base64 si existe
+      let mapaBase64 = '';
+      if (reporte.ubicacionMapa && selectedProject?.mapa?.imagen?.data) {
+        mapaBase64 = `data:image/png;base64,${selectedProject.mapa.imagen.data}`;
+      }
+
+      const html = generatePDFHTML(
+        reporte,
+        selectedProject?.nombre || 'N/A',
+        logoBase64,
+        mapaBase64
+      );
       const { uri } = await Print.printToFileAsync({ html });
       await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
       toast.success('PDF generado con éxito');
@@ -415,7 +431,7 @@ const ReportDetailScreen = () => {
   );
 };
 
-const generatePDFHTML = (reporte: ReporteActividades, projectName: string, logoBase64?: string) => {
+const generatePDFHTML = (reporte: ReporteActividades, projectName: string, logoBase64?: string, mapaBase64?: string) => {
   return `
     <html>
       <head>
@@ -548,6 +564,23 @@ const generatePDFHTML = (reporte: ReporteActividades, projectName: string, logoB
             font-size: 10px;
             color: #666;
           }
+          .map-container {
+            margin: 20px 0;
+            text-align: center;
+            page-break-inside: avoid;
+          }
+          .map-image {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+          }
+          .map-info {
+            margin-top: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #555;
+          }
         </style>
       </head>
       <body>
@@ -586,6 +619,16 @@ const generatePDFHTML = (reporte: ReporteActividades, projectName: string, logoB
             <div class="info-value">${reporte.sobrestante || '-'}</div>
           </div>
         </div>
+
+        ${mapaBase64 && reporte.ubicacionMapa ? `
+          <div class="section">
+            <div class="section-title">UBICACIÓN EN MAPA DEL PROYECTO</div>
+            <div class="map-container">
+              <img src="${mapaBase64}" class="map-image" />
+              <div class="map-info">ZONA: ${reporte.zonaTrabajo?.zonaNombre || 'N/A'} | SECCIÓN: ${reporte.seccionTrabajo?.seccionNombre || 'N/A'}</div>
+            </div>
+          </div>
+        ` : ''}
 
         <div class="section">
           <div class="section-title">CONTROL DE ACARREOS</div>
