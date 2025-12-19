@@ -78,7 +78,20 @@ const ReportDetailScreen = () => {
     if (!reporte) return;
     try {
       toast.info('Generando PDF...');
-      const html = generatePDFHTML(reporte, selectedProject?.nombre || 'N/A');
+
+      // Convertir logo a base64 para incluir en el PDF
+      const logoBase64 = await fetch(require('../../Logo.png'))
+        .then(response => response.blob())
+        .then(blob => {
+          return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
+          });
+        })
+        .catch(() => '');
+
+      const html = generatePDFHTML(reporte, selectedProject?.nombre || 'N/A', logoBase64 as string);
       const { uri } = await Print.printToFileAsync({ html });
       await Sharing.shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
       toast.success('PDF generado con éxito');
@@ -402,154 +415,323 @@ const ReportDetailScreen = () => {
   );
 };
 
-const generatePDFHTML = (reporte: ReporteActividades, projectName: string) => {
+const generatePDFHTML = (reporte: ReporteActividades, projectName: string, logoBase64?: string) => {
   return `
     <html>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <style>
-          body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
-          .header { text-align: center; border-bottom: 3px solid #4F46E5; padding-bottom: 15px; margin-bottom: 20px; }
-          .title { font-size: 20px; font-weight: bold; margin-bottom: 10px; }
-          .project { color: #4F46E5; font-size: 16px; font-weight: bold; }
-          .section { margin-bottom: 20px; page-break-inside: avoid; }
-          .section-title { font-size: 14px; font-weight: bold; background: #4F46E5; color: white; padding: 8px; margin-bottom: 10px; }
-          .info-row { display: flex; margin-bottom: 5px; font-size: 12px; }
-          .info-label { font-weight: bold; width: 150px; }
-          .info-value { flex: 1; }
-          table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 11px; }
-          th { background: #4F46E5; color: white; padding: 8px; text-align: left; font-weight: bold; }
-          td { border: 1px solid #ddd; padding: 6px; }
-          tr:nth-child(even) { background: #f9fafb; }
-          .total-row { background: #e0e7ff !important; font-weight: bold; }
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body {
+            font-family: Arial, sans-serif;
+            padding: 30px 40px;
+            color: #333;
+            background: white;
+          }
+          .header {
+            text-align: center;
+            margin-bottom: 30px;
+          }
+          .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+          }
+          .logo {
+            width: 100px;
+            height: auto;
+          }
+          .title {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #1a1a1a;
+            letter-spacing: 0.5px;
+          }
+          .project {
+            color: #5B4FE5;
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+          }
+          .header-divider {
+            width: 100%;
+            height: 4px;
+            background: #5B4FE5;
+            margin-top: 15px;
+          }
+          .info-section {
+            margin-bottom: 25px;
+            page-break-inside: avoid;
+          }
+          .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+          }
+          .info-item {
+            margin-bottom: 10px;
+          }
+          .info-label {
+            font-weight: bold;
+            font-size: 13px;
+            color: #555;
+            margin-bottom: 3px;
+          }
+          .info-value {
+            font-size: 13px;
+            color: #1a1a1a;
+          }
+          .section {
+            margin-bottom: 30px;
+            page-break-inside: avoid;
+          }
+          .section-title {
+            font-size: 14px;
+            font-weight: bold;
+            background: #5B4FE5;
+            color: white;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          .empty-message {
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            font-size: 13px;
+          }
+          table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 11px;
+            border: 1px solid #ddd;
+          }
+          th {
+            background: #5B4FE5;
+            color: white;
+            padding: 10px 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 11px;
+            border: 1px solid #4a3fc9;
+          }
+          td {
+            border: 1px solid #ddd;
+            padding: 8px 6px;
+            text-align: center;
+            font-size: 11px;
+          }
+          tr:nth-child(even) td {
+            background: #f8f9fa;
+          }
+          .total-row td {
+            background: #e8e6ff !important;
+            font-weight: bold;
+            color: #1a1a1a;
+          }
+          .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            text-align: center;
+            font-size: 10px;
+            color: #666;
+            border-top: 1px solid #ddd;
+          }
+          .page-number {
+            position: fixed;
+            bottom: 20px;
+            right: 40px;
+            font-size: 10px;
+            color: #666;
+          }
         </style>
       </head>
       <body>
         <div class="header">
+          ${logoBase64 ? `
+            <div class="logo-container">
+              <img src="${logoBase64}" class="logo" />
+            </div>
+          ` : ''}
           <div class="title">REPORTE DE ACTIVIDADES DIARIAS</div>
           <div class="project">${projectName}</div>
+          <div class="header-divider"></div>
         </div>
 
-        <div class="section">
-          <div class="info-row">
-            <div class="info-label">Fecha:</div>
-            <div class="info-value">${new Date(reporte.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
-            <div class="info-label" style="margin-left: 20px;">Turno:</div>
-            <div class="info-value">${reporte.turno}</div>
+        <div class="info-section">
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Fecha:</div>
+              <div class="info-value">${new Date(reporte.fecha).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Turno:</div>
+              <div class="info-value">${reporte.turno}</div>
+            </div>
           </div>
-          <div class="info-row">
+          <div class="info-item">
             <div class="info-label">Ubicación:</div>
             <div class="info-value">${reporte.zonaTrabajo?.zonaNombre || reporte.ubicacion}${reporte.seccionTrabajo ? ` - ${reporte.seccionTrabajo.seccionNombre}` : ''}</div>
           </div>
-          <div class="info-row">
+          <div class="info-item">
             <div class="info-label">Jefe de Frente:</div>
             <div class="info-value">${reporte.jefeFrente || '-'}</div>
           </div>
-          <div class="info-row">
+          <div class="info-item">
             <div class="info-label">Sobrestante:</div>
             <div class="info-value">${reporte.sobrestante || '-'}</div>
           </div>
         </div>
 
-        ${reporte.controlAcarreo && reporte.controlAcarreo.length > 0 ? `
-          <div class="section">
-            <div class="section-title">CONTROL DE ACARREOS</div>
+        <div class="section">
+          <div class="section-title">CONTROL DE ACARREOS</div>
+          ${reporte.controlAcarreo && reporte.controlAcarreo.length > 0 ? `
             <table>
-              <tr>
-                <th>#</th><th>Material</th><th>No. Viaje</th><th>Capacidad</th><th>Vol. Suelto</th>
-                <th>Capa</th><th>Elevación</th><th>Origen</th><th>Destino</th>
-              </tr>
-              ${reporte.controlAcarreo.map((item: any, i: number) => `
+              <thead>
                 <tr>
-                  <td>${i + 1}</td>
-                  <td>${item.material || 'N/A'}</td>
-                  <td>${item.noViaje || 0}</td>
-                  <td>${item.capacidad || 'N/A'}</td>
-                  <td>${item.volSuelto || 'N/A'}</td>
-                  <td>${item.capa || '-'}</td>
-                  <td>${item.elevacion || '-'}</td>
-                  <td>${item.origen || 'N/A'}</td>
-                  <td>${item.destino || 'N/A'}</td>
+                  <th>#</th>
+                  <th>Material</th>
+                  <th>No. Viaje</th>
+                  <th>Capacidad</th>
+                  <th>Vol. Suelto</th>
+                  <th>Capa</th>
+                  <th>Elevación</th>
+                  <th>Origen</th>
+                  <th>Destino</th>
                 </tr>
-              `).join('')}
-              <tr class="total-row">
-                <td colspan="4">TOTAL VOLUMEN:</td>
-                <td colspan="5">${reporte.controlAcarreo.reduce((sum: number, item: any) => sum + (parseFloat(String(item.volSuelto).replace(/[^\d.]/g, '')) || 0), 0).toFixed(2)} m³</td>
-              </tr>
+              </thead>
+              <tbody>
+                ${reporte.controlAcarreo.map((item: any, i: number) => `
+                  <tr>
+                    <td>${i + 1}</td>
+                    <td>${item.material || 'N/A'}</td>
+                    <td>${item.noViaje || 0}</td>
+                    <td>${item.capacidad || 'N/A'}</td>
+                    <td>${item.volSuelto || 'N/A'}</td>
+                    <td>${item.capa || '-'}</td>
+                    <td>${item.elevacion || '-'}</td>
+                    <td>${item.origen || 'N/A'}</td>
+                    <td>${item.destino || 'N/A'}</td>
+                  </tr>
+                `).join('')}
+                <tr class="total-row">
+                  <td colspan="4" style="text-align: right; padding-right: 10px;">TOTAL VOLUMEN:</td>
+                  <td colspan="5">${reporte.controlAcarreo.reduce((sum: number, item: any) => sum + (parseFloat(String(item.volSuelto).replace(/[^\d.]/g, '')) || 0), 0).toFixed(2)} m³</td>
+                </tr>
+              </tbody>
             </table>
-          </div>
-        ` : '<div class="section"><div class="section-title">CONTROL DE ACARREOS</div><p>Sin registros</p></div>'}
+          ` : '<div class="empty-message">Sin registros</div>'}
+        </div>
 
-        ${reporte.controlMaterial && reporte.controlMaterial.length > 0 ? `
-          <div class="section">
-            <div class="section-title">CONTROL DE MATERIAL</div>
+        <div class="section">
+          <div class="section-title">CONTROL DE MATERIAL</div>
+          ${reporte.controlMaterial && reporte.controlMaterial.length > 0 ? `
             <table>
-              <tr><th>Material</th><th>Unidad</th><th>Cantidad</th><th>Zona</th><th>Elevación</th></tr>
-              ${reporte.controlMaterial.map((item: any) => `
+              <thead>
                 <tr>
-                  <td>${item.material || 'N/A'}</td>
-                  <td>${item.unidad || 'N/A'}</td>
-                  <td>${item.cantidad || 0}</td>
-                  <td>${item.zona || '-'}</td>
-                  <td>${item.elevacion || '-'}</td>
+                  <th>Material</th>
+                  <th>Unidad</th>
+                  <th>Cantidad</th>
+                  <th>Zona</th>
+                  <th>Elevación</th>
                 </tr>
-              `).join('')}
+              </thead>
+              <tbody>
+                ${reporte.controlMaterial.map((item: any) => `
+                  <tr>
+                    <td>${item.material || 'N/A'}</td>
+                    <td>${item.unidad || 'N/A'}</td>
+                    <td>${item.cantidad || 0}</td>
+                    <td>${item.zona || '-'}</td>
+                    <td>${item.elevacion || '-'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
             </table>
-          </div>
-        ` : ''}
+          ` : '<div class="empty-message">Sin registros</div>'}
+        </div>
 
-        ${reporte.controlAgua && reporte.controlAgua.length > 0 ? `
-          <div class="section">
-            <div class="section-title">CONTROL DE AGUA</div>
+        <div class="section">
+          <div class="section-title">CONTROL DE AGUA</div>
+          ${reporte.controlAgua && reporte.controlAgua.length > 0 ? `
             <table>
-              <tr><th>No. Económico</th><th>Viaje</th><th>Capacidad</th><th>Volumen</th><th>Origen</th><th>Destino</th></tr>
-              ${reporte.controlAgua.map((item: any) => `
+              <thead>
                 <tr>
-                  <td>${item.noEconomico || 'N/A'}</td>
-                  <td>${item.viaje || 0}</td>
-                  <td>${item.capacidad || 'N/A'}</td>
-                  <td>${item.volumen || 'N/A'}</td>
-                  <td>${item.origen || 'N/A'}</td>
-                  <td>${item.destino || 'N/A'}</td>
+                  <th>No. Económico</th>
+                  <th>Viaje</th>
+                  <th>Capacidad</th>
+                  <th>Volumen</th>
+                  <th>Origen</th>
+                  <th>Destino</th>
                 </tr>
-              `).join('')}
-              <tr class="total-row">
-                <td colspan="3">TOTAL VOLUMEN:</td>
-                <td colspan="3">${reporte.controlAgua.reduce((sum: number, item: any) => sum + (parseFloat(String(item.volumen).replace(/[^\d.]/g, '')) || 0), 0).toFixed(2)} m³</td>
-              </tr>
+              </thead>
+              <tbody>
+                ${reporte.controlAgua.map((item: any) => `
+                  <tr>
+                    <td>${item.noEconomico || 'N/A'}</td>
+                    <td>${item.viaje || 0}</td>
+                    <td>${item.capacidad || 'N/A'}</td>
+                    <td>${item.volumen || 'N/A'}</td>
+                    <td>${item.origen || 'N/A'}</td>
+                    <td>${item.destino || 'N/A'}</td>
+                  </tr>
+                `).join('')}
+                <tr class="total-row">
+                  <td colspan="3" style="text-align: right; padding-right: 10px;">TOTAL VOLUMEN:</td>
+                  <td colspan="3">${reporte.controlAgua.reduce((sum: number, item: any) => sum + (parseFloat(String(item.volumen).replace(/[^\d.]/g, '')) || 0), 0).toFixed(2)} m³</td>
+                </tr>
+              </tbody>
             </table>
-          </div>
-        ` : ''}
+          ` : '<div class="empty-message">Sin registros</div>'}
+        </div>
 
-        ${reporte.controlMaquinaria && reporte.controlMaquinaria.length > 0 ? `
-          <div class="section">
-            <div class="section-title">CONTROL DE MAQUINARIA</div>
+        <div class="section">
+          <div class="section-title">CONTROL DE MAQUINARIA</div>
+          ${reporte.controlMaquinaria && reporte.controlMaquinaria.length > 0 ? `
             <table>
-              <tr><th>Tipo</th><th>No. Econ.</th><th>Hor. Inicial</th><th>Hor. Final</th><th>Horas</th><th>Operador</th><th>Actividad</th></tr>
-              ${reporte.controlMaquinaria.map((item: any) => `
+              <thead>
                 <tr>
-                  <td>${item.tipo || 'N/A'}</td>
-                  <td>${item.numeroEconomico || item.nombre || 'N/A'}</td>
-                  <td>${item.horometroInicial || 0}</td>
-                  <td>${item.horometroFinal || 0}</td>
-                  <td>${item.horasOperacion || 0}</td>
-                  <td>${item.operador || 'N/A'}</td>
-                  <td>${item.actividad || 'N/A'}</td>
+                  <th>Tipo</th>
+                  <th>No. Econ.</th>
+                  <th>Hor. Inicial</th>
+                  <th>Hor. Final</th>
+                  <th>Horas</th>
+                  <th>Operador</th>
+                  <th>Actividad</th>
                 </tr>
-              `).join('')}
+              </thead>
+              <tbody>
+                ${reporte.controlMaquinaria.map((item: any) => `
+                  <tr>
+                    <td>${item.tipo || 'N/A'}</td>
+                    <td>${item.numeroEconomico || item.nombre || 'N/A'}</td>
+                    <td>${item.horometroInicial || 0}</td>
+                    <td>${item.horometroFinal || 0}</td>
+                    <td>${item.horasOperacion || 0}</td>
+                    <td>${item.operador || 'N/A'}</td>
+                    <td>${item.actividad || 'N/A'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
             </table>
-          </div>
-        ` : ''}
+          ` : '<div class="empty-message">Sin registros</div>'}
+        </div>
 
         ${reporte.observaciones ? `
           <div class="section">
             <div class="section-title">OBSERVACIONES</div>
-            <p style="padding: 10px; background: #f9fafb; border-radius: 5px;">${reporte.observaciones}</p>
+            <div style="padding: 15px; background: #f8f9fa; border-radius: 5px; border-left: 4px solid #5B4FE5;">
+              <p style="margin: 0; line-height: 1.6; color: #333;">${reporte.observaciones}</p>
+            </div>
           </div>
         ` : ''}
 
-        <div style="margin-top: 30px; text-align: center; font-size: 10px; color: #666;">
-          Generado: ${new Date().toLocaleString('es-ES')}
+        <div class="footer">
+          Generado: ${new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })} ${new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
         </div>
       </body>
     </html>
