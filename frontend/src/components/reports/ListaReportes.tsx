@@ -18,6 +18,8 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
   const { proyecto, user } = useAuth();
   const [mostrarConfirmacion, setMostrarConfirmacion] = useState(false);
   const [reporteEliminar, setReporteEliminar] = useState<ReporteActividades | null>(null);
+  const [fechaDesde, setFechaDesde] = useState('');
+  const [fechaHasta, setFechaHasta] = useState('');
 
   // Load reports when project changes
   useEffect(() => {
@@ -87,6 +89,28 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
     }
   };
 
+  // Filtrar reportes por rango de fechas
+  const reportesFiltrados = reportes.filter(reporte => {
+    const fechaReporte = new Date(reporte.fecha);
+    const desde = fechaDesde ? new Date(fechaDesde) : null;
+    const hasta = fechaHasta ? new Date(fechaHasta) : null;
+
+    if (desde && fechaReporte < desde) return false;
+    if (hasta) {
+      // Ajustar hasta el final del día
+      const hastaFinal = new Date(hasta);
+      hastaFinal.setHours(23, 59, 59, 999);
+      if (fechaReporte > hastaFinal) return false;
+    }
+
+    return true;
+  });
+
+  const limpiarFiltros = () => {
+    setFechaDesde('');
+    setFechaHasta('');
+  };
+
   if (loading) {
     return (
       <div className="text-center py-8">
@@ -121,8 +145,46 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-800">REPORTES DE {proyecto?.nombre}</h2>
           <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-            {reportes.length} REPORTE{reportes.length !== 1 ? 'S' : ''}
+            {reportesFiltrados.length} DE {reportes.length} REPORTE{reportes.length !== 1 ? 'S' : ''}
           </span>
+        </div>
+
+        {/* Filtro de fechas */}
+        <div className="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+          <div className="flex flex-wrap items-end gap-4">
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                FECHA DESDE
+              </label>
+              <input
+                type="date"
+                value={fechaDesde}
+                onChange={(e) => setFechaDesde(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                FECHA HASTA
+              </label>
+              <input
+                type="date"
+                value={fechaHasta}
+                onChange={(e) => setFechaHasta(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+            </div>
+            {(fechaDesde || fechaHasta) && (
+              <div>
+                <button
+                  onClick={limpiarFiltros}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors font-medium"
+                >
+                  LIMPIAR FILTROS
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         {reportes.length === 0 ? (
           <div className="text-center py-12">
@@ -132,6 +194,18 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
             <div className="bg-orange-100 border border-orange-300 rounded-lg p-4 inline-block">
               <p className="text-orange-800 font-medium">LOS REPORTES APARECERÁN AQUÍ DESPUÉS DE CREARLOS</p>
             </div>
+          </div>
+        ) : reportesFiltrados.length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">🔍</div>
+            <p className="text-gray-600 text-lg mb-4">NO SE ENCONTRARON REPORTES</p>
+            <p className="text-gray-500 mb-6">NO HAY REPORTES QUE COINCIDAN CON EL RANGO DE FECHAS SELECCIONADO</p>
+            <button
+              onClick={limpiarFiltros}
+              className="px-6 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 transition-colors font-medium"
+            >
+              LIMPIAR FILTROS
+            </button>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -147,7 +221,7 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {reportes.map(reporte => (
+                {reportesFiltrados.map(reporte => (
                   <tr key={reporte._id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 uppercase">
                       {formatFecha(reporte.fecha)}
