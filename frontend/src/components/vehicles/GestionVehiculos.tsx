@@ -326,11 +326,11 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                 </div>
                                 {/* Tipo */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">TIPO *</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1 uppercase">TIPO *</label>
                                     <AutocompleteInput
                                         value={formData.tipo}
                                         onChange={(value) => setFormData({ ...formData, tipo: value })}
-                                        options={tiposVehiculo.map(t => t.nombre)}
+                                        options={tiposVehiculo.map(t => t.nombre.toUpperCase())}
                                         placeholder="ESCRIBE O SELECCIONA UN TIPO"
                                         required
                                     />
