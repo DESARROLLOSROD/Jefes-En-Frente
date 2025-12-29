@@ -1,4 +1,6 @@
+import type ExcelJS from 'exceljs';
 import { EstadisticasResponse } from '../services/estadisticas.service';
+import { generatePieChartImage } from './chartGenerator';
 
 export const generarExcelEstadisticas = async (estadisticas: EstadisticasResponse, nombreProyecto?: string) => {
     const ExcelJS = (await import('exceljs')).default;
@@ -6,11 +8,7 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
 
     // Colores corporativos
     const BLUE = '4C4EC9';
-    const LIGHT_BLUE = 'E3F2FD';
-    const GREEN = '22C55E';
-    const LIGHT_GREEN = 'DCFCE7';
     const PURPLE = 'A855F7';
-    const LIGHT_PURPLE = 'F3E8FF';
     const GRAY = '646464';
 
     // =============== UNA SOLA HOJA: ESTADÍSTICAS ===============
@@ -23,225 +21,219 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
     // =============== TÍTULO PRINCIPAL ===============
     sheet.mergeCells(`A${currentRow}:H${currentRow}`);
     const titleCell = sheet.getCell(`A${currentRow}`);
-    titleCell.value = '📊 ANÁLISIS Y ESTADÍSTICAS';
-    titleCell.font = { bold: true, size: 18, color: { argb: 'FF1A1A1A' } };
+    titleCell.value = '📊 ANÁLISIS Y ESTADÍSTICAS DE OPERACIÓN';
+    titleCell.font = { bold: true, size: 18, color: { argb: 'FFFFFFFF' } };
     titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
-    titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${LIGHT_BLUE}` } };
-    sheet.getRow(currentRow).height = 30;
+    titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${BLUE}` } };
+    sheet.getRow(currentRow).height = 40;
     currentRow++;
 
     sheet.mergeCells(`A${currentRow}:H${currentRow}`);
     const subtitleCell = sheet.getCell(`A${currentRow}`);
-    subtitleCell.value = 'GENERADO POR JEFES EN FRENTE';
-    subtitleCell.font = { size: 10, color: { argb: `FF${GRAY}` } };
+    subtitleCell.value = `PROYECTO: ${nombreProyecto || 'TODOS LOS PROYECTOS'} | GENERADO POR JEFES EN FRENTE`;
+    subtitleCell.font = { size: 11, bold: true, color: { argb: `FF${GRAY}` } };
     subtitleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+    sheet.getRow(currentRow).height = 25;
     currentRow += 2;
 
-    // =============== INFORMACIÓN GENERAL (4 COLUMNAS) ===============
+    // =============== INFORMACIÓN GENERAL (KPIs) ===============
     const fechaInicio = new Date(estadisticas.rangoFechas.inicio + 'T00:00:00').toLocaleDateString('es-MX');
     const fechaFin = new Date(estadisticas.rangoFechas.fin + 'T00:00:00').toLocaleDateString('es-MX');
 
-    // Columna 1: Período
-    sheet.mergeCells(`A${currentRow}:B${currentRow + 1}`);
-    const periodCell = sheet.getCell(`A${currentRow}`);
-    periodCell.value = 'Período';
-    periodCell.font = { bold: false, size: 10, color: { argb: `FF${GRAY}` } };
-    periodCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${LIGHT_BLUE}` } };
-    periodCell.alignment = { horizontal: 'left', vertical: 'top' };
+    // Estilo común para KPIs
+    const kpiLabelStyle: Partial<ExcelJS.Style> = {
+        font: { size: 10, color: { argb: `FF${GRAY}` } },
+        alignment: { horizontal: 'center', vertical: 'middle' },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF9FAFB' } }
+    };
 
-    const periodValueCell = sheet.getCell(`A${currentRow + 1}`);
-    periodValueCell.value = `${fechaInicio} - ${fechaFin}`;
-    periodValueCell.font = { bold: true, size: 11 };
-    periodValueCell.alignment = { horizontal: 'left', vertical: 'bottom' };
+    const kpiValueStyle: Partial<ExcelJS.Style> = {
+        font: { bold: true, size: 16 },
+        alignment: { horizontal: 'center', vertical: 'middle' },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF9FAFB' } }
+    };
 
-    // Columna 2: Total de Reportes
-    sheet.mergeCells(`C${currentRow}:D${currentRow + 1}`);
-    const reportesCell = sheet.getCell(`C${currentRow}`);
-    reportesCell.value = 'Total de Reportes';
-    reportesCell.font = { bold: false, size: 10, color: { argb: `FF${GRAY}` } };
-    reportesCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${LIGHT_GREEN}` } };
-    reportesCell.alignment = { horizontal: 'left', vertical: 'top' };
+    // Fila de etiquetas
+    sheet.mergeCells(`A${currentRow}:B${currentRow}`);
+    sheet.mergeCells(`C${currentRow}:D${currentRow}`);
+    sheet.mergeCells(`E${currentRow}:F${currentRow}`);
+    sheet.mergeCells(`G${currentRow}:H${currentRow}`);
 
-    const reportesValueCell = sheet.getCell(`C${currentRow + 1}`);
-    reportesValueCell.value = estadisticas.totalReportes;
-    reportesValueCell.font = { bold: true, size: 16, color: { argb: `FF${GREEN}` } };
-    reportesValueCell.alignment = { horizontal: 'left', vertical: 'bottom' };
+    sheet.getCell(`A${currentRow}`).value = 'Período';
+    sheet.getCell(`C${currentRow}`).value = 'Total de Reportes';
+    sheet.getCell(`E${currentRow}`).value = 'Total Viajes';
+    sheet.getCell(`G${currentRow}`).value = 'Material Más Movido';
 
-    // Columna 3: Total Viajes Generales
-    sheet.mergeCells(`E${currentRow}:F${currentRow + 1}`);
-    const viajesCell = sheet.getCell(`E${currentRow}`);
-    viajesCell.value = 'Total Viajes Generales';
-    viajesCell.font = { bold: false, size: 10, color: { argb: `FF${GRAY}` } };
-    viajesCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFF9C4' } }; // Light Yellow
-    viajesCell.alignment = { horizontal: 'left', vertical: 'top' };
+    [`A${currentRow}`, `C${currentRow}`, `E${currentRow}`, `G${currentRow}`].forEach(c => {
+        sheet.getCell(c).style = kpiLabelStyle;
+    });
+    currentRow++;
 
-    const viajesValueCell = sheet.getCell(`E${currentRow + 1}`);
-    viajesValueCell.value = estadisticas.totalViajes || 0;
-    viajesValueCell.font = { bold: true, size: 16, color: { argb: 'FFF59E0B' } }; // Yellow
-    viajesValueCell.alignment = { horizontal: 'left', vertical: 'bottom' };
+    // Fila de valores
+    sheet.mergeCells(`A${currentRow}:B${currentRow}`);
+    sheet.mergeCells(`C${currentRow}:D${currentRow}`);
+    sheet.mergeCells(`E${currentRow}:F${currentRow}`);
+    sheet.mergeCells(`G${currentRow}:H${currentRow}`);
 
-    // Columna 4: Material Más Movido
-    sheet.mergeCells(`G${currentRow}:H${currentRow + 1}`);
-    const materialCell = sheet.getCell(`G${currentRow}`);
-    materialCell.value = 'Material Más Movido';
-    materialCell.font = { bold: false, size: 10, color: { argb: `FF${GRAY}` } };
-    materialCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${LIGHT_PURPLE}` } };
-    materialCell.alignment = { horizontal: 'left', vertical: 'top' };
+    sheet.getCell(`A${currentRow}`).value = `${fechaInicio} - ${fechaFin}`;
+    sheet.getCell(`C${currentRow}`).value = estadisticas.totalReportes;
+    sheet.getCell(`E${currentRow}`).value = estadisticas.totalViajes || 0;
+    sheet.getCell(`G${currentRow}`).value = estadisticas.acarreo.materialMasMovido || 'N/A';
 
-    const materialValueCell = sheet.getCell(`G${currentRow + 1}`);
-    materialValueCell.value = estadisticas.acarreo.materialMasMovido || 'N/A';
-    materialValueCell.font = { bold: true, size: 11, color: { argb: `FF${PURPLE}` } };
-    materialValueCell.alignment = { horizontal: 'left', vertical: 'bottom' };
+    [`A${currentRow}`, `C${currentRow}`, `E${currentRow}`, `G${currentRow}`].forEach(c => {
+        sheet.getCell(c).style = kpiValueStyle;
+    });
+    sheet.getCell(`C${currentRow}`).font = { ...kpiValueStyle.font, color: { argb: `FF${BLUE}` } };
+    sheet.getCell(`E${currentRow}`).font = { ...kpiValueStyle.font, color: { argb: 'FFF59E0B' } };
+    sheet.getCell(`G${currentRow}`).font = { ...kpiValueStyle.font, size: 12, color: { argb: `FF${PURPLE}` } };
 
-    sheet.getRow(currentRow).height = 20;
-    sheet.getRow(currentRow + 1).height = 20;
+    sheet.getRow(currentRow - 1).height = 20;
+    sheet.getRow(currentRow).height = 30;
     currentRow += 3;
 
-    // =============== SECCIÓN: CONTROL DE ACARREO ===============
+    // =============== GRÁFICAS Y TABLAS POR SECCIÓN ===============
+
+    // 1. CONTROL DE ACARREO
     if (estadisticas.acarreo.materiales.length > 0) {
-        sheet.mergeCells(`A${currentRow}:C${currentRow}`);
-        const acarreoTitle = sheet.getCell(`A${currentRow}`);
-        acarreoTitle.value = '📦 CONTROL DE ACARREO';
-        acarreoTitle.font = { bold: true, size: 12, color: { argb: `FF${BLUE}` } };
-        acarreoTitle.alignment = { horizontal: 'left', vertical: 'middle' };
+        sheet.mergeCells(`A${currentRow}:H${currentRow}`);
+        const acarreoHeader = sheet.getCell(`A${currentRow}`);
+        acarreoHeader.value = '📦 CONTROL DE ACARREO (RESUMEN DE VOLUMEN)';
+        acarreoHeader.font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } };
+        acarreoHeader.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${BLUE}` } };
+        acarreoHeader.alignment = { horizontal: 'left', vertical: 'middle', indent: 1 };
         currentRow++;
 
+        // Subtítulos
         sheet.getCell(`A${currentRow}`).value = `Total Volumen: ${estadisticas.acarreo.totalVolumen.toLocaleString()} m³`;
-        sheet.getCell(`A${currentRow}`).font = { size: 10, color: { argb: `FF${GRAY}` } };
-        currentRow++;
-        sheet.getCell(`A${currentRow}`).value = `Material más movido: ${estadisticas.acarreo.materialMasMovido}`;
-        sheet.getCell(`A${currentRow}`).font = { size: 10, color: { argb: `FF${GRAY}` } };
+        sheet.getCell(`A${currentRow}`).font = { bold: true, color: { argb: `FF${GRAY}` } };
+        currentRow += 2;
+
+        // Tabla a la izquierda
+        const startTableRow = currentRow;
+        const headers = ['Material', 'Volumen (m³)', 'Viajes', 'Porcentaje'];
+        headers.forEach((h, i) => {
+            const cell = sheet.getCell(currentRow, i + 1);
+            cell.value = h;
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF6B6EC9' } };
+            cell.alignment = { horizontal: 'center' };
+        });
         currentRow++;
 
-        // Tabla de acarreo
-        const acarreoHeaderRow = sheet.getRow(currentRow);
-        acarreoHeaderRow.values = ['Material', 'Volumen (m³)', 'Viajes', 'Porcentaje'];
-        acarreoHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-        acarreoHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${BLUE}` } };
-        acarreoHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
-        acarreoHeaderRow.height = 20;
-        currentRow++;
-
-        estadisticas.acarreo.materiales.forEach((material) => {
-            const row = sheet.getRow(currentRow);
-            row.values = [material.nombre, material.volumen, material.viajes, `${material.porcentaje}%`];
-            row.alignment = { horizontal: 'left', vertical: 'middle' };
+        estadisticas.acarreo.materiales.forEach(m => {
+            sheet.getRow(currentRow).values = [m.nombre, m.volumen, m.viajes, `${m.porcentaje}%`];
+            sheet.getRow(currentRow).alignment = { horizontal: 'left' };
             currentRow++;
         });
 
-        currentRow++;
-    }
-
-    // =============== SECCIÓN: CONTROL DE MATERIAL ===============
-    if (estadisticas.material.materiales.length > 0) {
-        sheet.mergeCells(`D${currentRow}:G${currentRow}`);
-        const materialTitle = sheet.getCell(`D${currentRow}`);
-        materialTitle.value = '🏗️ CONTROL DE MATERIAL';
-        materialTitle.font = { bold: true, size: 12, color: { argb: `FF${BLUE}` } };
-        materialTitle.alignment = { horizontal: 'left', vertical: 'middle' };
-        currentRow++;
-
-        sheet.getCell(`D${currentRow}`).value = `Material más utilizado: ${estadisticas.material.materialMasUtilizado}`;
-        sheet.getCell(`D${currentRow}`).font = { size: 10, color: { argb: `FF${GRAY}` } };
-        currentRow++;
-
-        // Tabla de material
-        const materialHeaderRow = sheet.getRow(currentRow);
-        materialHeaderRow.values = [undefined, undefined, undefined, 'Material', 'Cantidad', 'Unidad'];
-        materialHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-        materialHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${BLUE}` } };
-        materialHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
-        materialHeaderRow.height = 20;
-        currentRow++;
-
-        estadisticas.material.materiales.forEach((material) => {
-            const row = sheet.getRow(currentRow);
-            row.values = [undefined, undefined, undefined, material.nombre, material.cantidad, material.unidad];
-            row.alignment = { horizontal: 'left', vertical: 'middle' };
-            currentRow++;
+        // Gráfica a la derecha (Base64)
+        const chartData = estadisticas.acarreo.materiales.map(m => ({ label: m.nombre, value: m.volumen }));
+        const pieChart = generatePieChartImage(chartData, 400, 300, 'Distribución por Material');
+        const imgId = workbook.addImage({ base64: pieChart, extension: 'png' });
+        sheet.addImage(imgId, {
+            tl: { col: 4, row: startTableRow - 1 },
+            ext: { width: 400, height: 250 }
         });
 
-        currentRow++;
+        currentRow = Math.max(currentRow, startTableRow + 13); // Asegurar espacio para la imagen
+        currentRow += 2;
     }
 
-    // Ajustar a la posición correcta después de ambas secciones
-    currentRow = Math.max(currentRow, sheet.rowCount) + 1;
-
-    // =============== SECCIÓN: CONTROL DE AGUA ===============
+    // 2. CONTROL DE AGUA
     if (estadisticas.agua.porOrigen.length > 0) {
-        sheet.mergeCells(`A${currentRow}:C${currentRow}`);
-        const aguaTitle = sheet.getCell(`A${currentRow}`);
-        aguaTitle.value = '💧 CONTROL DE AGUA';
-        aguaTitle.font = { bold: true, size: 12, color: { argb: `FF${BLUE}` } };
-        aguaTitle.alignment = { horizontal: 'left', vertical: 'middle' };
+        sheet.mergeCells(`A${currentRow}:H${currentRow}`);
+        const aguaHeader = sheet.getCell(`A${currentRow}`);
+        aguaHeader.value = '💧 CONTROL DE AGUA (RESUMEN POR ORIGEN)';
+        aguaHeader.font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } };
+        aguaHeader.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0284C7' } }; // Cyan-600
+        aguaHeader.alignment = { horizontal: 'left', vertical: 'middle', indent: 1 };
         currentRow++;
 
         sheet.getCell(`A${currentRow}`).value = `Total Volumen: ${estadisticas.agua.volumenTotal.toLocaleString()} m³`;
-        sheet.getCell(`A${currentRow}`).font = { size: 10, color: { argb: `FF${GRAY}` } };
-        currentRow++;
-        sheet.getCell(`A${currentRow}`).value = `Origen más utilizado: ${estadisticas.agua.origenMasUtilizado}`;
-        sheet.getCell(`A${currentRow}`).font = { size: 10, color: { argb: `FF${GRAY}` } };
+        sheet.getCell(`A${currentRow}`).font = { bold: true, color: { argb: `FF${GRAY}` } };
+        currentRow += 2;
+
+        const startTableRow = currentRow;
+        const headers = ['Origen', 'Volumen (m³)', 'Viajes', 'Porcentaje'];
+        headers.forEach((h, i) => {
+            const cell = sheet.getCell(currentRow, i + 1);
+            cell.value = h;
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF38BDF8' } };
+            cell.alignment = { horizontal: 'center' };
+        });
         currentRow++;
 
-        // Tabla de agua
-        const aguaHeaderRow = sheet.getRow(currentRow);
-        aguaHeaderRow.values = ['Origen', 'Volumen (m³)', 'Viajes', 'Porcentaje'];
-        aguaHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-        aguaHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${BLUE}` } };
-        aguaHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
-        aguaHeaderRow.height = 20;
-        currentRow++;
-
-        estadisticas.agua.porOrigen.forEach((origen) => {
-            const row = sheet.getRow(currentRow);
-            row.values = [origen.origen, origen.volumen, origen.viajes, `${origen.porcentaje}%`];
-            row.alignment = { horizontal: 'left', vertical: 'middle' };
+        estadisticas.agua.porOrigen.forEach(o => {
+            sheet.getRow(currentRow).values = [o.origen, o.volumen, o.viajes, `${o.porcentaje}%`];
             currentRow++;
         });
 
-        currentRow++;
+        // Gráfica
+        const chartData = estadisticas.agua.porOrigen.map(o => ({ label: o.origen, value: o.volumen }));
+        const pieChart = generatePieChartImage(chartData, 400, 300, 'Distribución por Origen de Agua');
+        const imgId = workbook.addImage({ base64: pieChart, extension: 'png' });
+        sheet.addImage(imgId, {
+            tl: { col: 4, row: startTableRow - 1 },
+            ext: { width: 400, height: 250 }
+        });
+
+        currentRow = Math.max(currentRow, startTableRow + 13);
+        currentRow += 2;
     }
 
-    // =============== SECCIÓN: VEHÍCULOS ===============
+    // 3. VEHÍCULOS / MAQUINARIA
     if (estadisticas.vehiculos.vehiculos.length > 0) {
-        sheet.mergeCells(`D${currentRow}:G${currentRow}`);
-        const vehiculosTitle = sheet.getCell(`D${currentRow}`);
-        vehiculosTitle.value = '🚜 VEHÍCULOS';
-        vehiculosTitle.font = { bold: true, size: 12, color: { argb: `FF${BLUE}` } };
-        vehiculosTitle.alignment = { horizontal: 'left', vertical: 'middle' };
+        sheet.mergeCells(`A${currentRow}:H${currentRow}`);
+        const vehHeader = sheet.getCell(`A${currentRow}`);
+        vehHeader.value = '🚜 USO DE MAQUINARIA (HORAS)';
+        vehHeader.font = { bold: true, size: 14, color: { argb: 'FFFFFFFF' } };
+        vehHeader.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD97706' } }; // Amber-600
+        vehHeader.alignment = { horizontal: 'left', vertical: 'middle', indent: 1 };
         currentRow++;
 
-        sheet.getCell(`D${currentRow}`).value = `Total Horas: ${estadisticas.vehiculos.totalHoras.toLocaleString()} hrs`;
-        sheet.getCell(`D${currentRow}`).font = { size: 10, color: { argb: `FF${GRAY}` } };
-        currentRow++;
-        sheet.getCell(`D${currentRow}`).value = `Vehículo más utilizado: ${estadisticas.vehiculos.vehiculoMasUtilizado}`;
-        sheet.getCell(`D${currentRow}`).font = { size: 10, color: { argb: `FF${GRAY}` } };
+        sheet.getCell(`A${currentRow}`).value = `Total Horas Operación: ${estadisticas.vehiculos.totalHoras.toLocaleString()} hrs`;
+        sheet.getCell(`A${currentRow}`).font = { bold: true, color: { argb: `FF${GRAY}` } };
+        currentRow += 2;
+
+        const startTableRow = currentRow;
+        const headers = ['Maquinaria', 'Económico', 'Horas', 'Porcentaje'];
+        headers.forEach((h, i) => {
+            const cell = sheet.getCell(currentRow, i + 1);
+            cell.value = h;
+            cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFBBF24' } };
+            cell.alignment = { horizontal: 'center' };
+        });
         currentRow++;
 
-        // Tabla de vehículos
-        const vehiculosHeaderRow = sheet.getRow(currentRow);
-        vehiculosHeaderRow.values = [undefined, undefined, undefined, 'Vehículo', 'Horas', 'Porcentaje'];
-        vehiculosHeaderRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-        vehiculosHeaderRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${BLUE}` } };
-        vehiculosHeaderRow.alignment = { horizontal: 'center', vertical: 'middle' };
-        vehiculosHeaderRow.height = 20;
-        currentRow++;
-
-        estadisticas.vehiculos.vehiculos.forEach((vehiculo) => {
-            const row = sheet.getRow(currentRow);
-            row.values = [undefined, undefined, undefined, vehiculo.nombre, vehiculo.horasOperacion, `${vehiculo.porcentaje}%`];
-            row.alignment = { horizontal: 'left', vertical: 'middle' };
+        estadisticas.vehiculos.vehiculos.forEach(v => {
+            sheet.getRow(currentRow).values = [v.nombre, v.noEconomico, v.horasOperacion, `${v.porcentaje}%`];
             currentRow++;
         });
+
+        // Gráfica
+        const chartData = estadisticas.vehiculos.vehiculos.map(v => ({ label: `${v.nombre} (${v.noEconomico})`, value: v.horasOperacion }));
+        const pieChart = generatePieChartImage(chartData, 400, 300, 'Uso de Maquinaria por Horas');
+        const imgId = workbook.addImage({ base64: pieChart, extension: 'png' });
+        sheet.addImage(imgId, {
+            tl: { col: 4, row: startTableRow - 1 },
+            ext: { width: 400, height: 250 }
+        });
+
+        currentRow = Math.max(currentRow, startTableRow + 13);
+        currentRow += 2;
     }
 
     // Ajustar anchos de columnas
-    sheet.getColumn('A').width = 25;
+    sheet.getColumn('A').width = 30;
     sheet.getColumn('B').width = 15;
     sheet.getColumn('C').width = 15;
-    sheet.getColumn('D').width = 25;
+    sheet.getColumn('D').width = 15;
     sheet.getColumn('E').width = 15;
     sheet.getColumn('F').width = 15;
+    sheet.getColumn('G').width = 20;
+    sheet.getColumn('H').width = 20;
 
     // Descargar el archivo
     const buffer = await workbook.xlsx.writeBuffer();
@@ -249,7 +241,7 @@ export const generarExcelEstadisticas = async (estadisticas: EstadisticasRespons
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    const nombreArchivo = `Estadisticas_${nombreProyecto || 'Todos'}_${fechaInicio.replace(/\//g, '-')}_${fechaFin.replace(/\//g, '-')}.xlsx`;
+    const nombreArchivo = `Estadisticas_${nombreProyecto || 'Global'}_${fechaInicio.replace(/\//g, '-')}_${fechaFin.replace(/\//g, '-')}.xlsx`;
     a.download = nombreArchivo;
     a.click();
     window.URL.revokeObjectURL(url);

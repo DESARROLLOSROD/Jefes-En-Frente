@@ -8,7 +8,7 @@ import GestionVehiculos from '../vehicles/GestionVehiculos';
 import { WorkZoneManager } from '../WorkZones';
 import { EstadisticasReporte } from '../reports/EstadisticasReporte';
 import { ReporteActividades } from '../../types/reporte';
-import { proyectoService } from '../../services/api';
+import { reporteService, proyectoService } from '../../services/api';
 import { obtenerEstadisticas, EstadisticasResponse } from '../../services/estadisticas.service';
 import { generarPDFEstadisticas } from '../../utils/pdfEstadisticasGenerator';
 import { generarExcelEstadisticas } from '../../utils/excelEstadisticasGenerator';
@@ -73,7 +73,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const handleDescargarReporteGeneral = async (formato: 'pdf' | 'excel') => {
+  const handleDescargarReporteGeneral = async (formato: 'pdf' | 'excel' | 'consolidado') => {
     setMostrarModalFormato(false);
 
     // Verificar que haya fechas seleccionadas
@@ -86,16 +86,41 @@ const Dashboard: React.FC = () => {
     try {
       setLoadingGeneral(true);
 
-      // Obtener estadísticas
-      const idsProyectos = proyectoSeleccionado || 'todos';
-      const stats = await obtenerEstadisticas(idsProyectos, fechaInicio, fechaFin);
-
       // Obtener nombre del proyecto seleccionado
       let nombreProyecto: string | undefined = undefined;
       if (proyectoSeleccionado && proyectos.length > 0) {
         const proyectoEncontrado = proyectos.find(p => p._id === proyectoSeleccionado);
         nombreProyecto = proyectoEncontrado?.nombre;
       }
+
+      // 1. Caso: Consolidado Detallado (Excel multi-hoja con todos los reportes)
+      if (formato === 'consolidado') {
+        const { generarExcelGeneral } = await import('../../utils/fileGenerator');
+
+        // Obtener todos los reportes (o por proyecto)
+        const res = await reporteService.obtenerReportes(proyectoSeleccionado);
+        if (res.success && res.data) {
+          // Filtrar por fecha
+          const reportsFiltered = res.data.filter((r: ReporteActividades) => {
+            const f = new Date(r.fecha);
+            return f >= new Date(fechaInicio) && f <= new Date(fechaFin + 'T23:59:59');
+          });
+
+          if (reportsFiltered.length === 0) {
+            alert('NO SE ENCONTRARON REPORTES EN ESTE RANGO DE FECHAS');
+            return;
+          }
+
+          await generarExcelGeneral(reportsFiltered, proyectos);
+        } else {
+          alert('ERROR AL OBTENER REPORTES PARA EL CONSOLIDADO');
+        }
+        return;
+      }
+
+      // 2. Caso: Estadísticas (PDF o Excel de KPIs)
+      const idsProyectos = proyectoSeleccionado || 'todos';
+      const stats = await obtenerEstadisticas(idsProyectos, fechaInicio, fechaFin);
 
       // Generar el archivo según el formato
       if (formato === 'pdf') {
@@ -105,7 +130,7 @@ const Dashboard: React.FC = () => {
       }
     } catch (error) {
       console.error('Error generando reporte general:', error);
-      alert('OCURRIÓ UN ERROR AL GENERAR EL REPORTE DE ESTADÍSTICAS');
+      alert('OCURRIÓ UN ERROR AL GENERAR EL REPORTE');
     } finally {
       setLoadingGeneral(false);
     }
@@ -424,18 +449,24 @@ const Dashboard: React.FC = () => {
             <p className="text-gray-600 mb-6">
               ELIGE EL FORMATO EN EL QUE DESEAS EXPORTAR EL REPORTE:
             </p>
-            <div className="flex justify-around">
+            <div className="grid grid-cols-1 gap-3">
               <button
                 onClick={() => handleDescargarReporteGeneral('pdf')}
-                className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-semibold"
+                className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold flex items-center justify-center"
               >
-                PDF
+                <span className="mr-2">📄</span> PDF ESTADÍSTICAS
               </button>
               <button
                 onClick={() => handleDescargarReporteGeneral('excel')}
-                className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors font-semibold"
+                className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold flex items-center justify-center"
               >
-                EXCEL
+                <span className="mr-2">📊</span> EXCEL ESTADÍSTICAS
+              </button>
+              <button
+                onClick={() => handleDescargarReporteGeneral('consolidado')}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold flex items-center justify-center"
+              >
+                <span className="mr-2">📋</span> EXCEL CONSOLIDADO DE REPORTES
               </button>
             </div>
             <div className="mt-6 flex justify-end">

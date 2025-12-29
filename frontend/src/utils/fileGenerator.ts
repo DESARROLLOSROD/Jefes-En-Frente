@@ -1,7 +1,8 @@
+import type ExcelJS from 'exceljs';
 import * as XLSX from 'xlsx';
 import { ReporteActividades } from '../types/reporte';
 import { Vehiculo, Proyecto } from '../types/gestion';
-import { prepararDatosReporte, prepararDatosVehiculos, prepararDatosGeneral } from './reportGenerator';
+import { prepararDatosReporte, prepararDatosVehiculos } from './reportGenerator';
 
 // Función auxiliar para dibujar el mapa con pines (reutilizada del PDF)
 const dibujarMapaConPines = (
@@ -67,120 +68,128 @@ export const generarExcelReporte = async (
     proyectoMapa?: { imagen: { data: string; contentType: string }; width: number; height: number }
 ) => {
     const ExcelJS = (await import('exceljs')).default;
+    const { generatePieChartImage } = await import('./chartGenerator');
+
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Reporte Completo', {
+    const worksheet = workbook.addWorksheet('Reporte Diario', {
         properties: { tabColor: { argb: 'FF4C4EC9' } }
     });
 
     const datos = prepararDatosReporte(reporte);
     let currentRow = 1;
 
-    // Estilo para títulos de sección
-    const sectionTitleStyle = {
-        font: { bold: true, size: 14, color: { argb: 'FFFFFFFF' } },
-        fill: { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FF4C4EC9' } },
-        alignment: { vertical: 'middle' as const, horizontal: 'left' as const, indent: 1 },
+    // Colores corporativos
+    const BLUE = '4C4EC9';
+
+    // === TÍTULO PRINCIPAL ===
+    worksheet.mergeCells(`A${currentRow}:I${currentRow}`);
+    const mainTitle = worksheet.getCell(`A${currentRow}`);
+    mainTitle.value = 'REPORTE DIARIO DE ACTIVIDADES';
+    mainTitle.font = { bold: true, size: 16, color: { argb: 'FFFFFFFF' } };
+    mainTitle.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${BLUE}` } };
+    mainTitle.alignment = { horizontal: 'center', vertical: 'middle' };
+    worksheet.getRow(currentRow).height = 40;
+    currentRow++;
+
+    // Estilo para títulos de sección (más moderno)
+    const sectionTitleStyle: Partial<ExcelJS.Style> = {
+        font: { bold: true, size: 12, color: { argb: 'FF1F2937' } },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } },
+        alignment: { vertical: 'middle', horizontal: 'left', indent: 1 },
         border: {
-            top: { style: 'thin' as const },
-            left: { style: 'thin' as const },
-            bottom: { style: 'thin' as const },
-            right: { style: 'thin' as const }
+            bottom: { style: 'medium', color: { argb: `FF${BLUE}` } }
         }
     };
 
     // Estilo para encabezados de tabla
-    const headerStyle = {
-        font: { bold: true, size: 11, color: { argb: 'FFFFFFFF' } },
-        fill: { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FF6B6EC9' } },
-        alignment: { vertical: 'middle' as const, horizontal: 'center' as const },
+    const headerStyle: Partial<ExcelJS.Style> = {
+        font: { bold: true, size: 10, color: { argb: 'FFFFFFFF' } },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF6B6EC9' } },
+        alignment: { vertical: 'middle', horizontal: 'center' },
         border: {
-            top: { style: 'thin' as const },
-            left: { style: 'thin' as const },
-            bottom: { style: 'thin' as const },
-            right: { style: 'thin' as const }
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
         }
     };
 
-    // Estilo para celdas de datos (filas pares)
-    const dataStyle = {
+    const dataStyle: Partial<ExcelJS.Style> = {
         border: {
-            top: { style: 'thin' as const, color: { argb: 'FFE0E0E0' } },
-            left: { style: 'thin' as const, color: { argb: 'FFE0E0E0' } },
-            bottom: { style: 'thin' as const, color: { argb: 'FFE0E0E0' } },
-            right: { style: 'thin' as const, color: { argb: 'FFE0E0E0' } }
+            bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } }
         },
-        alignment: { vertical: 'middle' as const }
-    };
-
-    // Estilo para filas alternas (zebra striping)
-    const alternateDataStyle = {
-        ...dataStyle,
-        fill: { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFF5F5F5' } }
-    };
-
-    // Estilo para fila de total
-    const totalStyle = {
-        font: { bold: true, size: 11 },
-        fill: { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFFFE4B5' } },
-        alignment: { vertical: 'middle' as const, horizontal: 'right' as const },
-        border: {
-            top: { style: 'medium' as const },
-            left: { style: 'thin' as const },
-            bottom: { style: 'medium' as const },
-            right: { style: 'thin' as const }
-        }
+        alignment: { vertical: 'middle', horizontal: 'left' }
     };
 
     // === INFORMACIÓN GENERAL ===
-    const titleRow = worksheet.getRow(currentRow);
-    titleRow.getCell(1).value = 'INFORMACIÓN GENERAL';
-    titleRow.getCell(1).style = sectionTitleStyle;
+    const infoTitleRow = worksheet.getRow(currentRow);
+    infoTitleRow.getCell(1).value = '📋 INFORMACIÓN GENERAL';
+    infoTitleRow.getCell(1).style = sectionTitleStyle;
     worksheet.mergeCells(currentRow, 1, currentRow, 9);
-    titleRow.height = 30;
-    currentRow++;
+    currentRow += 1;
 
-    // Encabezados
-    const infoHeaderRow = worksheet.getRow(currentRow);
-    infoHeaderRow.getCell(1).value = 'Campo';
-    infoHeaderRow.getCell(2).value = 'Valor';
-    infoHeaderRow.getCell(1).style = headerStyle;
-    infoHeaderRow.getCell(2).style = headerStyle;
-    infoHeaderRow.height = 25;
-    currentRow++;
-
-    // Datos de información general
+    // Grid de información general (2 columnas)
     const infoData = [
-        ['Fecha', new Date(reporte.fecha).toLocaleDateString('es-MX', { timeZone: 'UTC' })],
-        ['Turno', reporte.turno === 'primer' ? 'PRIMER TURNO' : 'SEGUNDO TURNO'],
-        ['Ubicación', reporte.ubicacion],
-        ['Zona de Trabajo', typeof reporte.zonaTrabajo === 'string' ? reporte.zonaTrabajo : (reporte.zonaTrabajo?.zonaNombre || 'N/A')],
-        ['Sección de Trabajo', typeof reporte.seccionTrabajo === 'string' ? reporte.seccionTrabajo : (reporte.seccionTrabajo?.seccionNombre || 'N/A')],
-        ['Jefe de Frente', reporte.jefeFrente],
-        ['Sobrestante', reporte.sobrestante]
+        ['Fecha', new Date(reporte.fecha).toLocaleDateString('es-MX', { timeZone: 'UTC' }), 'Turno', reporte.turno === 'primer' ? 'PRIMER TURNO' : 'SEGUNDO TURNO'],
+        ['Jefe de Frente', reporte.jefeFrente, 'Sobrestante', reporte.sobrestante],
+        ['Zona', typeof reporte.zonaTrabajo === 'string' ? reporte.zonaTrabajo : (reporte.zonaTrabajo?.zonaNombre || 'N/A'), 'Sección', typeof reporte.seccionTrabajo === 'string' ? reporte.seccionTrabajo : (reporte.seccionTrabajo?.seccionNombre || 'N/A')],
+        ['Ubicación', reporte.ubicacion, '', '']
     ];
 
-    infoData.forEach(([campo, valor], index) => {
+    infoData.forEach(rowData => {
         const row = worksheet.getRow(currentRow);
-        row.getCell(1).value = campo;
-        row.getCell(2).value = valor;
-        row.getCell(1).style = { ...dataStyle, font: { bold: true } };
-        row.getCell(2).style = index % 2 === 0 ? dataStyle : alternateDataStyle;
-        row.height = 22;
+        row.getCell(1).value = rowData[0];
+        row.getCell(2).value = rowData[1];
+        row.getCell(4).value = rowData[2];
+        row.getCell(5).value = rowData[3];
+
+        row.getCell(1).font = { bold: true, size: 10, color: { argb: 'FF4B5563' } };
+        row.getCell(4).font = { bold: true, size: 10, color: { argb: 'FF4B5563' } };
+        row.getCell(2).font = { size: 10 };
+        row.getCell(5).font = { size: 10 };
+
+        worksheet.mergeCells(currentRow, 2, currentRow, 3);
+        worksheet.mergeCells(currentRow, 5, currentRow, 9);
+
+        row.height = 20;
         currentRow++;
     });
 
-    currentRow += 2; // Espacio entre secciones
+    currentRow += 2;
+
+    // === RESUMEN VISUAL (Gráficas si hay datos) ===
+    if (reporte.controlAcarreo && reporte.controlAcarreo.length > 0) {
+        // Agrupar por material
+        const acarreoPorMaterial = reporte.controlAcarreo.reduce((acc: any, item) => {
+            acc[item.material] = (acc[item.material] || 0) + (parseFloat(item.volSuelto) || 0);
+            return acc;
+        }, {});
+
+        const chartData = Object.entries(acarreoPorMaterial).map(([label, value]) => ({ label, value: value as number }));
+
+        if (chartData.length > 0) {
+            const pieChart = generatePieChartImage(chartData, 500, 300, 'Distribución de Volumen por Material (Acarreo)');
+            const imgId = workbook.addImage({ base64: pieChart, extension: 'png' });
+
+            worksheet.getRow(currentRow).getCell(1).value = '📊 RESUMEN DE ACARREO';
+            worksheet.getRow(currentRow).getCell(1).style = sectionTitleStyle as any;
+            worksheet.mergeCells(currentRow, 1, currentRow, 9);
+            currentRow++;
+
+            worksheet.addImage(imgId, {
+                tl: { col: 0, row: currentRow },
+                ext: { width: 450, height: 250 }
+            });
+            currentRow += 18; // Espacio para la gráfica
+        }
+    }
 
     // === MAPA DEL PROYECTO ===
     let pinesParaDibujar: Array<{ pinX: number; pinY: number; etiqueta?: string; color?: string }> = [];
-
     if (reporte.pinesMapa && reporte.pinesMapa.length > 0) {
         pinesParaDibujar = reporte.pinesMapa;
     } else if (reporte.ubicacionMapa?.colocado) {
-        pinesParaDibujar = [{
-            pinX: reporte.ubicacionMapa.pinX,
-            pinY: reporte.ubicacionMapa.pinY
-        }];
+        pinesParaDibujar = [{ pinX: reporte.ubicacionMapa.pinX, pinY: reporte.ubicacionMapa.pinY }];
     }
 
     if (proyectoMapa?.imagen?.data && pinesParaDibujar.length > 0) {
@@ -191,192 +200,121 @@ export const generarExcelReporte = async (
                 pinesParaDibujar
             );
 
-            // Título de mapa
-            const mapaRow = worksheet.getRow(currentRow);
-            mapaRow.getCell(1).value = 'UBICACIÓN EN MAPA DEL PROYECTO';
-            mapaRow.getCell(1).style = sectionTitleStyle;
+            worksheet.getRow(currentRow).getCell(1).value = '📍 UBICACIÓN EN MAPA';
+            worksheet.getRow(currentRow).getCell(1).style = sectionTitleStyle as any;
             worksheet.mergeCells(currentRow, 1, currentRow, 9);
-            mapaRow.height = 30;
             currentRow++;
 
-            // Agregar imagen al workbook
-            const imageId = workbook.addImage({
-                base64: mapaConPines,
-                extension: 'png',
-            });
-
-            // Calcular dimensiones (aproximadamente 400px de ancho)
+            const imageId = workbook.addImage({ base64: mapaConPines, extension: 'png' });
             const aspectRatio = proyectoMapa.width / proyectoMapa.height;
-            const imageWidth = 400;
+            const imageWidth = 450;
             const imageHeight = imageWidth / aspectRatio;
 
-            // Insertar imagen
             worksheet.addImage(imageId, {
-                tl: { col: 0, row: currentRow - 1 },
+                tl: { col: 0, row: currentRow },
                 ext: { width: imageWidth, height: imageHeight }
             });
 
-            // Calcular cuántas filas ocupa la imagen (aproximadamente 15px por fila)
-            const rowsNeeded = Math.ceil(imageHeight / 15);
-            currentRow += rowsNeeded + 1;
+            const rowsNeeded = Math.ceil(imageHeight / 20);
+            currentRow += rowsNeeded + 2;
 
         } catch (error) {
             console.error('Error al agregar mapa al Excel:', error);
         }
     }
 
-    // Helper function para agregar sección con tabla
-    const addTableSection = (title: string, headers: string[], data: any[][], hasTotal: boolean = false) => {
-        if (data.length === 0) return;
+    // Helper function para agregar tablas
+    const addTableSection = (title: string, icon: string, headers: string[], dataRows: any[][], hasTotal: boolean = false) => {
+        if (dataRows.length === 0) return;
 
-        // Título de sección
-        const sectionRow = worksheet.getRow(currentRow);
-        sectionRow.getCell(1).value = title;
-        sectionRow.getCell(1).style = sectionTitleStyle;
-        worksheet.mergeCells(currentRow, 1, currentRow, headers.length);
-        sectionRow.height = 30;
+        worksheet.getRow(currentRow).getCell(1).value = `${icon} ${title}`;
+        worksheet.getRow(currentRow).getCell(1).style = sectionTitleStyle as any;
+        worksheet.mergeCells(currentRow, 1, currentRow, 9);
         currentRow++;
 
-        // Encabezados
         const headerRow = worksheet.getRow(currentRow);
-        headers.forEach((header, index) => {
-            headerRow.getCell(index + 1).value = header;
-            headerRow.getCell(index + 1).style = headerStyle;
+        headers.forEach((h, i) => {
+            const cell = headerRow.getCell(i + 1);
+            cell.value = h;
+            cell.style = headerStyle as any;
         });
         headerRow.height = 25;
         currentRow++;
 
-        // Datos (filtrar la fila de total si existe)
-        const dataRows = hasTotal ? data.slice(0, -1) : data;
-        dataRows.forEach((rowData, index) => {
-            const dataRow = worksheet.getRow(currentRow);
-            rowData.forEach((value, colIndex) => {
-                // Limpiar valores que puedan ser objetos
-                const cleanValue = typeof value === 'object' ? '' : value;
-                dataRow.getCell(colIndex + 1).value = cleanValue;
-                dataRow.getCell(colIndex + 1).style = index % 2 === 0 ? dataStyle : alternateDataStyle;
+        // Filtrar la fila de total si se pasó desde prepararDatosReporte (que a veces lo hace)
+        const cleanData = dataRows.filter(r => !r.some(v => typeof v === 'object' && v.content));
+
+        cleanData.forEach((rowData, index) => {
+            const row = worksheet.getRow(currentRow);
+            rowData.forEach((val, i) => {
+                row.getCell(i + 1).value = val;
+                row.getCell(i + 1).style = dataStyle as any;
+                if (index % 2 === 1) {
+                    row.getCell(i + 1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF9FAFB' } };
+                }
             });
-            dataRow.height = 22;
+            row.height = 20;
             currentRow++;
         });
 
-        // Agregar fila de total si existe
-        if (hasTotal && data.length > 0) {
+        if (hasTotal) {
             const totalRow = worksheet.getRow(currentRow);
+            let totalVal = 0;
+            let label = 'TOTAL VOLUMEN:';
+            let colIndex = 0;
 
-            // Calcular el total de volumen
-            let totalVolumen = 0;
-            if (title === 'CONTROL DE ACARREO') {
-                dataRows.forEach(row => {
-                    const vol = parseFloat(row[4]) || 0; // Columna Vol. Suelto
-                    totalVolumen += vol;
-                });
-                totalRow.getCell(1).value = '';
-                totalRow.getCell(2).value = '';
-                totalRow.getCell(3).value = '';
-                totalRow.getCell(4).value = 'TOTAL VOLUMEN:';
-                totalRow.getCell(5).value = `${totalVolumen.toFixed(2)} m³`;
-                totalRow.getCell(4).style = totalStyle;
-                totalRow.getCell(5).style = totalStyle;
-            } else if (title === 'CONTROL DE AGUA') {
-                dataRows.forEach(row => {
-                    const vol = parseFloat(row[3]) || 0; // Columna Volumen
-                    totalVolumen += vol;
-                });
-                totalRow.getCell(1).value = '';
-                totalRow.getCell(2).value = '';
-                totalRow.getCell(3).value = 'TOTAL VOLUMEN:';
-                totalRow.getCell(4).value = `${totalVolumen.toFixed(2)} m³`;
-                totalRow.getCell(3).style = totalStyle;
-                totalRow.getCell(4).style = totalStyle;
+            if (title.includes('ACARREO')) {
+                totalVal = cleanData.reduce((acc, r) => acc + (parseFloat(r[4]) || 0), 0);
+                colIndex = 5;
+            } else if (title.includes('AGUA')) {
+                totalVal = cleanData.reduce((acc, r) => acc + (parseFloat(r[3]) || 0), 0);
+                colIndex = 4;
             }
 
-            totalRow.height = 25;
-            currentRow++;
+            if (colIndex > 0) {
+                totalRow.getCell(colIndex - 1).value = label;
+                totalRow.getCell(colIndex - 1).font = { bold: true };
+                totalRow.getCell(colIndex).value = `${totalVal.toFixed(2)} m³`;
+                totalRow.getCell(colIndex).font = { bold: true, color: { argb: `FF${BLUE}` } };
+                totalRow.height = 25;
+                currentRow++;
+            }
         }
 
-        currentRow += 2; // Espacio entre secciones
+        currentRow += 2;
     };
 
-    // === CONTROL DE ACARREO ===
-    if (datos.controlAcarreo.length) {
-        addTableSection(
-            'CONTROL DE ACARREO',
-            ['No.', 'Material', 'No. Viaje', 'Capacidad', 'Vol. Suelto', 'Capa No.', 'Elevación', 'Capa Origen', 'Destino'],
-            datos.controlAcarreo,
-            true
-        );
-    }
-
-    // === CONTROL DE MATERIAL ===
-    if (datos.controlMaterial.length) {
-        addTableSection(
-            'CONTROL DE MATERIAL',
-            ['Material', 'Unidad', 'Cantidad', 'Zona', 'Elevación'],
-            datos.controlMaterial,
-            false
-        );
-    }
-
-    // === CONTROL DE AGUA ===
-    if (datos.controlAgua.length) {
-        addTableSection(
-            'CONTROL DE AGUA',
-            ['No. Económico', 'Viajes', 'Capacidad', 'Volumen', 'Origen', 'Destino'],
-            datos.controlAgua,
-            true
-        );
-    }
-
-    // === CONTROL DE MAQUINARIA ===
-    if (datos.controlMaquinaria.length) {
-        addTableSection(
-            'CONTROL DE MAQUINARIA',
-            ['Tipo', 'No. Económico', 'H. Inicial', 'H. Final', 'H. Operación', 'Operador', 'Actividad'],
-            datos.controlMaquinaria,
-            false
-        );
-    }
+    // Tablas de datos
+    addTableSection('CONTROL DE ACARREO', '📦', ['No.', 'Material', 'No. Viaje', 'Capacidad', 'Vol. Suelto', 'Capa No.', 'Elevación', 'Capa Origen', 'Destino'], datos.controlAcarreo, true);
+    addTableSection('CONTROL DE MATERIAL', '🏗️', ['Material', 'Unidad', 'Cantidad', 'Zona', 'Elevación'], datos.controlMaterial);
+    addTableSection('CONTROL DE AGUA', '💧', ['Económico', 'Viajes', 'Capacidad', 'Volumen', 'Origen', 'Destino'], datos.controlAgua, true);
+    addTableSection('CONTROL DE MAQUINARIA', '🚜', ['Tipo', 'Económico', 'H. Inicio', 'H. Fin', 'H. Oper.', 'Operador', 'Actividad'], datos.controlMaquinaria);
 
     // === OBSERVACIONES ===
     if (reporte.observaciones) {
-        const obsRow = worksheet.getRow(currentRow);
-        obsRow.getCell(1).value = 'OBSERVACIONES';
-        obsRow.getCell(1).style = sectionTitleStyle;
+        worksheet.getRow(currentRow).getCell(1).value = '📝 OBSERVACIONES';
+        worksheet.getRow(currentRow).getCell(1).style = sectionTitleStyle as any;
         worksheet.mergeCells(currentRow, 1, currentRow, 9);
-        obsRow.height = 30;
         currentRow++;
 
-        const obsDataRow = worksheet.getRow(currentRow);
-        obsDataRow.getCell(1).value = reporte.observaciones;
-        obsDataRow.getCell(1).style = {
-            ...dataStyle,
-            alignment: { wrapText: true, vertical: 'top' as const },
-            fill: { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: 'FFFAFAFA' } }
-        };
-        worksheet.mergeCells(currentRow, 1, currentRow, 9);
-        obsDataRow.height = 80;
+        worksheet.mergeCells(currentRow, 1, currentRow + 3, 9);
+        const obsCell = worksheet.getCell(currentRow, 1);
+        obsCell.value = reporte.observaciones;
+        obsCell.alignment = { wrapText: true, vertical: 'top' };
+        currentRow += 4;
     }
 
-    // Configurar anchos de columna
+    // Configurar anchos
     worksheet.columns = [
-        { width: 20 },
-        { width: 25 },
-        { width: 16 },
-        { width: 16 },
-        { width: 16 },
-        { width: 16 },
-        { width: 20 },
-        { width: 20 },
-        { width: 20 }
+        { width: 12 }, { width: 15 }, { width: 12 }, { width: 12 }, { width: 12 },
+        { width: 12 }, { width: 15 }, { width: 15 }, { width: 15 }
     ];
 
-    // Generar y descargar archivo
+    // Descargar
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const fechaArchivo = new Date(reporte.fecha).toISOString().split('T')[0];
-    const zonaNombre = typeof reporte.zonaTrabajo === 'string' ? reporte.zonaTrabajo : (reporte.zonaTrabajo?.zonaNombre || 'Zona');
-    const zona = zonaNombre.replace(/\s+/g, '_').substring(0, 20);
+    const zona = (typeof reporte.zonaTrabajo === 'string' ? reporte.zonaTrabajo : (reporte.zonaTrabajo?.zonaNombre || 'Zona')).substring(0, 15).replace(/\s+/g, '_');
     const filename = `Reporte_${fechaArchivo}_${zona}.xlsx`;
 
     const link = document.createElement('a');
@@ -395,11 +333,172 @@ export const generarExcelVehiculos = (vehiculos: Vehiculo[]) => {
     XLSX.writeFile(workbook, 'Reporte_Vehiculos.xlsx');
 };
 
-// Función para generar y descargar un archivo Excel a partir de un reporte general
-export const generarExcelGeneral = (reportes: ReporteActividades[], proyectos: Proyecto[]) => {
-    const workbook = XLSX.utils.book_new();
-    const datos = prepararDatosGeneral(reportes, proyectos);
-    const reportesSheet = XLSX.utils.json_to_sheet(datos);
-    XLSX.utils.book_append_sheet(workbook, reportesSheet, 'Reporte General');
-    XLSX.writeFile(workbook, 'Reporte_General.xlsx');
+// Función para generar y descargar un archivo Excel a partir de un reporte general (Multi-Hoja)
+export const generarExcelGeneral = async (reportes: ReporteActividades[], proyectos: Proyecto[]) => {
+    const ExcelJS = (await import('exceljs')).default;
+    const { generatePieChartImage } = await import('./chartGenerator');
+
+    const workbook = new ExcelJS.Workbook();
+    const proyectosMap = new Map(proyectos.map(p => [p._id, p.nombre]));
+
+    // Colores corporativos
+    const BLUE = '4C4EC9';
+    const AMBER = 'D97706';
+    const CYAN = '0284C7';
+
+    // Estilos comunes
+    const headerStyle = {
+        font: { bold: true, color: { argb: 'FFFFFFFF' } },
+        fill: { type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: `FF${BLUE}` } },
+        alignment: { horizontal: 'center' as const, vertical: 'middle' as const }
+    };
+
+    // 1. HOJA DE RESUMEN
+    const summarySheet = workbook.addWorksheet('Resumen General', { properties: { tabColor: { argb: `FF${BLUE}` } } });
+    let sRow = 1;
+
+    summarySheet.mergeCells('A1:E1');
+    const titleCell = summarySheet.getCell('A1');
+    titleCell.value = '📊 RESUMEN GENERAL DE OPERACIONES';
+    titleCell.font = { bold: true, size: 16, color: { argb: 'FFFFFFFF' } };
+    titleCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: `FF${BLUE}` } };
+    titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+    summarySheet.getRow(1).height = 40;
+    sRow += 2;
+
+    // KPIs Rápidos
+    const totalReportes = reportes.length;
+    const totalVolAcarreo = reportes.reduce((acc, r) => acc + (r.controlAcarreo?.reduce((s, i) => s + (parseFloat(i.volSuelto) || 0), 0) || 0), 0);
+    const totalVolAgua = reportes.reduce((acc, r) => acc + (r.controlAgua?.reduce((s, i) => s + (parseFloat(i.volumen) || 0), 0) || 0), 0);
+    const totalHorasMaq = reportes.reduce((acc, r) => acc + (r.controlMaquinaria?.reduce((s, i) => s + (i.horasOperacion || 0), 0) || 0), 0);
+
+    const kpis = [
+        ['Total Reportes', totalReportes, 'docs'],
+        ['Volumen Acarreo', `${totalVolAcarreo.toLocaleString()} m³`, 'truck'],
+        ['Volumen Agua', `${totalVolAgua.toLocaleString()} m³`, 'drop'],
+        ['Horas Maquinaria', `${totalHorasMaq.toLocaleString()} hrs`, 'tool']
+    ];
+
+    kpis.forEach((kpi) => {
+        const row = summarySheet.getRow(sRow);
+        row.getCell(1).value = kpi[0];
+        row.getCell(2).value = kpi[1];
+        row.getCell(1).font = { bold: true, color: { argb: 'FF4B5563' } };
+        row.getCell(2).font = { bold: true, size: 12, color: { argb: `FF${BLUE}` } };
+        sRow++;
+    });
+
+    // Gráfica de distribución de materiales en el resumen
+    const materialesGlobal = reportes.reduce((acc: any, r) => {
+        r.controlAcarreo?.forEach(i => {
+            acc[i.material] = (acc[i.material] || 0) + (parseFloat(i.volSuelto) || 0);
+        });
+        return acc;
+    }, {});
+
+    const chartData = Object.entries(materialesGlobal).map(([label, value]) => ({ label, value: value as number })).sort((a, b) => b.value - a.value).slice(0, 8);
+
+    if (chartData.length > 0) {
+        const pieChart = generatePieChartImage(chartData, 500, 350, 'Distribución Global de Materiales (Acarreo)');
+        const imgId = workbook.addImage({ base64: pieChart, extension: 'png' });
+        summarySheet.addImage(imgId, {
+            tl: { col: 0, row: sRow + 1 },
+            ext: { width: 450, height: 300 }
+        });
+    }
+
+    summarySheet.getColumn(1).width = 25;
+    summarySheet.getColumn(2).width = 25;
+
+    // 2. HOJA DE ACARREO DETALLADO
+    const acarreoReports = reportes.filter(r => r.controlAcarreo && r.controlAcarreo.length > 0);
+    if (acarreoReports.length > 0) {
+        const sheet = workbook.addWorksheet('Acarreo Detallado');
+        sheet.getRow(1).values = ['Proyecto', 'Fecha', 'Turno', 'Zona', 'Material', 'Viaje No.', 'Capacidad', 'Vol. Suelto', 'Origen', 'Destino'];
+        sheet.getRow(1).eachCell(c => { c.style = headerStyle as any; });
+        sheet.getRow(1).height = 25;
+
+        let rowIdx = 2;
+        acarreoReports.forEach(r => {
+            r.controlAcarreo?.forEach(i => {
+                sheet.getRow(rowIdx).values = [
+                    proyectosMap.get(r.proyectoId) || 'N/A',
+                    new Date(r.fecha).toLocaleDateString('es-MX', { timeZone: 'UTC' }),
+                    r.turno.toUpperCase(),
+                    typeof r.zonaTrabajo === 'string' ? r.zonaTrabajo : (r.zonaTrabajo?.zonaNombre || 'N/A'),
+                    i.material,
+                    i.noViaje,
+                    i.capacidad,
+                    i.volSuelto,
+                    i.capaOrigen,
+                    i.destino
+                ];
+                rowIdx++;
+            });
+        });
+        sheet.columns.forEach(col => col.width = 18);
+    }
+
+    // 3. HOJA DE AGUA DETALLADO
+    const aguaReports = reportes.filter(r => r.controlAgua && r.controlAgua.length > 0);
+    if (aguaReports.length > 0) {
+        const sheet = workbook.addWorksheet('Agua Detallado', { properties: { tabColor: { argb: `FF${CYAN}` } } });
+        sheet.getRow(1).values = ['Proyecto', 'Fecha', 'Turno', 'Económico', 'Viaje', 'Capacidad', 'Volumen', 'Origen', 'Destino'];
+        sheet.getRow(1).eachCell(c => { c.style = headerStyle as any; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0284C7' } }; });
+
+        let rowIdx = 2;
+        aguaReports.forEach(r => {
+            r.controlAgua?.forEach(i => {
+                sheet.getRow(rowIdx).values = [
+                    proyectosMap.get(r.proyectoId) || 'N/A',
+                    new Date(r.fecha).toLocaleDateString('es-MX', { timeZone: 'UTC' }),
+                    r.turno.toUpperCase(),
+                    i.noEconomico,
+                    i.viaje,
+                    i.capacidad,
+                    i.volumen,
+                    i.origen,
+                    i.destino
+                ];
+                rowIdx++;
+            });
+        });
+        sheet.columns.forEach(col => col.width = 18);
+    }
+
+    // 4. HOJA DE MAQUINARIA DETALLADO
+    const maqReports = reportes.filter(r => r.controlMaquinaria && r.controlMaquinaria.length > 0);
+    if (maqReports.length > 0) {
+        const sheet = workbook.addWorksheet('Maquinaria Detallado', { properties: { tabColor: { argb: `FF${AMBER}` } } });
+        sheet.getRow(1).values = ['Proyecto', 'Fecha', 'Tipo', 'Económico', 'H. Inicio', 'H. Fin', 'H. Oper.', 'Operador', 'Actividad'];
+        sheet.getRow(1).eachCell(c => { c.style = headerStyle as any; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD97706' } }; });
+
+        let rowIdx = 2;
+        maqReports.forEach(r => {
+            r.controlMaquinaria?.forEach(i => {
+                sheet.getRow(rowIdx).values = [
+                    proyectosMap.get(r.proyectoId) || 'N/A',
+                    new Date(r.fecha).toLocaleDateString('es-MX', { timeZone: 'UTC' }),
+                    i.tipo || '-',
+                    i.numeroEconomico || '-',
+                    i.horometroInicial,
+                    i.horometroFinal,
+                    i.horasOperacion,
+                    i.operador,
+                    i.actividad
+                ];
+                rowIdx++;
+            });
+        });
+        sheet.columns.forEach(col => col.width = 18);
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const filename = `Reporte_General_Consolidado_${new Date().toISOString().split('T')[0]}.xlsx`;
+
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
 };
