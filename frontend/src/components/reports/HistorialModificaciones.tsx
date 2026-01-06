@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import { ModificacionReporte, ApiResponse } from '../../types/reporte';
+import { api } from '../../services/api';
 
 interface HistorialModificacionesProps {
   reporteId: string;
@@ -16,12 +16,8 @@ const HistorialModificaciones: React.FC<HistorialModificacionesProps> = ({ repor
     const cargarHistorial = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('token');
-        const response = await axios.get<ApiResponse<ModificacionReporte[]>>(
-          `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/reportes/${reporteId}/historial`,
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
+        const response = await api.get<ApiResponse<ModificacionReporte[]>>(
+          `/reportes/${reporteId}/historial`
         );
 
         if (response.data.success && response.data.data) {
