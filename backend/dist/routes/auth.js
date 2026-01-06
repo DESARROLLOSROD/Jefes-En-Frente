@@ -1,11 +1,11 @@
 import express from 'express';
-import jwt from 'jsonwebtoken';
 import Usuario from '../models/Usuario.js';
 import Proyecto from '../models/Proyecto.js';
-import { generateAccessToken, generateRefreshToken, verifyRefreshToken, revokeRefreshToken, setAuthCookies, clearAuthCookies } from '../middleware/auth.js';
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken, revokeRefreshToken, setAuthCookies, clearAuthCookies, verificarToken } from '../middleware/auth.js';
 import { validateLogin } from '../middleware/validators.js';
 import { loginLimiter } from '../middleware/rateLimiter.js';
 const router = express.Router();
+export { verificarToken };
 const JWT_SECRET = process.env.JWT_SECRET || 'jefesenfrente_secret_2024';
 // Login con soporte de cookies y refresh tokens
 router.post('/login', loginLimiter, validateLogin, async (req, res) => {
@@ -15,7 +15,7 @@ router.post('/login', loginLimiter, validateLogin, async (req, res) => {
         // Buscar usuario con debug
         console.log('📋 Buscando usuario en la base de datos...');
         const usuario = await Usuario.findOne({ email, activo: true })
-            .populate('proyectos', 'nombre ubicacion descripcion');
+            .populate('proyectos', 'nombre ubicacion descripcion mapa');
         if (!usuario) {
             console.log('❌ Usuario no encontrado:', email);
             const response = {
@@ -89,7 +89,7 @@ router.post('/refresh', async (req, res) => {
         // Verificar refresh token
         const tokenData = await verifyRefreshToken(refreshToken);
         const usuario = await Usuario.findById(tokenData.userId)
-            .populate('proyectos', 'nombre ubicacion descripcion');
+            .populate('proyectos', 'nombre ubicacion descripcion mapa');
         if (!usuario || !usuario.activo) {
             return res.status(401).json({
                 success: false,
@@ -175,27 +175,6 @@ router.get('/proyectos', async (req, res) => {
         res.status(500).json(response);
     }
 });
-// Middleware para verificar token JWT
-export const verificarToken = (req, res, next) => {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
-    if (!token) {
-        return res.status(401).json({
-            success: false,
-            error: 'Token de acceso requerido'
-        });
-    }
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded;
-        next();
-    }
-    catch (error) {
-        res.status(401).json({
-            success: false,
-            error: 'Token inválido'
-        });
-    }
-};
 // Middleware para verificar que el usuario es admin
 export const verificarAdmin = (req, res, next) => {
     if (req.user?.rol !== 'admin') {

@@ -35,6 +35,26 @@ const controlMaquinariaSchema = new Schema({
     horometroInicial: Number,
     horometroFinal: Number
 });
+const modificacionReporteSchema = new Schema({
+    fechaModificacion: {
+        type: Date,
+        default: Date.now
+    },
+    usuarioId: {
+        type: String,
+        required: true
+    },
+    usuarioNombre: {
+        type: String,
+        required: true
+    },
+    cambios: [{
+            campo: String,
+            valorAnterior: Schema.Types.Mixed,
+            valorNuevo: Schema.Types.Mixed
+        }],
+    observacion: String
+});
 const reporteActividadesSchema = new Schema({
     fecha: {
         type: Date,
@@ -87,6 +107,7 @@ const reporteActividadesSchema = new Schema({
     fechaCreacion: {
         type: Date,
         default: Date.now
-    }
+    },
+    historialModificaciones: [modificacionReporteSchema]
 });
 export default model('ReporteActividades', reporteActividadesSchema);

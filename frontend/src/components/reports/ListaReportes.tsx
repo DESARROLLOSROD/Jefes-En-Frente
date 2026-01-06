@@ -5,6 +5,7 @@ import { reporteService } from '../../services/api';
 import { generarPDFReporte } from '../../utils/pdfGenerator';
 import { generarExcelReporte } from '../../utils/fileGenerator';
 import ModalConfirmacion from '../shared/modals/ModalConfirmacion';
+import HistorialModificaciones from './HistorialModificaciones';
 
 interface ListaReportesProps {
   onEditar: (reporte: ReporteActividades) => void;
@@ -20,6 +21,7 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
   const [reporteEliminar, setReporteEliminar] = useState<ReporteActividades | null>(null);
   const [fechaDesde, setFechaDesde] = useState('');
   const [fechaHasta, setFechaHasta] = useState('');
+  const [reporteHistorial, setReporteHistorial] = useState<string | null>(null);
 
   // Load reports when project changes
   useEffect(() => {
@@ -254,6 +256,13 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
                       >
                         EXCEL
                       </button>
+                      <button
+                        className="text-purple-600 hover:text-purple-900 mr-3 font-semibold"
+                        onClick={() => setReporteHistorial(reporte._id!)}
+                        title="VER HISTORIAL"
+                      >
+                        HISTORIAL
+                      </button>
                       {(user?.rol === 'admin' || user?.rol === 'supervisor') && (
                         <>
                           <button
@@ -280,7 +289,6 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
       </div>
 
       {/* Modal de Confirmación */}
-      {/* Modal de Confirmación */}
       <ModalConfirmacion
         isOpen={mostrarConfirmacion}
         onClose={() => {
@@ -299,6 +307,14 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
         confirmText="ELIMINAR"
         cancelText="CANCELAR"
       />
+
+      {/* Modal de Historial de Modificaciones */}
+      {reporteHistorial && (
+        <HistorialModificaciones
+          reporteId={reporteHistorial}
+          onClose={() => setReporteHistorial(null)}
+        />
+      )}
     </div>
   );
 };

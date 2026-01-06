@@ -1,6 +1,7 @@
 import express from 'express';
 import ReporteActividades from '../models/ReporteActividades.js';
 import Vehiculo from '../models/Vehiculo.js';
+import Usuario from '../models/Usuario.js';
 import { ApiResponse } from '../types/reporte.js';
 import { verificarToken, verificarAdminOSupervisor, AuthRequest } from '../middleware/auth.middleware.js';
 
@@ -267,7 +268,42 @@ router.get('/estadisticas', async (req: AuthRequest, res) => {
   }
 });
 
-// Obtener reporte por ID (DEBE estar DESPUÉS de rutas específicas como /estadisticas)
+// Obtener historial de modificaciones de un reporte (DEBE estar ANTES de /:id)
+router.get('/:id/historial', async (req: AuthRequest, res) => {
+  try {
+    const reporte = await ReporteActividades.findById(req.params.id, 'historialModificaciones');
+    if (!reporte) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'Reporte no encontrado'
+      };
+      return res.status(404).json(response);
+    }
+
+    const historial = reporte.historialModificaciones?.map(mod => ({
+      fechaModificacion: mod.fechaModificacion,
+      usuarioId: mod.usuarioId,
+      usuarioNombre: mod.usuarioNombre,
+      cambios: mod.cambios,
+      observacion: mod.observacion
+    })) || [];
+
+    const response: ApiResponse<typeof historial> = {
+      success: true,
+      data: historial
+    };
+    res.json(response);
+  } catch (error) {
+    console.error('❌ Error obteniendo historial:', error);
+    const response: ApiResponse<null> = {
+      success: false,
+      error: (error as Error).message
+    };
+    res.status(500).json(response);
+  }
+});
+
+// Obtener reporte por ID (DEBE estar DESPUÉS de rutas específicas como /estadisticas y /:id/historial)
 router.get('/:id', async (req: AuthRequest, res) => {
   try {
     const reporte = await ReporteActividades.findById(req.params.id);
@@ -306,7 +342,40 @@ router.put('/:id', verificarAdminOSupervisor, async (req: AuthRequest, res) => {
       return res.status(404).json(response);
     }
 
-    // 2. Revertir las horas de los vehículos del reporte anterior
+    // 2. Obtener información del usuario que modifica
+    const usuario = await Usuario.findById(req.userId);
+    if (!usuario) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'Usuario no encontrado'
+      };
+      return res.status(404).json(response);
+    }
+
+    // 3. Detectar los cambios entre el reporte anterior y el nuevo
+    const cambios: { campo: string; valorAnterior: any; valorNuevo: any }[] = [];
+    const camposIgnorados = ['_id', '__v', 'historialModificaciones', 'fechaCreacion', 'usuarioId'];
+
+    for (const campo in req.body) {
+      if (camposIgnorados.includes(campo)) continue;
+
+      const valorAnterior = (reporteAnterior as any)[campo];
+      const valorNuevo = req.body[campo];
+
+      // Comparar valores (convertir a JSON para comparar objetos y arrays)
+      const valorAnteriorStr = JSON.stringify(valorAnterior);
+      const valorNuevoStr = JSON.stringify(valorNuevo);
+
+      if (valorAnteriorStr !== valorNuevoStr) {
+        cambios.push({
+          campo,
+          valorAnterior,
+          valorNuevo
+        });
+      }
+    }
+
+    // 4. Revertir las horas de los vehículos del reporte anterior
     if (reporteAnterior.controlMaquinaria && Array.isArray(reporteAnterior.controlMaquinaria)) {
       for (const maquinaria of reporteAnterior.controlMaquinaria) {
         if (maquinaria.vehiculoId && maquinaria.horasOperacion) {
@@ -323,14 +392,29 @@ router.put('/:id', verificarAdminOSupervisor, async (req: AuthRequest, res) => {
       }
     }
 
-    // 3. Actualizar el reporte con los nuevos datos
+    // 5. Preparar el registro de modificación
+    const nuevaModificacion = {
+      fechaModificacion: new Date(),
+      usuarioId: req.userId!,
+      usuarioNombre: usuario.nombre,
+      cambios,
+      observacion: req.body.observacionModificacion || undefined
+    };
+
+    // 6. Actualizar el reporte con los nuevos datos y agregar al historial
+    const datosActualizacion = { ...req.body };
+    delete datosActualizacion.observacionModificacion; // Remover si existe
+
     const reporteActualizado = await ReporteActividades.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      {
+        ...datosActualizacion,
+        $push: { historialModificaciones: nuevaModificacion }
+      },
       { new: true }
     );
 
-    // 4. Aplicar las nuevas horas de los vehículos
+    // 7. Aplicar las nuevas horas de los vehículos
     if (reporteActualizado && reporteActualizado.controlMaquinaria && Array.isArray(reporteActualizado.controlMaquinaria)) {
       for (const maquinaria of reporteActualizado.controlMaquinaria) {
         if (maquinaria.vehiculoId && maquinaria.horasOperacion) {
@@ -338,7 +422,7 @@ router.put('/:id', verificarAdminOSupervisor, async (req: AuthRequest, res) => {
             await Vehiculo.findByIdAndUpdate(
               maquinaria.vehiculoId,
               {
-                horometroInicial: maquinaria.horometroFinal, // Actualizamos también los horómetros
+                horometroInicial: maquinaria.horometroFinal,
                 horometroFinal: maquinaria.horometroFinal,
                 $inc: { horasOperacion: maquinaria.horasOperacion }
               }
@@ -350,6 +434,8 @@ router.put('/:id', verificarAdminOSupervisor, async (req: AuthRequest, res) => {
         }
       }
     }
+
+    console.log(`📝 Reporte ${req.params.id} modificado por ${usuario.nombre}. ${cambios.length} cambios registrados.`);
 
     const response: ApiResponse<typeof reporteActualizado> = {
       success: true,

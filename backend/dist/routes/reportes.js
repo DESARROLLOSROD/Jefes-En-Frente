@@ -1,7 +1,8 @@
 import express from 'express';
 import ReporteActividades from '../models/ReporteActividades.js';
 import Vehiculo from '../models/Vehiculo.js';
-import { verificarToken } from '../middleware/auth.middleware.js';
+import Usuario from '../models/Usuario.js';
+import { verificarToken, verificarAdminOSupervisor } from '../middleware/auth.middleware.js';
 const router = express.Router();
 // TODAS las rutas requieren autenticación
 router.use(verificarToken);
@@ -240,7 +241,40 @@ router.get('/estadisticas', async (req, res) => {
         res.status(500).json(response);
     }
 });
-// Obtener reporte por ID (DEBE estar DESPUÉS de rutas específicas como /estadisticas)
+// Obtener historial de modificaciones de un reporte (DEBE estar ANTES de /:id)
+router.get('/:id/historial', async (req, res) => {
+    try {
+        const reporte = await ReporteActividades.findById(req.params.id, 'historialModificaciones');
+        if (!reporte) {
+            const response = {
+                success: false,
+                error: 'Reporte no encontrado'
+            };
+            return res.status(404).json(response);
+        }
+        const historial = reporte.historialModificaciones?.map(mod => ({
+            fechaModificacion: mod.fechaModificacion,
+            usuarioId: mod.usuarioId,
+            usuarioNombre: mod.usuarioNombre,
+            cambios: mod.cambios,
+            observacion: mod.observacion
+        })) || [];
+        const response = {
+            success: true,
+            data: historial
+        };
+        res.json(response);
+    }
+    catch (error) {
+        console.error('❌ Error obteniendo historial:', error);
+        const response = {
+            success: false,
+            error: error.message
+        };
+        res.status(500).json(response);
+    }
+});
+// Obtener reporte por ID (DEBE estar DESPUÉS de rutas específicas como /estadisticas y /:id/historial)
 router.get('/:id', async (req, res) => {
     try {
         const reporte = await ReporteActividades.findById(req.params.id);
@@ -265,8 +299,8 @@ router.get('/:id', async (req, res) => {
         res.status(500).json(response);
     }
 });
-// Actualizar reporte
-router.put('/:id', async (req, res) => {
+// Actualizar reporte (Solo Admin/Supervisor)
+router.put('/:id', verificarAdminOSupervisor, async (req, res) => {
     try {
         // 1. Obtener el reporte ANTES de la actualización
         const reporteAnterior = await ReporteActividades.findById(req.params.id);
@@ -277,7 +311,35 @@ router.put('/:id', async (req, res) => {
             };
             return res.status(404).json(response);
         }
-        // 2. Revertir las horas de los vehículos del reporte anterior
+        // 2. Obtener información del usuario que modifica
+        const usuario = await Usuario.findById(req.userId);
+        if (!usuario) {
+            const response = {
+                success: false,
+                error: 'Usuario no encontrado'
+            };
+            return res.status(404).json(response);
+        }
+        // 3. Detectar los cambios entre el reporte anterior y el nuevo
+        const cambios = [];
+        const camposIgnorados = ['_id', '__v', 'historialModificaciones', 'fechaCreacion', 'usuarioId'];
+        for (const campo in req.body) {
+            if (camposIgnorados.includes(campo))
+                continue;
+            const valorAnterior = reporteAnterior[campo];
+            const valorNuevo = req.body[campo];
+            // Comparar valores (convertir a JSON para comparar objetos y arrays)
+            const valorAnteriorStr = JSON.stringify(valorAnterior);
+            const valorNuevoStr = JSON.stringify(valorNuevo);
+            if (valorAnteriorStr !== valorNuevoStr) {
+                cambios.push({
+                    campo,
+                    valorAnterior,
+                    valorNuevo
+                });
+            }
+        }
+        // 4. Revertir las horas de los vehículos del reporte anterior
         if (reporteAnterior.controlMaquinaria && Array.isArray(reporteAnterior.controlMaquinaria)) {
             for (const maquinaria of reporteAnterior.controlMaquinaria) {
                 if (maquinaria.vehiculoId && maquinaria.horasOperacion) {
@@ -291,15 +353,28 @@ router.put('/:id', async (req, res) => {
                 }
             }
         }
-        // 3. Actualizar el reporte con los nuevos datos
-        const reporteActualizado = await ReporteActividades.findByIdAndUpdate(req.params.id, req.body, { new: true });
-        // 4. Aplicar las nuevas horas de los vehículos
+        // 5. Preparar el registro de modificación
+        const nuevaModificacion = {
+            fechaModificacion: new Date(),
+            usuarioId: req.userId,
+            usuarioNombre: usuario.nombre,
+            cambios,
+            observacion: req.body.observacionModificacion || undefined
+        };
+        // 6. Actualizar el reporte con los nuevos datos y agregar al historial
+        const datosActualizacion = { ...req.body };
+        delete datosActualizacion.observacionModificacion; // Remover si existe
+        const reporteActualizado = await ReporteActividades.findByIdAndUpdate(req.params.id, {
+            ...datosActualizacion,
+            $push: { historialModificaciones: nuevaModificacion }
+        }, { new: true });
+        // 7. Aplicar las nuevas horas de los vehículos
         if (reporteActualizado && reporteActualizado.controlMaquinaria && Array.isArray(reporteActualizado.controlMaquinaria)) {
             for (const maquinaria of reporteActualizado.controlMaquinaria) {
                 if (maquinaria.vehiculoId && maquinaria.horasOperacion) {
                     try {
                         await Vehiculo.findByIdAndUpdate(maquinaria.vehiculoId, {
-                            horometroInicial: maquinaria.horometroFinal, // Actualizamos también los horómetros
+                            horometroInicial: maquinaria.horometroFinal,
                             horometroFinal: maquinaria.horometroFinal,
                             $inc: { horasOperacion: maquinaria.horasOperacion }
                         });
@@ -311,6 +386,7 @@ router.put('/:id', async (req, res) => {
                 }
             }
         }
+        console.log(`📝 Reporte ${req.params.id} modificado por ${usuario.nombre}. ${cambios.length} cambios registrados.`);
         const response = {
             success: true,
             data: reporteActualizado
@@ -326,8 +402,8 @@ router.put('/:id', async (req, res) => {
         res.status(500).json(response);
     }
 });
-// Eliminar reporte
-router.delete('/:id', async (req, res) => {
+// Eliminar reporte (Solo Admin/Supervisor)
+router.delete('/:id', verificarAdminOSupervisor, async (req, res) => {
     try {
         const reporte = await ReporteActividades.findByIdAndDelete(req.params.id);
         if (!reporte) {

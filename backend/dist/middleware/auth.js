@@ -6,7 +6,7 @@ const REFRESH_SECRET = process.env.REFRESH_SECRET || 'jefesenfrente_refresh_secr
 /**
  * Middleware de autenticación que soporta tanto cookies como headers
  */
-export const authMiddleware = (req, res, next) => {
+export const verificarToken = (req, res, next) => {
     // Intentar obtener el token desde cookie primero, luego desde header
     let token = req.cookies?.accessToken;
     if (!token) {
@@ -42,7 +42,7 @@ export const authMiddleware = (req, res, next) => {
  * Genera un access token (corta duración: 15 minutos)
  */
 export const generateAccessToken = (payload) => {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: '15m' });
+    return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
 };
 /**
  * Genera un refresh token (larga duración: 7 días)

@@ -1,5 +1,5 @@
 import { Schema, model } from 'mongoose';
-import { IReporteActividades, IControlAcarreo, IControlAgua, IControlMaterial, IControlMaquinaria } from '../types/reporte.js';
+import { IReporteActividades, IControlAcarreo, IControlAgua, IControlMaterial, IControlMaquinaria, IModificacionReporte } from '../types/reporte.js';
 
 const controlAcarreoSchema = new Schema<IControlAcarreo>({
   material: String,
@@ -39,6 +39,27 @@ const controlMaquinariaSchema = new Schema<IControlMaquinaria>({
   vehiculoId: { type: Schema.Types.ObjectId, ref: 'Vehiculo' },
   horometroInicial: Number,
   horometroFinal: Number
+});
+
+const modificacionReporteSchema = new Schema<IModificacionReporte>({
+  fechaModificacion: {
+    type: Date,
+    default: Date.now
+  },
+  usuarioId: {
+    type: String,
+    required: true
+  },
+  usuarioNombre: {
+    type: String,
+    required: true
+  },
+  cambios: [{
+    campo: String,
+    valorAnterior: Schema.Types.Mixed,
+    valorNuevo: Schema.Types.Mixed
+  }],
+  observacion: String
 });
 
 const reporteActividadesSchema = new Schema<IReporteActividades>({
@@ -93,7 +114,8 @@ const reporteActividadesSchema = new Schema<IReporteActividades>({
   fechaCreacion: {
     type: Date,
     default: Date.now
-  }
+  },
+  historialModificaciones: [modificacionReporteSchema]
 });
 
 export default model<IReporteActividades>('ReporteActividades', reporteActividadesSchema);

@@ -72,6 +72,18 @@ export interface SeccionTrabajo {
   seccionNombre: string;
 }
 
+export interface ModificacionReporte {
+  fechaModificacion: string;
+  usuarioId: string;
+  usuarioNombre: string;
+  cambios: {
+    campo: string;
+    valorAnterior: any;
+    valorNuevo: any;
+  }[];
+  observacion?: string;
+}
+
 export interface ReporteActividades {
   _id?: string;
   // NUEVO: Campos de autenticación
@@ -107,4 +119,5 @@ export interface ReporteActividades {
   // REMOVER: creadoPor ya no es necesario
   fechaCreacion?: string;
   creadoPor?: string; // Optional as per usage in FormularioReporte.tsx line 47
+  historialModificaciones?: ModificacionReporte[];
 }

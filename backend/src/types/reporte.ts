@@ -49,6 +49,18 @@ export interface ISeccionTrabajo {
   seccionNombre: string;
 }
 
+export interface IModificacionReporte {
+  fechaModificacion: Date;
+  usuarioId: string;
+  usuarioNombre: string;
+  cambios: {
+    campo: string;
+    valorAnterior: any;
+    valorNuevo: any;
+  }[];
+  observacion?: string;
+}
+
 export interface IReporteActividades extends Document {
   fecha: Date;
   ubicacion: string;
@@ -81,6 +93,7 @@ export interface IReporteActividades extends Document {
     color?: string;
   }>;
   fechaCreacion: Date;
+  historialModificaciones?: Types.Array<IModificacionReporte>;
 }
 
 export interface ApiResponse<T> {
