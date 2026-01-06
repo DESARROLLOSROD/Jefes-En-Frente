@@ -20,6 +20,7 @@ import {
 class ApiService {
   private api: AxiosInstance;
   private isOnline: boolean = true;
+  private isSyncingQueue: boolean = false; // Prevenir sincronizaciones concurrentes
 
   constructor() {
     this.api = axios.create({
@@ -44,9 +45,11 @@ class ApiService {
       }
 
       // Si volvemos a estar online, intentar procesar la cola
-      if (wasOffline && this.isOnline) {
-        this.processOfflineQueue();
-      }
+      // NOTA: Esta sincronización está deshabilitada porque NetworkContext/useSyncQueue
+      // ya maneja la sincronización automática al reconectar
+      // if (wasOffline && this.isOnline) {
+      //   this.processOfflineQueue();
+      // }
     });
   }
 
@@ -151,48 +154,60 @@ class ApiService {
    * Procesa la cola de peticiones offline
    */
   async processOfflineQueue(): Promise<{ success: number; failed: number }> {
-    if (!this.isOnline) return { success: 0, failed: 0 };
-
-    const queue = await offlineQueue.getQueue();
-    if (queue.length === 0) return { success: 0, failed: 0 };
-
-    if (__DEV__) console.log(`🔄 Procesando cola offline (${queue.length} items)...`);
-
-    let successCount = 0;
-    let failedCount = 0;
-
-    for (const item of queue) {
-      try {
-        await this.api.request({
-          method: item.method,
-          url: item.endpoint,
-          data: item.data,
-        });
-
-        await offlineQueue.removeFromQueue(item.id);
-        successCount++;
-      } catch (error) {
-        console.error(`❌ Error al procesar item offline ${item.id}:`, error);
-        await offlineQueue.incrementRetry(item.id);
-
-        // Si ya falló muchas veces, podrías decidir conservarlo o borrarlo
-        // Por ahora lo conservamos hasta 5 intentos
-        const updatedQueue = await offlineQueue.getQueue();
-        const currentItem = updatedQueue.find(qi => qi.id === item.id);
-        if (currentItem && currentItem.retryCount >= 5) {
-          console.log(`🗑️ Eliminando item offline ${item.id} tras 5 intentos fallidos`);
-          await offlineQueue.removeFromQueue(item.id);
-        }
-
-        failedCount++;
+    // Prevenir múltiples sincronizaciones concurrentes
+    if (!this.isOnline || this.isSyncingQueue) {
+      if (__DEV__ && this.isSyncingQueue) {
+        console.log('⚠️ Ya hay una sincronización en progreso, saltando...');
       }
+      return { success: 0, failed: 0 };
     }
 
-    if (__DEV__) {
-      console.log(`✅ Resultado de sincronización: ${successCount} éxitos, ${failedCount} fallos`);
-    }
+    this.isSyncingQueue = true;
 
-    return { success: successCount, failed: failedCount };
+    try {
+      const queue = await offlineQueue.getQueue();
+      if (queue.length === 0) return { success: 0, failed: 0 };
+
+      if (__DEV__) console.log(`🔄 Procesando cola offline (${queue.length} items)...`);
+
+      let successCount = 0;
+      let failedCount = 0;
+
+      for (const item of queue) {
+        try {
+          await this.api.request({
+            method: item.method,
+            url: item.endpoint,
+            data: item.data,
+          });
+
+          await offlineQueue.removeFromQueue(item.id);
+          successCount++;
+        } catch (error) {
+          console.error(`❌ Error al procesar item offline ${item.id}:`, error);
+          await offlineQueue.incrementRetry(item.id);
+
+          // Si ya falló muchas veces, podrías decidir conservarlo o borrarlo
+          // Por ahora lo conservamos hasta 5 intentos
+          const updatedQueue = await offlineQueue.getQueue();
+          const currentItem = updatedQueue.find(qi => qi.id === item.id);
+          if (currentItem && currentItem.retryCount >= 5) {
+            console.log(`🗑️ Eliminando item offline ${item.id} tras 5 intentos fallidos`);
+            await offlineQueue.removeFromQueue(item.id);
+          }
+
+          failedCount++;
+        }
+      }
+
+      if (__DEV__) {
+        console.log(`✅ Resultado de sincronización: ${successCount} éxitos, ${failedCount} fallos`);
+      }
+
+      return { success: successCount, failed: failedCount };
+    } finally {
+      this.isSyncingQueue = false;
+    }
   }
 
   /**

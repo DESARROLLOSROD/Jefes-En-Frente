@@ -16,7 +16,8 @@ const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000, // 5 minutos por defecto
       gcTime: 10 * 60 * 1000, // Mantener en cache 10 minutos
       refetchOnWindowFocus: false, // No refetch al volver a la app
-      refetchOnReconnect: true, // Refetch al recuperar conexión
+      refetchOnReconnect: false, // No refetch automático al reconectar (lo maneja useSyncQueue)
+      refetchOnMount: false, // No refetch al montar si los datos están frescos
     },
     mutations: {
       retry: 1, // Reintentar 1 vez las mutaciones

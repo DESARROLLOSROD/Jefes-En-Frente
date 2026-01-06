@@ -30,8 +30,13 @@ export const useCreateReporte = () => {
   return useMutation({
     mutationFn: (reporte: ReporteActividades) => ApiService.createReporte(reporte),
     onSuccess: (data, variables) => {
-      // Invalidar la cache de reportes para refrescar la lista
-      queryClient.invalidateQueries({ queryKey: ['reportes', variables.proyectoId] });
+      // Invalidar solo la cache específica del proyecto para refrescar la lista
+      // Usamos invalidateQueries con exact: false para invalidar todas las queries relacionadas
+      queryClient.invalidateQueries({
+        queryKey: ['reportes', variables.proyectoId],
+        exact: false, // Invalidar también las queries infinitas
+        refetchType: 'active' // Solo refetch de queries activas
+      });
       toast.success('Reporte creado exitosamente');
     },
     onError: (error: any) => {
@@ -51,8 +56,12 @@ export const useUpdateReporte = () => {
       // Actualizar la cache del reporte específico
       queryClient.setQueryData(['reportes', data._id], data);
 
-      // Invalidar la lista de reportes
-      queryClient.invalidateQueries({ queryKey: ['reportes'] });
+      // Invalidar solo las listas de reportes del proyecto específico
+      queryClient.invalidateQueries({
+        queryKey: ['reportes', data.proyectoId],
+        exact: false,
+        refetchType: 'active'
+      });
 
       toast.success('Reporte actualizado exitosamente');
     },
@@ -69,8 +78,12 @@ export const useDeleteReporte = () => {
   return useMutation({
     mutationFn: (reporteId: string) => ApiService.deleteReporte(reporteId),
     onSuccess: () => {
-      // Invalidar todas las queries de reportes
-      queryClient.invalidateQueries({ queryKey: ['reportes'] });
+      // Invalidar todas las queries de reportes (sin proyecto específico porque no lo tenemos)
+      queryClient.invalidateQueries({
+        queryKey: ['reportes'],
+        exact: false,
+        refetchType: 'active'
+      });
       toast.success('Reporte eliminado exitosamente');
     },
     onError: (error: any) => {
