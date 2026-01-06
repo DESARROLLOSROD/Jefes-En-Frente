@@ -361,13 +361,13 @@ router.put('/:id', verificarAdminOSupervisor, async (req, res) => {
             cambios,
             observacion: req.body.observacionModificacion || undefined
         };
-        // 6. Actualizar el reporte con los nuevos datos y agregar al historial
+        // 6. Actualizar el reporte con los nuevos datos
         const datosActualizacion = { ...req.body };
         delete datosActualizacion.observacionModificacion; // Remover si existe
-        const reporteActualizado = await ReporteActividades.findByIdAndUpdate(req.params.id, {
-            ...datosActualizacion,
-            $push: { historialModificaciones: nuevaModificacion }
-        }, { new: true });
+        // Primero actualizar los campos del reporte
+        await ReporteActividades.findByIdAndUpdate(req.params.id, datosActualizacion);
+        // Luego agregar al historial de modificaciones
+        const reporteActualizado = await ReporteActividades.findByIdAndUpdate(req.params.id, { $push: { historialModificaciones: nuevaModificacion } }, { new: true });
         // 7. Aplicar las nuevas horas de los vehículos
         if (reporteActualizado && reporteActualizado.controlMaquinaria && Array.isArray(reporteActualizado.controlMaquinaria)) {
             for (const maquinaria of reporteActualizado.controlMaquinaria) {

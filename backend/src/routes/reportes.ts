@@ -401,16 +401,20 @@ router.put('/:id', verificarAdminOSupervisor, async (req: AuthRequest, res) => {
       observacion: req.body.observacionModificacion || undefined
     };
 
-    // 6. Actualizar el reporte con los nuevos datos y agregar al historial
+    // 6. Actualizar el reporte con los nuevos datos
     const datosActualizacion = { ...req.body };
     delete datosActualizacion.observacionModificacion; // Remover si existe
 
+    // Primero actualizar los campos del reporte
+    await ReporteActividades.findByIdAndUpdate(
+      req.params.id,
+      datosActualizacion
+    );
+
+    // Luego agregar al historial de modificaciones
     const reporteActualizado = await ReporteActividades.findByIdAndUpdate(
       req.params.id,
-      {
-        ...datosActualizacion,
-        $push: { historialModificaciones: nuevaModificacion }
-      },
+      { $push: { historialModificaciones: nuevaModificacion } },
       { new: true }
     );
 
