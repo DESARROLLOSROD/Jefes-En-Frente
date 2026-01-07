@@ -12,6 +12,7 @@ import {
   Modal,
   FlatList,
 } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Picker } from '@react-native-picker/picker';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -303,12 +304,13 @@ const ReportFormWebStyle = () => {
               <View style={styles.halfWidth}>
                 <Text style={styles.label}>FECHA *</Text>
                 <TouchableOpacity
-                  style={styles.inputSmall}
+                  style={[styles.inputSmall, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }]}
                   onPress={() => setShowDatePicker(true)}
                 >
                   <Text style={styles.inputTextSelected}>
                     {fecha.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' })}
                   </Text>
+                  <MaterialCommunityIcons name="calendar-month" size={20} color="#FB923C" />
                 </TouchableOpacity>
 
                 {showDatePicker && (
