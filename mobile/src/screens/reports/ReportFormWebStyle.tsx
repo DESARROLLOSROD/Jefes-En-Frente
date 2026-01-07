@@ -12,6 +12,7 @@ import {
   Modal,
   FlatList,
 } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
@@ -91,6 +92,7 @@ const ReportFormWebStyle = () => {
   const [showMaquinariaModal, setShowMaquinariaModal] = useState(false);
   const [showZoneModal, setShowZoneModal] = useState(false);
   const [showSectionModal, setShowSectionModal] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   // Pin del mapa
   const [pinX, setPinX] = useState<number | undefined>(undefined);
@@ -197,6 +199,13 @@ const ReportFormWebStyle = () => {
     setTerminoActividades(nuevoTurno === 'primer' ? '19:00' : '07:00');
   };
 
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setFecha(selectedDate);
+    }
+  };
+
   // Handlers para agregar controles
   const handleAgregarAcarreo = (acarreo: ControlAcarreo) => {
     setControlAcarreo([...controlAcarreo, acarreo]);
@@ -295,10 +304,25 @@ const ReportFormWebStyle = () => {
             {/* Fila 1: Fecha y Turno (2 columnas) */}
             <View style={styles.row}>
               <View style={styles.halfWidth}>
-                <Text style={styles.label}>FECHA</Text>
-                <View style={styles.inputDisabled}>
-                  <Text style={styles.inputTextDisabled}>{fecha.toLocaleDateString('es-MX')}</Text>
-                </View>
+                <Text style={styles.label}>FECHA *</Text>
+                <TouchableOpacity
+                  style={styles.inputSmall}
+                  onPress={() => setShowDatePicker(true)}
+                >
+                  <Text style={styles.inputTextSelected}>
+                    {fecha.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                  </Text>
+                </TouchableOpacity>
+
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={fecha}
+                    mode="date"
+                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                    onChange={onDateChange}
+                    maximumDate={new Date()} // No permitir fechas futuras
+                  />
+                )}
               </View>
               <View style={styles.halfWidth}>
                 <Text style={styles.label}>TURNO *</Text>
@@ -601,7 +625,8 @@ const styles = StyleSheet.create({
   formGroup: { marginBottom: 16 },
   label: { fontSize: 13, fontWeight: '800', color: '#4B5563', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.5 },
   input: { backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: '#DEE2E6', borderRadius: 8, padding: 14, fontSize: 16, fontWeight: '700', color: '#1F2937' },
-  inputSmall: { backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: '#DEE2E6', borderRadius: 8, padding: 10, fontSize: 15, fontWeight: '700', color: '#1F2937', height: 48 },
+  inputSmall: { backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: '#DEE2E6', borderRadius: 8, padding: 10, fontSize: 15, fontWeight: '700', color: '#1F2937', height: 48, justifyContent: 'center' },
+  inputTextSelected: { fontSize: 15, fontWeight: '700', color: '#1F2937' },
   inputDisabled: { backgroundColor: '#EDF2F7', borderWidth: 1.5, borderColor: '#DEE2E6', borderRadius: 8, padding: 10, height: 48, justifyContent: 'center' },
   inputTextDisabled: { fontSize: 15, fontWeight: '700', color: '#718096' },
   pickerContainer: { backgroundColor: '#FFFFFF', borderWidth: 1.5, borderColor: '#DEE2E6', borderRadius: 8, overflow: 'hidden' },
