@@ -56,6 +56,7 @@ const ReportFormWebStyle = () => {
   const { data: zones = [] } = useZonesByProject(selectedProject?._id);
   const { data: vehiculos = [] } = useVehiculosByProyecto(selectedProject?._id);
   const createReporteMutation = useCreateReporte();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Hooks para datos globales sincronizados
   const { data: dbOrigenes = [] } = useOrigenes();
@@ -148,6 +149,7 @@ const ReportFormWebStyle = () => {
       } : undefined,
       pinesMapa: isMultiPin ? pinesMapa : [],
       ubicacion: selectedProject?.nombre?.toUpperCase() || 'GENERAL',
+      offlineId: `report-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     };
 
     if (selectedZone) {
@@ -173,7 +175,20 @@ const ReportFormWebStyle = () => {
       });
     }
 
-    createReporteMutation.mutate(reporte, { onSuccess: () => navigation.goBack() });
+    setIsSubmitting(true);
+    createReporteMutation.mutate(reporte, {
+      onSuccess: () => {
+        setIsSubmitting(false);
+        navigation.goBack();
+      },
+      onError: (error: any) => {
+        setIsSubmitting(false);
+        // Si el error es por offline, ya se encoló, así que cerramos el formulario
+        if (error.isOffline) {
+          navigation.goBack();
+        }
+      }
+    });
   };
 
   const handleTurnoChange = (nuevoTurno: 'primer' | 'segundo') => {
@@ -455,8 +470,15 @@ const ReportFormWebStyle = () => {
           </View>
 
 
-          <TouchableOpacity style={[styles.submitButton, createReporteMutation.isPending && styles.submitButtonDisabled]} onPress={handleSubmit} disabled={createReporteMutation.isPending}>
-            <Text style={styles.submitButtonText}>{createReporteMutation.isPending ? 'GUARDANDO...' : 'CREAR REPORTE'}</Text>
+
+          <TouchableOpacity
+            style={[styles.submitButton, isSubmitting && styles.submitButtonDisabled]}
+            onPress={handleSubmit}
+            disabled={isSubmitting}
+          >
+            <Text style={styles.submitButtonText}>
+              {isSubmitting ? 'GUARDANDO...' : 'GUARDAR REPORTE'}
+            </Text>
           </TouchableOpacity>
         </View>
 

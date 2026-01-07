@@ -79,6 +79,7 @@ export interface IReporteActividades extends Document {
   creadoPor: string;
   proyectoId: string;
   usuarioId: string;
+  offlineId?: string; // ID único generado por el cliente para evitar duplicados
   ubicacionMapa?: {
     pinX: number;
     pinY: number;

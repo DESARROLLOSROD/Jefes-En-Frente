@@ -136,6 +136,20 @@ class ApiService {
       const endpoint = config.url || '/unknown';
       const method = (config.method?.toUpperCase() as 'GET' | 'POST' | 'PUT' | 'DELETE') || 'POST';
 
+      // 🔍 DEDUPLICACIÓN: No encolar si ya existe una petición idéntica pendiente
+      const queue = await offlineQueue.getQueue();
+      const isDuplicate = queue.some(item =>
+        item.endpoint === endpoint &&
+        item.method === method &&
+        JSON.stringify(item.data) === JSON.stringify(config.data)
+      );
+
+      if (isDuplicate) {
+        if (__DEV__) console.log('🚫 Petición duplicada detectada en la cola, ignorando');
+        return;
+      }
+
+
       // Determinar tipo de operación basado en el endpoint
       let type: 'CREATE_REPORT' | 'UPDATE_REPORT' | 'DELETE_REPORT' | 'OTHER' = 'OTHER';
       if (endpoint.includes('/reportes')) {

@@ -18,6 +18,19 @@ router.post('/', async (req: AuthRequest, res) => {
       usuarioId: req.userId
     };
 
+    // 🔍 VERIFICAR IDEMPOTENCIA (evitar duplicados por offline sync)
+    if (reporteData.offlineId) {
+      const reporteExistente = await ReporteActividades.findOne({ offlineId: reporteData.offlineId });
+      if (reporteExistente) {
+        console.log('⚠️ Reporte ya existe (idempotencia):', reporteData.offlineId);
+        const response: ApiResponse<typeof reporteExistente> = {
+          success: true,
+          data: reporteExistente
+        };
+        return res.status(200).json(response);
+      }
+    }
+
     console.log('📝 Creando reporte:', reporteData);
     const reporte = new ReporteActividades(reporteData);
     await reporte.save();
