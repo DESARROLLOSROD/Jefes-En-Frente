@@ -297,10 +297,7 @@ const ReportFormWebStyle = () => {
         <View style={styles.content}>
           {/* SECCIÓN 1: INFORMACIÓN GENERAL */}
           <View style={[styles.section, styles.sectionOrange]}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={styles.sectionTitle}>INFORMACIÓN GENERAL</Text>
-              <Text style={{ fontSize: 10, color: '#FB923C', fontWeight: 'bold' }}>v1.0.1-MODAL-DATE-V2</Text>
-            </View>
+            <Text style={styles.sectionTitle}>INFORMACIÓN GENERAL</Text>
 
             {/* Fila 1: Fecha y Turno (2 columnas) */}
             <View style={styles.row}>
@@ -612,7 +609,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F3F4F6' },
   content: { padding: 16 },
   section: { borderRadius: 12, padding: 20, marginBottom: 16, borderWidth: 2 },
-  sectionOrange: { borderColor: '#2563eb', backgroundColor: '#FFF7ED' }, // Cambiado a azul para diagnóstico
+  sectionOrange: { borderColor: '#FB923C', backgroundColor: '#FFF7ED' },
   sectionGreen: { borderColor: '#4ADE80', backgroundColor: '#F0FDF4' },
   sectionRed: { borderColor: '#F87171', backgroundColor: '#FEF2F2' },
   sectionBlue: { borderColor: '#60A5FA', backgroundColor: '#EFF6FF' },
