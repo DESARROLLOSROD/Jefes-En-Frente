@@ -12,7 +12,7 @@ import {
   Modal,
   FlatList,
 } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../../navigation/AppNavigator';
@@ -199,11 +199,8 @@ const ReportFormWebStyle = () => {
     setTerminoActividades(nuevoTurno === 'primer' ? '19:00' : '07:00');
   };
 
-  const onDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(false);
-    if (selectedDate) {
-      setFecha(selectedDate);
-    }
+  const onDateChange = (selectedDate: Date) => {
+    setFecha(selectedDate);
   };
 
   // Handlers para agregar controles
@@ -315,12 +312,11 @@ const ReportFormWebStyle = () => {
                 </TouchableOpacity>
 
                 {showDatePicker && (
-                  <DateTimePicker
-                    value={fecha}
-                    mode="date"
-                    display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                    onChange={onDateChange}
-                    maximumDate={new Date()} // No permitir fechas futuras
+                  <ModalDatePicker
+                    visible={showDatePicker}
+                    onClose={() => setShowDatePicker(false)}
+                    selectedDate={fecha}
+                    onSelect={onDateChange}
                   />
                 )}
               </View>
@@ -765,5 +761,76 @@ const styles = StyleSheet.create({
     color: '#10B981',
   },
 });
+
+// --- COMPONENTE SELECTOR DE FECHA PERSONALIZADO (JS ONLY) ---
+const ModalDatePicker = ({ visible, onClose, selectedDate, onSelect }: any) => {
+  const [day, setDay] = useState(selectedDate.getDate().toString());
+  const [month, setMonth] = useState(selectedDate.getMonth().toString());
+  const [year, setYear] = useState(selectedDate.getFullYear().toString());
+
+  const days = Array.from({ length: 31 }, (_, i) => ({ label: (i + 1).toString().padStart(2, '0'), value: (i + 1).toString() }));
+  const months = [
+    { label: 'Enero', value: '0' }, { label: 'Febrero', value: '1' }, { label: 'Marzo', value: '2' },
+    { label: 'Abril', value: '3' }, { label: 'Mayo', value: '4' }, { label: 'Junio', value: '5' },
+    { label: 'Julio', value: '6' }, { label: 'Agosto', value: '7' }, { label: 'Septiembre', value: '8' },
+    { label: 'Octubre', value: '9' }, { label: 'Noviembre', value: '10' }, { label: 'Diciembre', value: '11' }
+  ];
+
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 5 }, (_, i) => ({ label: (currentYear - i).toString(), value: (currentYear - i).toString() }));
+
+  const handleConfirm = () => {
+    const newDate = new Date(parseInt(year), parseInt(month), parseInt(day));
+    onSelect(newDate);
+    onClose();
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="slide">
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>SELECCIONAR FECHA</Text>
+            <TouchableOpacity onPress={onClose}><Text style={styles.modalCloseButton}>✕</Text></TouchableOpacity>
+          </View>
+
+          <View style={{ flexDirection: 'row', padding: 20, justifyContent: 'space-between' }}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.label}>DÍA</Text>
+              <View style={styles.pickerContainer}>
+                <Picker selectedValue={day} onValueChange={(v) => setDay(v)} style={styles.pickerSmall}>
+                  {days.map(d => <Picker.Item key={d.value} label={d.label} value={d.value} />)}
+                </Picker>
+              </View>
+            </View>
+            <View style={{ flex: 2, marginHorizontal: 10 }}>
+              <Text style={styles.label}>MES</Text>
+              <View style={styles.pickerContainer}>
+                <Picker selectedValue={month} onValueChange={(v) => setMonth(v)} style={styles.pickerSmall}>
+                  {months.map(m => <Picker.Item key={m.value} label={m.label} value={m.value} />)}
+                </Picker>
+              </View>
+            </View>
+            <View style={{ flex: 1.5 }}>
+              <Text style={styles.label}>AÑO</Text>
+              <View style={styles.pickerContainer}>
+                <Picker selectedValue={year} onValueChange={(v) => setYear(v)} style={styles.pickerSmall}>
+                  {years.map(y => <Picker.Item key={y.value} label={y.label} value={y.value} />)}
+                </Picker>
+              </View>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            style={[styles.submitButton, { margin: 20, backgroundColor: '#FB923C' }]}
+            onPress={handleConfirm}
+          >
+            <Text style={styles.submitButtonText}>CONFIRMAR FECHA</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+};
 
 export default ReportFormWebStyle;
