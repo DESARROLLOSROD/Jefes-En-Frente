@@ -1,6 +1,6 @@
 {
   "name": "jefes-en-frente-mobile",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "Aplicación móvil para el sistema de reportes mineros Jefes en Frente",
   "main": "index.ts",
   "scripts": {
