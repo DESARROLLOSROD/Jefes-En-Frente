@@ -94,6 +94,13 @@ class ApiService {
 
           // Solo encolar POST, PUT, DELETE (no GET)
           if (config && config.method && ['post', 'put', 'delete'].includes(config.method.toLowerCase())) {
+            // SI LA PETICIÓN TIENE _skipOfflineQueue, NO LA VOLVEMOS A ENCOLAR
+            // Esto evita duplicados durante la sincronización
+            if ((config as any)._skipOfflineQueue) {
+              if (__DEV__) console.log('⚠️ Petición fallida durante sincronización, NO re-encolando');
+              return Promise.reject(error);
+            }
+
             await this.enqueueRequest(config);
             // Devolver un error específico que los componentes puedan reconocer
             return Promise.reject({
@@ -179,7 +186,8 @@ class ApiService {
             method: item.method,
             url: item.endpoint,
             data: item.data,
-          });
+            _skipOfflineQueue: true, // FLAG CRÍTICO: Evita que el interceptor lo vuelva a encolar si falla
+          } as any);
 
           await offlineQueue.removeFromQueue(item.id);
           successCount++;

@@ -137,10 +137,10 @@ const ReportFormWebStyle = () => {
       jefeFrente,
       sobrestante,
       observaciones,
-      controlAcarreo,
-      controlMaterial,
-      controlAgua,
-      controlMaquinaria,
+      controlAcarreo: controlAcarreo.filter(a => a.material && (Number(a.noViaje) > 0 || Number(a.capacidad) > 0)),
+      controlMaterial: controlMaterial.filter(m => m.material && Number(m.cantidad) > 0),
+      controlAgua: controlAgua.filter(a => a.noEconomico && (Number(a.viaje) > 0 || Number(a.capacidad) > 0)),
+      controlMaquinaria: controlMaquinaria.filter(m => m.tipo && (Number(m.horasOperacion) > 0 || (m.horometroFinal !== undefined && m.horometroFinal > 0))),
       ubicacionMapa: !isMultiPin && pinX !== undefined && pinY !== undefined ? {
         pinX: pinX!,
         pinY: pinY!,
@@ -273,289 +273,289 @@ const ReportFormWebStyle = () => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.content}>
-        {/* SECCIÓN 1: INFORMACIÓN GENERAL */}
-        <View style={[styles.section, styles.sectionOrange]}>
-          <Text style={styles.sectionTitle}>INFORMACIÓN GENERAL</Text>
+          {/* SECCIÓN 1: INFORMACIÓN GENERAL */}
+          <View style={[styles.section, styles.sectionOrange]}>
+            <Text style={styles.sectionTitle}>INFORMACIÓN GENERAL</Text>
 
-          {/* Fila 1: Fecha y Turno (2 columnas) */}
-          <View style={styles.row}>
-            <View style={styles.halfWidth}>
-              <Text style={styles.label}>FECHA</Text>
-              <View style={styles.inputDisabled}>
-                <Text style={styles.inputTextDisabled}>{fecha.toLocaleDateString('es-MX')}</Text>
-              </View>
-            </View>
-            <View style={styles.halfWidth}>
-              <Text style={styles.label}>TURNO *</Text>
-              <View style={styles.turnoContainer}>
-                <TouchableOpacity
-                  style={[
-                    styles.turnoButton,
-                    turno === 'primer' && styles.turnoButtonActive,
-                  ]}
-                  onPress={() => handleTurnoChange('primer')}
-                >
-                  <Text
-                    style={[
-                      styles.turnoText,
-                      turno === 'primer' && styles.turnoTextActive,
-                    ]}
-                  >
-                    1ER TURNO
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.turnoButton,
-                    turno === 'segundo' && styles.turnoButtonActive,
-                  ]}
-                  onPress={() => handleTurnoChange('segundo')}
-                >
-                  <Text
-                    style={[
-                      styles.turnoText,
-                      turno === 'segundo' && styles.turnoTextActive,
-                    ]}
-                  >
-                    2DO TURNO
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-
-          {/* Fila 2: Inicio y Término (2 columnas) */}
-          <View style={styles.row}>
-            <View style={styles.halfWidth}>
-              <Text style={styles.label}>INICIO *</Text>
-              <TextInput style={styles.inputSmall} value={inicioActividades} onChangeText={setInicioActividades} placeholder="07:00" placeholderTextColor="#9CA3AF" />
-            </View>
-            <View style={styles.halfWidth}>
-              <Text style={styles.label}>TÉRMINO *</Text>
-              <TextInput style={styles.inputSmall} value={terminoActividades} onChangeText={setTerminoActividades} placeholder="19:00" placeholderTextColor="#9CA3AF" />
-            </View>
-          </View>
-
-          {/* Fila 2: Zona y Sección (2 columnas) */}
-          <View style={styles.row}>
-            <View style={styles.halfWidth}>
-              <Text style={styles.label}>ZONA DE TRABAJO *</Text>
-              <TouchableOpacity
-                style={styles.selectButton}
-                onPress={() => setShowZoneModal(true)}
-              >
-                <Text style={selectedZone ? styles.selectButtonTextSelected : styles.selectButtonTextPlaceholder}>
-                  {selectedZone ? zones.find(z => z._id === selectedZone)?.name : 'SELECCIONAR ZONA...'}
-                </Text>
-                <Text style={styles.selectButtonIcon}>▼</Text>
-              </TouchableOpacity>
-            </View>
-            <View style={styles.halfWidth}>
-              <Text style={styles.label}>SECCIÓN DE TRABAJO *</Text>
-              <TouchableOpacity
-                style={[styles.selectButton, !selectedZone && styles.selectButtonDisabled]}
-                onPress={() => selectedZone && setShowSectionModal(true)}
-                disabled={!selectedZone}
-              >
-                <Text style={selectedSection ? styles.selectButtonTextSelected : styles.selectButtonTextPlaceholder}>
-                  {selectedSection ? availableSections.find((s: any) => s.id === selectedSection)?.name : 'SELECCIONAR SECCIÓN...'}
-                </Text>
-                <Text style={styles.selectButtonIcon}>▼</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Fila 3: Jefe y Sobrestante (2 columnas) */}
-          <View style={styles.row}>
-            <View style={styles.halfWidth}>
-              <Text style={styles.label}>JEFE DE FRENTE *</Text>
-              <TextInput style={styles.input} value={jefeFrente} onChangeText={(text) => setJefeFrente(text.toUpperCase())} placeholder="NOMBRE DEL JEFE" placeholderTextColor="#9CA3AF" autoCapitalize="characters" />
-            </View>
-            <View style={styles.halfWidth}>
-              <Text style={styles.label}>SOBRESTANTE</Text>
-              <TextInput style={styles.input} value={sobrestante} onChangeText={(text) => setSobrestante(text.toUpperCase())} placeholder="NOMBRE DEL SOBRESTANTE" placeholderTextColor="#9CA3AF" autoCapitalize="characters" />
-            </View>
-          </View>
-        </View>
-
-        {/* SECCIÓN 2: UBICACIÓN EN MAPA (Sección Azul separada) */}
-        {selectedProject?.mapa && (
-          <View style={[styles.section, styles.sectionMapBlue]}>
-            <View style={styles.mapHeaderRefined}>
-              <Text style={styles.mapTitleMain}>UBICACIÓN EN MAPA DEL PROYECTO</Text>
-              <View style={styles.multiPinToggleRow}>
-                <Text style={styles.miniToggleLabel}>MÚLTIPLES PINES: </Text>
-                <TouchableOpacity
-                  style={[styles.miniToggleLarge, isMultiPin && styles.miniToggleActive]}
-                  onPress={() => setIsMultiPin(!isMultiPin)}
-                >
-                  <Text style={[styles.miniToggleText, isMultiPin && styles.miniToggleTextActive]}>
-                    {isMultiPin ? 'ACTIVADO' : 'DESACTIVADO'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            <Text style={styles.mapInstructionUpper}>COLOQUE UN PIN EN EL MAPA PARA INDICAR DÓNDE SE REALIZÓ EL TRABAJO (OPCIONAL)</Text>
-
-            <View style={styles.mapFrame}>
-              {isMultiPin ? (
-                <View style={{ height: 350 }}>
-                  <ProjectMap
-                    proyecto={selectedProject}
-                    pins={pinesMapa}
-                    onPinAdd={handleAddMultiPin}
-                    onPinRemove={handleRemoveMultiPin}
-                    editable={true}
-                    showControls={true}
-                  />
+            {/* Fila 1: Fecha y Turno (2 columnas) */}
+            <View style={styles.row}>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>FECHA</Text>
+                <View style={styles.inputDisabled}>
+                  <Text style={styles.inputTextDisabled}>{fecha.toLocaleDateString('es-MX')}</Text>
                 </View>
-              ) : (
-                <MapPinSelector
-                  mapaImagen={`data:${selectedProject.mapa.imagen.contentType};base64,${selectedProject.mapa.imagen.data}`}
-                  pinX={pinX}
-                  pinY={pinY}
-                  onPinChange={handlePinChange}
-                  onPinRemove={handlePinRemove}
-                />
-              )}
+              </View>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>TURNO *</Text>
+                <View style={styles.turnoContainer}>
+                  <TouchableOpacity
+                    style={[
+                      styles.turnoButton,
+                      turno === 'primer' && styles.turnoButtonActive,
+                    ]}
+                    onPress={() => handleTurnoChange('primer')}
+                  >
+                    <Text
+                      style={[
+                        styles.turnoText,
+                        turno === 'primer' && styles.turnoTextActive,
+                      ]}
+                    >
+                      1ER TURNO
+                    </Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.turnoButton,
+                      turno === 'segundo' && styles.turnoButtonActive,
+                    ]}
+                    onPress={() => handleTurnoChange('segundo')}
+                  >
+                    <Text
+                      style={[
+                        styles.turnoText,
+                        turno === 'segundo' && styles.turnoTextActive,
+                      ]}
+                    >
+                      2DO TURNO
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
-            <Text style={styles.mapInstructionLower}>CLICK EN EL MAPA PARA COLOCAR EL PIN</Text>
-          </View>
-        )}
 
-
-        <View style={[styles.section, styles.sectionGreen]}>
-          <Text style={styles.sectionTitle}>CONTROL DE ACARREO</Text>
-          <View style={styles.controlInfo}><Text style={styles.controlCount}>({controlAcarreo.length} REGISTROS)</Text></View>
-          <TouchableOpacity style={[styles.button, styles.buttonGreen]} onPress={() => setShowAcarreoModal(true)}><Text style={styles.buttonText}>AGREGAR ACARREO</Text></TouchableOpacity>
-        </View>
-
-        <View style={[styles.section, styles.sectionRed]}>
-          <Text style={styles.sectionTitle}>CONTROL DE MATERIAL</Text>
-          <View style={styles.controlInfo}><Text style={styles.controlCount}>({controlMaterial.length} REGISTROS)</Text></View>
-          <TouchableOpacity style={[styles.button, styles.buttonRed]} onPress={() => setShowMaterialModal(true)}><Text style={styles.buttonText}>AGREGAR MATERIAL</Text></TouchableOpacity>
-        </View>
-
-        <View style={[styles.section, styles.sectionBlue]}>
-          <Text style={styles.sectionTitle}>CONTROL DE AGUA</Text>
-          <View style={styles.controlInfo}><Text style={styles.controlCount}>({controlAgua.length} REGISTROS)</Text></View>
-          <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={() => setShowAguaModal(true)}><Text style={styles.buttonText}>AGREGAR AGUA</Text></TouchableOpacity>
-        </View>
-
-        <View style={[styles.section, styles.sectionPurple]}>
-          <Text style={styles.sectionTitle}>CONTROL DE MAQUINARIA</Text>
-          <View style={styles.controlInfo}><Text style={styles.controlCount}>({controlMaquinaria.length} REGISTROS)</Text></View>
-          <TouchableOpacity style={[styles.button, styles.buttonPurple]} onPress={() => setShowMaquinariaModal(true)}><Text style={styles.buttonText}>AGREGAR MAQUINARIA</Text></TouchableOpacity>
-        </View>
-
-        <View style={[styles.section, styles.sectionGray]}>
-          <Text style={styles.sectionTitle}>OBSERVACIONES</Text>
-          <TextInput style={[styles.input, styles.textArea]} value={observaciones} onChangeText={(text) => setObservaciones(text.toUpperCase())} placeholder="OBSERVACIONES ADICIONALES..." placeholderTextColor="#9CA3AF" multiline numberOfLines={4} textAlignVertical="top" autoCapitalize="characters" />
-        </View>
-
-
-        <TouchableOpacity style={[styles.submitButton, createReporteMutation.isPending && styles.submitButtonDisabled]} onPress={handleSubmit} disabled={createReporteMutation.isPending}>
-          <Text style={styles.submitButtonText}>{createReporteMutation.isPending ? 'GUARDANDO...' : 'CREAR REPORTE'}</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Modal de Selección de Zona */}
-      <Modal visible={showZoneModal} animationType="slide" transparent onRequestClose={() => setShowZoneModal(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>SELECCIONAR ZONA</Text>
-              <TouchableOpacity onPress={() => setShowZoneModal(false)}>
-                <Text style={styles.modalCloseButton}>✕</Text>
-              </TouchableOpacity>
+            {/* Fila 2: Inicio y Término (2 columnas) */}
+            <View style={styles.row}>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>INICIO *</Text>
+                <TextInput style={styles.inputSmall} value={inicioActividades} onChangeText={setInicioActividades} placeholder="07:00" placeholderTextColor="#9CA3AF" />
+              </View>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>TÉRMINO *</Text>
+                <TextInput style={styles.inputSmall} value={terminoActividades} onChangeText={setTerminoActividades} placeholder="19:00" placeholderTextColor="#9CA3AF" />
+              </View>
             </View>
-            <FlatList
-              data={zones}
-              keyExtractor={(item) => item._id}
-              renderItem={({ item }) => (
+
+            {/* Fila 2: Zona y Sección (2 columnas) */}
+            <View style={styles.row}>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>ZONA DE TRABAJO *</Text>
                 <TouchableOpacity
-                  style={styles.modalItem}
-                  onPress={() => {
-                    setSelectedZone(item._id);
-                    setSelectedSection('');
-                    setShowZoneModal(false);
-                  }}
+                  style={styles.selectButton}
+                  onPress={() => setShowZoneModal(true)}
                 >
-                  <Text style={styles.modalItemText}>{item.name}</Text>
-                  {selectedZone === item._id && <Text style={styles.modalItemCheck}>✓</Text>}
+                  <Text style={selectedZone ? styles.selectButtonTextSelected : styles.selectButtonTextPlaceholder}>
+                    {selectedZone ? zones.find(z => z._id === selectedZone)?.name : 'SELECCIONAR ZONA...'}
+                  </Text>
+                  <Text style={styles.selectButtonIcon}>▼</Text>
                 </TouchableOpacity>
-              )}
-            />
-          </View>
-        </View>
-      </Modal>
-
-      {/* Modal de Selección de Sección */}
-      <Modal visible={showSectionModal} animationType="slide" transparent onRequestClose={() => setShowSectionModal(false)}>
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>SELECCIONAR SECCIÓN</Text>
-              <TouchableOpacity onPress={() => setShowSectionModal(false)}>
-                <Text style={styles.modalCloseButton}>✕</Text>
-              </TouchableOpacity>
-            </View>
-            <FlatList
-              data={availableSections}
-              keyExtractor={(item: any) => item.id}
-              renderItem={({ item }: any) => (
+              </View>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>SECCIÓN DE TRABAJO *</Text>
                 <TouchableOpacity
-                  style={styles.modalItem}
-                  onPress={() => {
-                    setSelectedSection(item.id);
-                    setShowSectionModal(false);
-                  }}
+                  style={[styles.selectButton, !selectedZone && styles.selectButtonDisabled]}
+                  onPress={() => selectedZone && setShowSectionModal(true)}
+                  disabled={!selectedZone}
                 >
-                  <Text style={styles.modalItemText}>{item.name}</Text>
-                  {selectedSection === item.id && <Text style={styles.modalItemCheck}>✓</Text>}
+                  <Text style={selectedSection ? styles.selectButtonTextSelected : styles.selectButtonTextPlaceholder}>
+                    {selectedSection ? availableSections.find((s: any) => s.id === selectedSection)?.name : 'SELECCIONAR SECCIÓN...'}
+                  </Text>
+                  <Text style={styles.selectButtonIcon}>▼</Text>
                 </TouchableOpacity>
-              )}
-            />
+              </View>
+            </View>
+
+            {/* Fila 3: Jefe y Sobrestante (2 columnas) */}
+            <View style={styles.row}>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>JEFE DE FRENTE *</Text>
+                <TextInput style={styles.input} value={jefeFrente} onChangeText={(text) => setJefeFrente(text.toUpperCase())} placeholder="NOMBRE DEL JEFE" placeholderTextColor="#9CA3AF" autoCapitalize="characters" />
+              </View>
+              <View style={styles.halfWidth}>
+                <Text style={styles.label}>SOBRESTANTE</Text>
+                <TextInput style={styles.input} value={sobrestante} onChangeText={(text) => setSobrestante(text.toUpperCase())} placeholder="NOMBRE DEL SOBRESTANTE" placeholderTextColor="#9CA3AF" autoCapitalize="characters" />
+              </View>
+            </View>
           </View>
+
+          {/* SECCIÓN 2: UBICACIÓN EN MAPA (Sección Azul separada) */}
+          {selectedProject?.mapa && (
+            <View style={[styles.section, styles.sectionMapBlue]}>
+              <View style={styles.mapHeaderRefined}>
+                <Text style={styles.mapTitleMain}>UBICACIÓN EN MAPA DEL PROYECTO</Text>
+                <View style={styles.multiPinToggleRow}>
+                  <Text style={styles.miniToggleLabel}>MÚLTIPLES PINES: </Text>
+                  <TouchableOpacity
+                    style={[styles.miniToggleLarge, isMultiPin && styles.miniToggleActive]}
+                    onPress={() => setIsMultiPin(!isMultiPin)}
+                  >
+                    <Text style={[styles.miniToggleText, isMultiPin && styles.miniToggleTextActive]}>
+                      {isMultiPin ? 'ACTIVADO' : 'DESACTIVADO'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
+              <Text style={styles.mapInstructionUpper}>COLOQUE UN PIN EN EL MAPA PARA INDICAR DÓNDE SE REALIZÓ EL TRABAJO (OPCIONAL)</Text>
+
+              <View style={styles.mapFrame}>
+                {isMultiPin ? (
+                  <View style={{ height: 350 }}>
+                    <ProjectMap
+                      proyecto={selectedProject}
+                      pins={pinesMapa}
+                      onPinAdd={handleAddMultiPin}
+                      onPinRemove={handleRemoveMultiPin}
+                      editable={true}
+                      showControls={true}
+                    />
+                  </View>
+                ) : (
+                  <MapPinSelector
+                    mapaImagen={`data:${selectedProject.mapa.imagen.contentType};base64,${selectedProject.mapa.imagen.data}`}
+                    pinX={pinX}
+                    pinY={pinY}
+                    onPinChange={handlePinChange}
+                    onPinRemove={handlePinRemove}
+                  />
+                )}
+              </View>
+              <Text style={styles.mapInstructionLower}>CLICK EN EL MAPA PARA COLOCAR EL PIN</Text>
+            </View>
+          )}
+
+
+          <View style={[styles.section, styles.sectionGreen]}>
+            <Text style={styles.sectionTitle}>CONTROL DE ACARREO</Text>
+            <View style={styles.controlInfo}><Text style={styles.controlCount}>({controlAcarreo.length} REGISTROS)</Text></View>
+            <TouchableOpacity style={[styles.button, styles.buttonGreen]} onPress={() => setShowAcarreoModal(true)}><Text style={styles.buttonText}>AGREGAR ACARREO</Text></TouchableOpacity>
+          </View>
+
+          <View style={[styles.section, styles.sectionRed]}>
+            <Text style={styles.sectionTitle}>CONTROL DE MATERIAL</Text>
+            <View style={styles.controlInfo}><Text style={styles.controlCount}>({controlMaterial.length} REGISTROS)</Text></View>
+            <TouchableOpacity style={[styles.button, styles.buttonRed]} onPress={() => setShowMaterialModal(true)}><Text style={styles.buttonText}>AGREGAR MATERIAL</Text></TouchableOpacity>
+          </View>
+
+          <View style={[styles.section, styles.sectionBlue]}>
+            <Text style={styles.sectionTitle}>CONTROL DE AGUA</Text>
+            <View style={styles.controlInfo}><Text style={styles.controlCount}>({controlAgua.length} REGISTROS)</Text></View>
+            <TouchableOpacity style={[styles.button, styles.buttonBlue]} onPress={() => setShowAguaModal(true)}><Text style={styles.buttonText}>AGREGAR AGUA</Text></TouchableOpacity>
+          </View>
+
+          <View style={[styles.section, styles.sectionPurple]}>
+            <Text style={styles.sectionTitle}>CONTROL DE MAQUINARIA</Text>
+            <View style={styles.controlInfo}><Text style={styles.controlCount}>({controlMaquinaria.length} REGISTROS)</Text></View>
+            <TouchableOpacity style={[styles.button, styles.buttonPurple]} onPress={() => setShowMaquinariaModal(true)}><Text style={styles.buttonText}>AGREGAR MAQUINARIA</Text></TouchableOpacity>
+          </View>
+
+          <View style={[styles.section, styles.sectionGray]}>
+            <Text style={styles.sectionTitle}>OBSERVACIONES</Text>
+            <TextInput style={[styles.input, styles.textArea]} value={observaciones} onChangeText={(text) => setObservaciones(text.toUpperCase())} placeholder="OBSERVACIONES ADICIONALES..." placeholderTextColor="#9CA3AF" multiline numberOfLines={4} textAlignVertical="top" autoCapitalize="characters" />
+          </View>
+
+
+          <TouchableOpacity style={[styles.submitButton, createReporteMutation.isPending && styles.submitButtonDisabled]} onPress={handleSubmit} disabled={createReporteMutation.isPending}>
+            <Text style={styles.submitButtonText}>{createReporteMutation.isPending ? 'GUARDANDO...' : 'CREAR REPORTE'}</Text>
+          </TouchableOpacity>
         </View>
-      </Modal>
 
-      {/* Modales */}
-      <ModalControlAcarreo
-        isOpen={showAcarreoModal}
-        onClose={() => setShowAcarreoModal(false)}
-        onSave={handleAgregarAcarreo}
-        origenes={allOrigenes}
-        destinos={allDestinos}
-        materiales={allMateriales}
-        capacidades={allCapacidades}
-        proyectoId={selectedProject?._id}
-      />
+        {/* Modal de Selección de Zona */}
+        <Modal visible={showZoneModal} animationType="slide" transparent onRequestClose={() => setShowZoneModal(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>SELECCIONAR ZONA</Text>
+                <TouchableOpacity onPress={() => setShowZoneModal(false)}>
+                  <Text style={styles.modalCloseButton}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              <FlatList
+                data={zones}
+                keyExtractor={(item) => item._id}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    style={styles.modalItem}
+                    onPress={() => {
+                      setSelectedZone(item._id);
+                      setSelectedSection('');
+                      setShowZoneModal(false);
+                    }}
+                  >
+                    <Text style={styles.modalItemText}>{item.name}</Text>
+                    {selectedZone === item._id && <Text style={styles.modalItemCheck}>✓</Text>}
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+          </View>
+        </Modal>
 
-      <ModalControlMaterial
-        isOpen={showMaterialModal}
-        onClose={() => setShowMaterialModal(false)}
-        onSave={handleAgregarMaterial}
-        materiales={allMateriales}
-      />
+        {/* Modal de Selección de Sección */}
+        <Modal visible={showSectionModal} animationType="slide" transparent onRequestClose={() => setShowSectionModal(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>SELECCIONAR SECCIÓN</Text>
+                <TouchableOpacity onPress={() => setShowSectionModal(false)}>
+                  <Text style={styles.modalCloseButton}>✕</Text>
+                </TouchableOpacity>
+              </View>
+              <FlatList
+                data={availableSections}
+                keyExtractor={(item: any) => item.id}
+                renderItem={({ item }: any) => (
+                  <TouchableOpacity
+                    style={styles.modalItem}
+                    onPress={() => {
+                      setSelectedSection(item.id);
+                      setShowSectionModal(false);
+                    }}
+                  >
+                    <Text style={styles.modalItemText}>{item.name}</Text>
+                    {selectedSection === item.id && <Text style={styles.modalItemCheck}>✓</Text>}
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+          </View>
+        </Modal>
 
-      <ModalControlAgua
-        isOpen={showAguaModal}
-        onClose={() => setShowAguaModal(false)}
-        onSave={handleAgregarAgua}
-        vehiculos={vehiculos}
-        origenes={allOrigenes}
-        destinos={allDestinos}
-        capacidades={allCapacidades}
-      />
+        {/* Modales */}
+        <ModalControlAcarreo
+          isOpen={showAcarreoModal}
+          onClose={() => setShowAcarreoModal(false)}
+          onSave={handleAgregarAcarreo}
+          origenes={allOrigenes}
+          destinos={allDestinos}
+          materiales={allMateriales}
+          capacidades={allCapacidades}
+          proyectoId={selectedProject?._id}
+        />
 
-      <ModalControlMaquinaria
-        isOpen={showMaquinariaModal}
-        onClose={() => setShowMaquinariaModal(false)}
-        onSave={handleAgregarMaquinaria}
-        vehiculos={vehiculos}
-      />
+        <ModalControlMaterial
+          isOpen={showMaterialModal}
+          onClose={() => setShowMaterialModal(false)}
+          onSave={handleAgregarMaterial}
+          materiales={allMateriales}
+        />
+
+        <ModalControlAgua
+          isOpen={showAguaModal}
+          onClose={() => setShowAguaModal(false)}
+          onSave={handleAgregarAgua}
+          vehiculos={vehiculos}
+          origenes={allOrigenes}
+          destinos={allDestinos}
+          capacidades={allCapacidades}
+        />
+
+        <ModalControlMaquinaria
+          isOpen={showMaquinariaModal}
+          onClose={() => setShowMaquinariaModal(false)}
+          onSave={handleAgregarMaquinaria}
+          vehiculos={vehiculos}
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );
