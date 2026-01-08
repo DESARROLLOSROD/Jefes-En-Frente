@@ -39,7 +39,8 @@
       "Bash(copy:*)",
       "Bash(git fetch:*)",
       "Bash(eas build:list:*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(railway logs:*)"
     ],
     "deny": [],
     "ask": []

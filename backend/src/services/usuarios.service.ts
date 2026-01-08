@@ -19,18 +19,35 @@ export class UsuariosService {
       throw new Error(`Error obteniendo usuarios: ${error.message}`);
     }
 
+    // Obtener usuarios de Auth para obtener emails
+    const { data: authUsers, error: authError } = await supabaseAdmin.auth.admin.listUsers();
+
+    if (authError) {
+      console.error('Error obteniendo usuarios de Auth:', authError);
+      throw new Error(`Error obteniendo usuarios de Auth: ${authError.message}`);
+    }
+
+    // Crear mapa de id -> email
+    const emailMap = new Map(authUsers.users.map(u => [u.id, u.email]));
+
     // Obtener proyectos para cada usuario
     const perfilesConProyectos = await Promise.all(
       (perfiles || []).map(async (perfil) => {
         const proyectos = await this.getProyectosDeUsuario(perfil.id);
         return {
-          ...perfil,
+          _id: perfil.id, // Para compatibilidad con frontend
+          id: perfil.id,
+          nombre: perfil.nombre,
+          email: emailMap.get(perfil.id) || '', // Email desde Auth
+          rol: perfil.rol,
+          activo: perfil.activo,
+          fechaCreacion: perfil.fecha_creacion,
           proyectos
         };
       })
     );
 
-    return perfilesConProyectos;
+    return perfilesConProyectos as any;
   }
 
   /**
@@ -51,13 +68,23 @@ export class UsuariosService {
       throw new Error(`Error obteniendo usuario: ${error.message}`);
     }
 
+    // Obtener email desde Auth
+    const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(id);
+    const email = authUser?.user?.email || '';
+
     // Obtener proyectos del usuario
     const proyectos = await this.getProyectosDeUsuario(id);
 
     return {
-      ...data,
+      _id: data.id,
+      id: data.id,
+      nombre: data.nombre,
+      email,
+      rol: data.rol,
+      activo: data.activo,
+      fechaCreacion: data.fecha_creacion,
       proyectos
-    };
+    } as any;
   }
 
   /**
