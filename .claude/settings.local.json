@@ -41,7 +41,8 @@
       "Bash(eas build:list:*)",
       "Bash(npx tsx:*)",
       "Bash(railway logs:*)",
-      "Bash(timeout 10 npm run dev:*)"
+      "Bash(timeout 10 npm run dev:*)",
+      "Bash(timeout 15 npm start)"
     ],
     "deny": [],
     "ask": []
