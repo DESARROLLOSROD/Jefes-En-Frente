@@ -50,11 +50,11 @@ router.get('/', async (req: AuthRequest, res) => {
       filtros.proyecto_id = proyectoId as string;
     }
 
-    const reportes = await reportesService.getReportes(
-      filtros,
-      limit ? parseInt(limit as string) : undefined,
-      offset ? parseInt(offset as string) : undefined
-    );
+    const reportes = await reportesService.getReportes({
+      ...filtros,
+      limit: limit ? parseInt(limit as string) : undefined,
+      offset: offset ? parseInt(offset as string) : undefined
+    });
 
     console.log(`✅ ${reportes.length} reportes encontrados`);
 
@@ -86,7 +86,7 @@ router.get('/estadisticas', async (req: AuthRequest, res) => {
       if (typeof proyectoIds === 'string') {
         proyectoIdsArray = proyectoIds.split(',');
       } else if (Array.isArray(proyectoIds)) {
-        proyectoIdsArray = proyectoIds.filter((id): id is string => typeof id === 'string');
+        proyectoIdsArray = proyectoIds.map(String);
       }
     }
 
@@ -180,7 +180,7 @@ router.put('/:id', verificarAdminOSupervisor, async (req: AuthRequest, res) => {
     // El servicio maneja la detección de cambios, historial y actualización de horómetros
     const reporteActualizado = await reportesService.updateReporte(
       req.params.id,
-      updateData
+      updateData as any
     );
 
     if (!reporteActualizado) {

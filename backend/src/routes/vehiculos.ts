@@ -70,12 +70,13 @@ vehiculosRouter.post('/', verificarAdminOSupervisor, async (req, res) => {
             horometro_inicial: horometroInicial,
             horometro_final: horometroFinal,
             no_economico: noEconomico,
-            capacidad
+            capacidad,
+            horas_operacion: 0 // Se calculará en el servicio
         });
 
         // Asignar proyectos si se proporcionaron
         if (proyectos && Array.isArray(proyectos) && proyectos.length > 0) {
-            await vehiculosService.assignProyectosToVehiculo(nuevoVehiculo.id, proyectos);
+            await vehiculosService.setProyectosForVehiculo(nuevoVehiculo.id, proyectos);
         }
 
         // Obtener vehículo completo con proyectos
@@ -123,7 +124,7 @@ vehiculosRouter.put('/:id', verificarAdmin, async (req, res) => {
 
         // Actualizar proyectos si se proporcionaron
         if (proyectos !== undefined && Array.isArray(proyectos)) {
-            await vehiculosService.assignProyectosToVehiculo(req.params.id, proyectos);
+            await vehiculosService.setProyectosForVehiculo(req.params.id, proyectos);
         }
 
         // Obtener vehículo actualizado con proyectos

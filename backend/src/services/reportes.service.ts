@@ -1,5 +1,5 @@
-import { supabaseAdmin } from '../config/supabase';
-import { vehiculosService } from './vehiculos.service';
+import { supabaseAdmin } from '../config/supabase.js';
+import { vehiculosService } from './vehiculos.service.js';
 import type {
   Reporte,
   ReporteCompleto,
