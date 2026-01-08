@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase.js';
+import { supabaseAdmin } from '../config/supabase.js';
 /**
  * Middleware de autenticación usando Supabase Auth
  * Soporta tanto cookies como headers
@@ -19,9 +19,10 @@ export const verificarToken = async (req, res, next) => {
         });
     }
     try {
-        // Verificar token con Supabase
-        const { data: { user }, error } = await supabase.auth.getUser(token);
+        // Verificar token con Supabase Admin (necesario para verificar tokens en servidor)
+        const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
         if (error || !user) {
+            console.log('❌ Token verification failed:', error?.message);
             return res.status(401).json({
                 success: false,
                 error: 'Token inválido o expirado',
@@ -29,19 +30,20 @@ export const verificarToken = async (req, res, next) => {
             });
         }
         // Obtener datos adicionales del perfil (rol, proyectos)
-        const { data: perfil, error: perfilError } = await supabase
+        const { data: perfil, error: perfilError } = await supabaseAdmin
             .from('perfiles')
             .select('rol')
             .eq('id', user.id)
             .single();
         if (perfilError || !perfil) {
+            console.log('❌ Profile not found for user:', user.id);
             return res.status(401).json({
                 success: false,
                 error: 'Perfil de usuario no encontrado'
             });
         }
         // Obtener proyectos del usuario
-        const { data: proyectosData } = await supabase
+        const { data: proyectosData } = await supabaseAdmin
             .from('proyecto_usuarios')
             .select('proyecto_id')
             .eq('usuario_id', user.id);
