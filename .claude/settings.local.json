@@ -40,7 +40,8 @@
       "Bash(git fetch:*)",
       "Bash(eas build:list:*)",
       "Bash(npx tsx:*)",
-      "Bash(railway logs:*)"
+      "Bash(railway logs:*)",
+      "Bash(timeout 10 npm run dev:*)"
     ],
     "deny": [],
     "ask": []

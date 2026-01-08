@@ -6,14 +6,15 @@ import { ApiResponse } from '../types/reporte.js';
 import {
   setAuthCookies,
   clearAuthCookies,
-  verificarToken,
-  AuthRequest
+  verificarToken
 } from '../middleware/auth.js';
+import type { AuthRequest } from '../middleware/auth.js';
 import { validateLogin } from '../middleware/validators.js';
 import { loginLimiter } from '../middleware/rateLimiter.js';
 
 const router = express.Router();
-export { verificarToken, AuthRequest };
+export { verificarToken };
+export type { AuthRequest };
 
 /**
  * Login con Supabase Auth

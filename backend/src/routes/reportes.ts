@@ -2,7 +2,8 @@ import express from 'express';
 import { reportesService } from '../services/reportes.service.js';
 import { usuariosService } from '../services/usuarios.service.js';
 import { ApiResponse } from '../types/reporte.js';
-import { verificarToken, verificarAdminOSupervisor, AuthRequest } from './auth.js';
+import { verificarToken, verificarAdminOSupervisor } from './auth.js';
+import type { AuthRequest } from './auth.js';
 
 const router = express.Router();
 
