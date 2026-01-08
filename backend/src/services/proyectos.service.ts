@@ -1,9 +1,9 @@
-import { supabaseAdmin } from '../config/supabase';
+import { supabaseAdmin } from '../config/supabase.js';
 import type {
   Proyecto,
   CreateProyectoInput,
   UpdateProyectoInput
-} from '../types/database.types';
+} from '../types/database.types.js';
 
 /**
  * Servicio para operaciones de Proyectos en Supabase

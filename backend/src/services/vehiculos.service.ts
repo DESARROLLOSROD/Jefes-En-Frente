@@ -5,7 +5,7 @@ import type {
   CreateVehiculoInput,
   UpdateVehiculoInput,
   Proyecto
-} from '../types/database.types';
+} from '../types/database.types.js';
 
 /**
  * Servicio para operaciones de Vehículos en Supabase

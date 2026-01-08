@@ -11,7 +11,7 @@ import type {
   ReporteAgua,
   ReporteMaquinaria,
   PinMapa
-} from '../types/database.types';
+} from '../types/database.types.js';
 
 /**
  * Servicio para operaciones de Reportes en Supabase

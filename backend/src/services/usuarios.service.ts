@@ -1,5 +1,5 @@
 import { supabaseAdmin } from '../config/supabase.js';
-import type { Perfil, PerfilConProyectos, Proyecto } from '../types/database.types';
+import type { Perfil, PerfilConProyectos, Proyecto } from '../types/database.types.js';
 
 /**
  * Servicio para operaciones de Usuarios (Perfiles) en Supabase
