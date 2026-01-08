@@ -40,7 +40,11 @@ router.get('/', async (req, res) => {
         if (proyectoId) {
             filtros.proyecto_id = proyectoId;
         }
-        const reportes = await reportesService.getReportes(filtros, limit ? parseInt(limit) : undefined, offset ? parseInt(offset) : undefined);
+        const reportes = await reportesService.getReportes({
+            ...filtros,
+            limit: limit ? parseInt(limit) : undefined,
+            offset: offset ? parseInt(offset) : undefined
+        });
         console.log(`✅ ${reportes.length} reportes encontrados`);
         const response = {
             success: true,
@@ -69,7 +73,7 @@ router.get('/estadisticas', async (req, res) => {
                 proyectoIdsArray = proyectoIds.split(',');
             }
             else if (Array.isArray(proyectoIds)) {
-                proyectoIdsArray = proyectoIds.filter((id) => typeof id === 'string');
+                proyectoIdsArray = proyectoIds.map(String);
             }
         }
         const estadisticas = await reportesService.getEstadisticas(proyectoIdsArray, fechaInicio ? new Date(fechaInicio) : undefined, fechaFin ? new Date(fechaFin) : undefined);

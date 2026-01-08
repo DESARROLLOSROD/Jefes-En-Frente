@@ -35,6 +35,7 @@ app.use(cookieParser());
 const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
+  'https://jefes-en-frente.up.railway.app', // Frontend de producción
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
@@ -50,16 +51,18 @@ const corsOptions = {
     // Log para ver EXACTAMENTE qué llega
     console.log('🔍 Request Origin:', origin);
 
-    // En producción, validar origins
-    if (process.env.NODE_ENV === 'production') {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('No permitido por CORS'));
-      }
-    } else {
-      // En desarrollo, permitir todo
+    // Permitir requests sin origin (como Postman, mobile apps)
+    if (!origin) {
       callback(null, true);
+      return;
+    }
+
+    // Verificar si el origin está en la lista de permitidos
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn('⚠️ Origin no permitido:', origin);
+      callback(new Error('No permitido por CORS'));
     }
   },
   credentials: true, // Importante para cookies
