@@ -286,8 +286,9 @@ export type CreateProyectoInput = Omit<Proyecto, 'id' | 'fecha_creacion' | 'acti
 
 export type UpdateProyectoInput = Partial<Omit<Proyecto, 'id' | 'fecha_creacion'>>;
 
-export type CreateVehiculoInput = Omit<Vehiculo, 'id' | 'fecha_creacion' | 'activo'> & {
+export type CreateVehiculoInput = Omit<Vehiculo, 'id' | 'fecha_creacion' | 'activo' | 'horas_operacion'> & {
   activo?: boolean;
+  horas_operacion?: number;
   proyectos?: string[]; // Array de proyecto_ids
 };
 

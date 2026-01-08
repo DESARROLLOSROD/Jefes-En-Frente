@@ -1,65 +1,57 @@
 import express from 'express';
-import Usuario from '../models/Usuario.js';
-import Proyecto from '../models/Proyecto.js';
-import { generateAccessToken, generateRefreshToken, verifyRefreshToken, revokeRefreshToken, setAuthCookies, clearAuthCookies, verificarToken } from '../middleware/auth.js';
+import { supabaseAdmin } from '../config/supabase.js';
+import { proyectosService } from '../services/proyectos.service.js';
+import { usuariosService } from '../services/usuarios.service.js';
+import { setAuthCookies, clearAuthCookies, verificarToken } from '../middleware/auth.js';
 import { validateLogin } from '../middleware/validators.js';
 import { loginLimiter } from '../middleware/rateLimiter.js';
 const router = express.Router();
 export { verificarToken };
-const JWT_SECRET = process.env.JWT_SECRET || 'jefesenfrente_secret_2024';
-// Login con soporte de cookies y refresh tokens
+/**
+ * Login con Supabase Auth
+ */
 router.post('/login', loginLimiter, validateLogin, async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log('🔐 Intentando login para:', email);
-        // Buscar usuario con debug
-        console.log('📋 Buscando usuario en la base de datos...');
-        const usuario = await Usuario.findOne({ email, activo: true })
-            .populate('proyectos', 'nombre ubicacion descripcion mapa');
-        if (!usuario) {
-            console.log('❌ Usuario no encontrado:', email);
+        console.log('🔐 Intentando login con Supabase Auth para:', email);
+        // Autenticar con Supabase
+        const { data, error } = await supabaseAdmin.auth.signInWithPassword({
+            email,
+            password
+        });
+        if (error || !data.user || !data.session) {
+            console.log('❌ Error de autenticación:', error?.message);
             const response = {
                 success: false,
                 error: 'Credenciales inválidas'
+            };
+            return res.status(401).json(response);
+        }
+        console.log('✅ Autenticación exitosa para:', data.user.email);
+        // Obtener perfil y proyectos del usuario
+        const usuario = await usuariosService.getUsuarioById(data.user.id);
+        if (!usuario || !usuario.activo) {
+            console.log('❌ Usuario inactivo o sin perfil');
+            const response = {
+                success: false,
+                error: 'Usuario inactivo'
             };
             return res.status(401).json(response);
         }
         console.log('✅ Usuario encontrado:', usuario.nombre);
-        // Comparar password con debug
-        console.log('🔑 Comparando password...');
-        const passwordValido = await usuario.compararPassword(password);
-        if (!passwordValido) {
-            console.log('❌ Password incorrecto');
-            const response = {
-                success: false,
-                error: 'Credenciales inválidas'
-            };
-            return res.status(401).json(response);
-        }
-        console.log('✅ Password válido');
-        // Generar tokens
-        const accessToken = generateAccessToken({
-            userId: usuario._id.toString(),
-            email: usuario.email,
-            rol: usuario.rol,
-            proyectos: usuario.proyectos.map((p) => p._id.toString())
-        });
-        // Obtener información del dispositivo
-        const deviceInfo = req.headers['user-agent'] || 'Unknown';
-        const refreshToken = await generateRefreshToken(usuario._id.toString(), deviceInfo);
-        console.log('✅ Tokens generados para:', usuario.nombre);
-        // Configurar cookies httpOnly
-        setAuthCookies(res, accessToken, refreshToken);
+        // Configurar cookies con tokens de Supabase
+        setAuthCookies(res, data.session.access_token, data.session.refresh_token);
         const response = {
             success: true,
             data: {
-                token: accessToken, // Mantener compatibilidad con clientes que usan headers
+                token: data.session.access_token,
                 user: {
-                    _id: usuario._id,
+                    _id: usuario.id,
+                    id: usuario.id,
                     nombre: usuario.nombre,
-                    email: usuario.email,
+                    email: data.user.email,
                     rol: usuario.rol,
-                    proyectos: usuario.proyectos
+                    proyectos: usuario.proyectos || []
                 }
             }
         };
@@ -75,7 +67,9 @@ router.post('/login', loginLimiter, validateLogin, async (req, res) => {
         res.status(500).json(response);
     }
 });
-// Endpoint para renovar access token usando refresh token
+/**
+ * Refresh token usando Supabase Auth
+ */
 router.post('/refresh', async (req, res) => {
     try {
         // Obtener refresh token desde cookie o body
@@ -86,41 +80,46 @@ router.post('/refresh', async (req, res) => {
                 error: 'Refresh token requerido'
             });
         }
-        // Verificar refresh token
-        const tokenData = await verifyRefreshToken(refreshToken);
-        const usuario = await Usuario.findById(tokenData.userId)
-            .populate('proyectos', 'nombre ubicacion descripcion mapa');
+        console.log('🔄 Renovando token de sesión...');
+        // Renovar sesión con Supabase
+        const { data, error } = await supabaseAdmin.auth.refreshSession({
+            refresh_token: refreshToken
+        });
+        if (error || !data.session || !data.user) {
+            console.log('❌ Error renovando token:', error?.message);
+            return res.status(401).json({
+                success: false,
+                error: 'Refresh token inválido o expirado'
+            });
+        }
+        console.log('✅ Token renovado para:', data.user.email);
+        // Obtener perfil del usuario
+        const usuario = await usuariosService.getUsuarioById(data.user.id);
         if (!usuario || !usuario.activo) {
             return res.status(401).json({
                 success: false,
                 error: 'Usuario no válido'
             });
         }
-        // Generar nuevo access token
-        const accessToken = generateAccessToken({
-            userId: usuario._id.toString(),
-            email: usuario.email,
-            rol: usuario.rol,
-            proyectos: usuario.proyectos.map((p) => p._id.toString())
-        });
-        // Configurar cookie de access token
+        // Configurar nueva cookie de access token
         const isProduction = process.env.NODE_ENV === 'production';
-        res.cookie('accessToken', accessToken, {
+        res.cookie('accessToken', data.session.access_token, {
             httpOnly: true,
             secure: isProduction,
             sameSite: 'strict',
-            maxAge: 15 * 60 * 1000 // 15 minutos
+            maxAge: 7 * 24 * 60 * 60 * 1000
         });
         res.json({
             success: true,
             data: {
-                token: accessToken,
+                token: data.session.access_token,
                 user: {
-                    _id: usuario._id,
+                    _id: usuario.id,
+                    id: usuario.id,
                     nombre: usuario.nombre,
-                    email: usuario.email,
+                    email: data.user.email,
                     rol: usuario.rol,
-                    proyectos: usuario.proyectos
+                    proyectos: usuario.proyectos || []
                 }
             }
         });
@@ -133,16 +132,19 @@ router.post('/refresh', async (req, res) => {
         });
     }
 });
-// Endpoint para logout
+/**
+ * Logout con Supabase Auth
+ */
 router.post('/logout', async (req, res) => {
     try {
-        const refreshToken = req.cookies?.refreshToken || req.body.refreshToken;
-        if (refreshToken) {
-            // Revocar refresh token
-            await revokeRefreshToken(refreshToken);
+        const accessToken = req.cookies?.accessToken || req.header('Authorization')?.replace('Bearer ', '');
+        if (accessToken) {
+            // Cerrar sesión en Supabase (invalida el token)
+            await supabaseAdmin.auth.signOut();
         }
         // Limpiar cookies
         clearAuthCookies(res);
+        console.log('✅ Logout exitoso');
         res.json({
             success: true,
             message: 'Logout exitoso'
@@ -156,10 +158,12 @@ router.post('/logout', async (req, res) => {
         });
     }
 });
-// Obtener proyectos
+/**
+ * Obtener proyectos activos (público)
+ */
 router.get('/proyectos', async (req, res) => {
     try {
-        const proyectos = await Proyecto.find({ activo: true });
+        const proyectos = await proyectosService.getProyectos(true);
         const response = {
             success: true,
             data: proyectos
@@ -175,7 +179,9 @@ router.get('/proyectos', async (req, res) => {
         res.status(500).json(response);
     }
 });
-// Middleware para verificar que el usuario es admin
+/**
+ * Middleware para verificar que el usuario es admin
+ */
 export const verificarAdmin = (req, res, next) => {
     if (req.user?.rol !== 'admin') {
         return res.status(403).json({
@@ -185,7 +191,9 @@ export const verificarAdmin = (req, res, next) => {
     }
     next();
 };
-// Middleware para verificar que el usuario es admin o supervisor
+/**
+ * Middleware para verificar que el usuario es admin o supervisor
+ */
 export const verificarAdminOSupervisor = (req, res, next) => {
     if (req.user?.rol !== 'admin' && req.user?.rol !== 'supervisor') {
         return res.status(403).json({

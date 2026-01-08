@@ -83,7 +83,11 @@ router.get('/estadisticas', async (req: AuthRequest, res) => {
     // Parse proyecto IDs
     let proyectoIdsArray: string[] | undefined;
     if (proyectoIds && proyectoIds !== 'todos') {
-      proyectoIdsArray = typeof proyectoIds === 'string' ? proyectoIds.split(',') : Array.isArray(proyectoIds) ? proyectoIds : [];
+      if (typeof proyectoIds === 'string') {
+        proyectoIdsArray = proyectoIds.split(',');
+      } else if (Array.isArray(proyectoIds)) {
+        proyectoIdsArray = proyectoIds.filter((id): id is string => typeof id === 'string');
+      }
     }
 
     const estadisticas = await reportesService.getEstadisticas(

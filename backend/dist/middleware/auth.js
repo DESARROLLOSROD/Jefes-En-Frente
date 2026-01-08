@@ -1,16 +1,16 @@
-import jwt from 'jsonwebtoken';
-import crypto from 'crypto';
-import RefreshToken from '../models/RefreshToken.js';
-const JWT_SECRET = process.env.JWT_SECRET || 'jefesenfrente_secret_2024';
-const REFRESH_SECRET = process.env.REFRESH_SECRET || 'jefesenfrente_refresh_secret_2024';
+import { supabase } from '../config/supabase.js';
 /**
- * Middleware de autenticación que soporta tanto cookies como headers
+ * Middleware de autenticación usando Supabase Auth
+ * Soporta tanto cookies como headers
  */
-export const verificarToken = (req, res, next) => {
+export const verificarToken = async (req, res, next) => {
     // Intentar obtener el token desde cookie primero, luego desde header
     let token = req.cookies?.accessToken;
     if (!token) {
-        token = req.header('Authorization')?.replace('Bearer ', '');
+        const authHeader = req.header('Authorization');
+        if (authHeader?.startsWith('Bearer ')) {
+            token = authHeader.replace('Bearer ', '');
+        }
     }
     if (!token) {
         return res.status(401).json({
@@ -19,90 +19,73 @@ export const verificarToken = (req, res, next) => {
         });
     }
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded;
+        // Verificar token con Supabase
+        const { data: { user }, error } = await supabase.auth.getUser(token);
+        if (error || !user) {
+            return res.status(401).json({
+                success: false,
+                error: 'Token inválido o expirado',
+                code: error?.message === 'JWT expired' ? 'TOKEN_EXPIRED' : 'INVALID_TOKEN'
+            });
+        }
+        // Obtener datos adicionales del perfil (rol, proyectos)
+        const { data: perfil, error: perfilError } = await supabase
+            .from('perfiles')
+            .select('rol')
+            .eq('id', user.id)
+            .single();
+        if (perfilError || !perfil) {
+            return res.status(401).json({
+                success: false,
+                error: 'Perfil de usuario no encontrado'
+            });
+        }
+        // Obtener proyectos del usuario
+        const { data: proyectosData } = await supabase
+            .from('proyecto_usuarios')
+            .select('proyecto_id')
+            .eq('usuario_id', user.id);
+        const proyectos = proyectosData?.map(p => p.proyecto_id) || [];
+        // Agregar info del usuario a la request
+        req.user = {
+            userId: user.id,
+            email: user.email || '',
+            rol: perfil.rol,
+            proyectos
+        };
         next();
     }
     catch (error) {
-        // Si el token expiró, indicar que necesita refresh
-        if (error instanceof jwt.TokenExpiredError) {
-            return res.status(401).json({
-                success: false,
-                error: 'Token expirado',
-                code: 'TOKEN_EXPIRED'
-            });
-        }
+        console.error('Error verificando token:', error);
         res.status(401).json({
             success: false,
-            error: 'Token inválido'
+            error: 'Error verificando autenticación'
         });
     }
 };
 /**
- * Genera un access token (corta duración: 15 minutos)
- */
-export const generateAccessToken = (payload) => {
-    return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
-};
-/**
- * Genera un refresh token (larga duración: 7 días)
- */
-export const generateRefreshToken = async (userId, deviceInfo) => {
-    // Generar token único
-    const token = crypto.randomBytes(64).toString('hex');
-    // Calcular fecha de expiración (7 días)
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
-    // Guardar en la base de datos
-    await RefreshToken.create({
-        userId,
-        token,
-        expiresAt,
-        deviceInfo
-    });
-    return token;
-};
-/**
- * Verifica y valida un refresh token
- */
-export const verifyRefreshToken = async (token) => {
-    const refreshToken = await RefreshToken.findOne({ token }).populate('userId');
-    if (!refreshToken) {
-        throw new Error('Refresh token no encontrado');
-    }
-    if (refreshToken.isRevoked) {
-        throw new Error('Refresh token revocado');
-    }
-    if (refreshToken.expiresAt < new Date()) {
-        throw new Error('Refresh token expirado');
-    }
-    return refreshToken;
-};
-/**
- * Revoca un refresh token
- */
-export const revokeRefreshToken = async (token) => {
-    await RefreshToken.updateOne({ token }, { $set: { isRevoked: true } });
-};
-/**
  * Configura las cookies de autenticación
+ * Para Supabase, solo guardamos el access token
+ * Supabase maneja el refresh token automáticamente
  */
 export const setAuthCookies = (res, accessToken, refreshToken) => {
     const isProduction = process.env.NODE_ENV === 'production';
-    // Cookie para access token (15 minutos)
+    // Cookie para access token
     res.cookie('accessToken', accessToken, {
-        httpOnly: true,
-        secure: isProduction, // HTTPS en producción
-        sameSite: 'strict',
-        maxAge: 15 * 60 * 1000 // 15 minutos
-    });
-    // Cookie para refresh token (7 días)
-    res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         secure: isProduction,
         sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 días
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 días (Supabase maneja la expiración)
     });
+    // Opcionalmente guardar refresh token (si se proporciona)
+    if (refreshToken) {
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            secure: isProduction,
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
+    }
 };
 /**
  * Limpia las cookies de autenticación

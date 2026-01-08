@@ -92,6 +92,10 @@ const reporteActividadesSchema = new Schema({
         type: String,
         required: true
     },
+    offlineId: {
+        type: String,
+        index: true // Índice para buscar rápidamente duplicados
+    },
     ubicacionMapa: {
         pinX: Number,
         pinY: Number,

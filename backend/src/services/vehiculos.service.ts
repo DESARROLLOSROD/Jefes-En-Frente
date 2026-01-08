@@ -1,11 +1,11 @@
-import { supabaseAdmin } from '../config/supabase.js';
+import { supabaseAdmin } from '../config/supabase';
 import type {
   Vehiculo,
   VehiculoConProyectos,
   CreateVehiculoInput,
   UpdateVehiculoInput,
   Proyecto
-} from '../types/database.types.js';
+} from '../types/database.types';
 
 /**
  * Servicio para operaciones de Vehículos en Supabase
@@ -128,11 +128,18 @@ export class VehiculosService {
   async createVehiculo(input: CreateVehiculoInput): Promise<Vehiculo> {
     const { proyectos, ...vehiculoData } = input;
 
+    // Calcular horas_operacion si no se proporciona
+    const horasOperacion = vehiculoData.horas_operacion ??
+      (vehiculoData.horometro_final && vehiculoData.horometro_inicial
+        ? vehiculoData.horometro_final - vehiculoData.horometro_inicial
+        : 0);
+
     // Crear vehículo
     const { data: vehiculo, error } = await supabaseAdmin
       .from('vehiculos')
       .insert({
         ...vehiculoData,
+        horas_operacion: horasOperacion,
         activo: vehiculoData.activo ?? true
       })
       .select()
@@ -298,6 +305,13 @@ export class VehiculosService {
         throw new Error(`Error asignando proyectos al vehículo: ${error.message}`);
       }
     }
+  }
+
+  /**
+   * Alias para setProyectosForVehiculo (para compatibilidad con routes)
+   */
+  async assignProyectosToVehiculo(vehiculoId: string, proyectoIds: string[]): Promise<void> {
+    return this.setProyectosForVehiculo(vehiculoId, proyectoIds);
   }
 }
 

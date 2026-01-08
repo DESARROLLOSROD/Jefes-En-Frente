@@ -1,11 +1,11 @@
-import { supabaseAdmin } from '../config/supabase.js';
+import { supabaseAdmin } from '../config/supabase';
 import type {
   CatMaterial,
   CatOrigen,
   CatDestino,
   CatCapacidad,
   CatTipoVehiculo
-} from '../types/database.types.js';
+} from '../types/database.types';
 
 /**
  * Servicio genérico para operaciones CRUD en catálogos

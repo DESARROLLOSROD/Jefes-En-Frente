@@ -1,5 +1,5 @@
-import { supabaseAdmin } from '../config/supabase.js';
-import { vehiculosService } from './vehiculos.service.js';
+import { supabaseAdmin } from '../config/supabase';
+import { vehiculosService } from './vehiculos.service';
 import type {
   Reporte,
   ReporteCompleto,
@@ -11,7 +11,7 @@ import type {
   ReporteAgua,
   ReporteMaquinaria,
   PinMapa
-} from '../types/database.types.js';
+} from '../types/database.types';
 
 /**
  * Servicio para operaciones de Reportes en Supabase
@@ -21,7 +21,7 @@ export class ReportesService {
   /**
    * Obtener reportes con filtros
    */
-  async getReportes(filtros: ReporteFiltros): Promise<Reporte[]> {
+  async getReportes(filtros: ReporteFiltros, limit?: number, offset?: number): Promise<Reporte[]> {
     let query = supabaseAdmin
       .from('reportes')
       .select('*')
@@ -43,12 +43,14 @@ export class ReportesService {
       query = query.lte('fecha', filtros.fecha_fin);
     }
 
-    if (filtros.limit) {
-      query = query.limit(filtros.limit);
+    // Usar parámetros limit y offset si se proporcionan
+    if (limit !== undefined) {
+      query = query.limit(limit);
     }
 
-    if (filtros.offset) {
-      query = query.range(filtros.offset, filtros.offset + (filtros.limit || 10) - 1);
+    if (offset !== undefined) {
+      const effectiveLimit = limit || 10;
+      query = query.range(offset, offset + effectiveLimit - 1);
     }
 
     const { data, error } = await query;
@@ -177,11 +179,12 @@ export class ReportesService {
    */
   async updateReporte(
     id: string,
-    input: UpdateReporteInput,
-    usuarioId: string,
-    usuarioNombre: string,
-    observacion?: string
+    input: UpdateReporteInput
   ): Promise<Reporte> {
+    // Extraer usuario y observación del input
+    const usuarioId = (input as any).usuario_modificacion_id;
+    const usuarioNombre = (input as any).usuario_modificacion_nombre;
+    const observacion = (input as any).observacion_modificacion;
     // Obtener reporte actual para comparar cambios
     const reporteActual = await this.getReporteById(id);
     if (!reporteActual) {
@@ -273,6 +276,77 @@ export class ReportesService {
       console.error('Error eliminando reporte:', error);
       throw new Error(`Error eliminando reporte: ${error.message}`);
     }
+  }
+
+  /**
+   * Obtener estadísticas de reportes
+   */
+  async getEstadisticas(
+    proyectoIds?: string[],
+    fechaInicio?: Date,
+    fechaFin?: Date
+  ): Promise<any> {
+    let query = supabaseAdmin
+      .from('reportes')
+      .select('*');
+
+    if (proyectoIds && proyectoIds.length > 0) {
+      query = query.in('proyecto_id', proyectoIds);
+    }
+
+    if (fechaInicio) {
+      query = query.gte('fecha', fechaInicio.toISOString());
+    }
+
+    if (fechaFin) {
+      query = query.lte('fecha', fechaFin.toISOString());
+    }
+
+    const { data: reportes, error } = await query;
+
+    if (error) {
+      console.error('Error obteniendo estadísticas:', error);
+      throw new Error(`Error obteniendo estadísticas: ${error.message}`);
+    }
+
+    // Calcular estadísticas básicas
+    const totalReportes = reportes?.length || 0;
+    const proyectosUnicos = new Set(reportes?.map(r => r.proyecto_id)).size;
+    const usuariosUnicos = new Set(reportes?.map(r => r.usuario_id)).size;
+
+    // Obtener totales de sub-tablas si hay reportes
+    let totalAcarreos = 0;
+    let totalMateriales = 0;
+    let totalAgua = 0;
+    let totalMaquinaria = 0;
+
+    if (reportes && reportes.length > 0) {
+      const reporteIds = reportes.map(r => r.id);
+
+      const [acarreos, materiales, agua, maquinaria] = await Promise.all([
+        supabaseAdmin.from('reporte_acarreo').select('*', { count: 'exact', head: true }).in('reporte_id', reporteIds),
+        supabaseAdmin.from('reporte_material').select('*', { count: 'exact', head: true }).in('reporte_id', reporteIds),
+        supabaseAdmin.from('reporte_agua').select('*', { count: 'exact', head: true }).in('reporte_id', reporteIds),
+        supabaseAdmin.from('reporte_maquinaria').select('*', { count: 'exact', head: true }).in('reporte_id', reporteIds)
+      ]);
+
+      totalAcarreos = acarreos.count || 0;
+      totalMateriales = materiales.count || 0;
+      totalAgua = agua.count || 0;
+      totalMaquinaria = maquinaria.count || 0;
+    }
+
+    return {
+      totalReportes,
+      proyectosUnicos,
+      usuariosUnicos,
+      totalAcarreos,
+      totalMateriales,
+      totalAgua,
+      totalMaquinaria,
+      fechaInicio: fechaInicio?.toISOString(),
+      fechaFin: fechaFin?.toISOString()
+    };
   }
 
   /**
@@ -369,7 +443,10 @@ export class ReportesService {
     return data || [];
   }
 
-  private async getHistorialModificaciones(reporteId: string): Promise<any[]> {
+  /**
+   * Obtener historial de modificaciones de un reporte
+   */
+  async getHistorialModificaciones(reporteId: string): Promise<any[]> {
     const { data: historial, error } = await supabaseAdmin
       .from('reporte_historial')
       .select('*')
