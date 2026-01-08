@@ -172,7 +172,7 @@ Si hay errores de TypeScript, revísalos antes de continuar.
 ### Paso 6: Migrar Usuarios
 
 ```bash
-npx ts-node src/scripts/migrateUsersToAuth.ts
+npx tsx src/scripts/migrateUsersToAuth.ts
 ```
 
 **IMPORTANTE:**
@@ -183,7 +183,7 @@ npx ts-node src/scripts/migrateUsersToAuth.ts
 ### Paso 7: Migrar Datos
 
 ```bash
-npx ts-node src/scripts/migrateDataComplete.ts
+npx tsx src/scripts/migrateDataComplete.ts
 ```
 
 Observa el progreso y el resumen al final.

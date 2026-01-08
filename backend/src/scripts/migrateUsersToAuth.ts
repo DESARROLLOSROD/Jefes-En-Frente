@@ -5,7 +5,7 @@
  * porque necesita crear los usuarios en Supabase Auth primero.
  *
  * Uso:
- * ts-node src/scripts/migrateUsersToAuth.ts
+ * npx tsx src/scripts/migrateUsersToAuth.ts
  */
 
 import dotenv from 'dotenv';

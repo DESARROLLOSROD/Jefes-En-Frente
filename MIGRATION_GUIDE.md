@@ -136,7 +136,7 @@ PORT=5000
 
 ```bash
 cd backend
-npx ts-node src/scripts/migrateUsersToAuth.ts
+npx tsx src/scripts/migrateUsersToAuth.ts
 ```
 
 Este script:
@@ -157,7 +157,7 @@ Este script:
 Una vez migrados los usuarios, ejecuta el script de migración de datos:
 
 ```bash
-npx ts-node src/scripts/migrateDataComplete.ts
+npx tsx src/scripts/migrateDataComplete.ts
 ```
 
 Este script migra en orden:

@@ -4,23 +4,23 @@
  * IMPORTANTE: Debes ejecutar PRIMERO migrateUsersToAuth.ts antes de este script
  *
  * Uso:
- * ts-node src/scripts/migrateDataComplete.ts
+ * npx tsx src/scripts/migrateDataComplete.ts
  */
 
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import { supabaseAdmin } from '../config/supabase.js';
+import { supabaseAdmin } from '../config/supabase';
 
 // Modelos de MongoDB
-import Proyecto from '../models/Proyecto.js';
-import Usuario from '../models/Usuario.js';
-import Vehiculo from '../models/Vehiculo.js';
-import ReporteActividades from '../models/ReporteActividades.js';
-import Material from '../models/Material.js';
-import Capacidad from '../models/Capacidad.js';
-import Origen from '../models/Origen.js';
-import Destino from '../models/Destino.js';
-import TipoVehiculo from '../models/TipoVehiculo.js';
+import Proyecto from '../models/Proyecto';
+import Usuario from '../models/Usuario';
+import Vehiculo from '../models/Vehiculo';
+import ReporteActividades from '../models/ReporteActividades';
+import Material from '../models/Material';
+import Capacidad from '../models/Capacidad';
+import Origen from '../models/Origen';
+import Destino from '../models/Destino';
+import TipoVehiculo from '../models/TipoVehiculo';
 
 // Cargar variables de entorno
 dotenv.config();
@@ -35,6 +35,17 @@ interface MigrationStats {
 }
 
 const stats: MigrationStats = {};
+
+// Mapeo de IDs antiguos (MongoDB ObjectID) a nuevos (Supabase UUID)
+const idMapping: {
+  proyectos: Map<string, string>;
+  vehiculos: Map<string, string>;
+  usuarios: Map<string, string>;
+} = {
+  proyectos: new Map(),
+  vehiculos: new Map(),
+  usuarios: new Map()
+};
 
 function initStats(collection: string) {
   stats[collection] = {
@@ -71,7 +82,7 @@ async function migrateProyectos() {
     for (const proyecto of proyectos) {
       try {
         const proyectoData: any = {
-          id: proyecto._id.toString(),
+          // No incluir id - dejar que Supabase genere UUID automáticamente
           nombre: proyecto.nombre,
           ubicacion: proyecto.ubicacion,
           descripcion: proyecto.descripcion || null,
@@ -87,9 +98,11 @@ async function migrateProyectos() {
           proyectoData.mapa_height = proyecto.mapa.height || null;
         }
 
-        const { error } = await supabaseAdmin
+        const { data: insertedData, error } = await supabaseAdmin
           .from('proyectos')
-          .insert(proyectoData);
+          .insert(proyectoData)
+          .select()
+          .single();
 
         if (error) {
           if (error.code === '23505') { // Duplicate key
@@ -98,7 +111,9 @@ async function migrateProyectos() {
             throw error;
           }
         } else {
-          console.log(`✅ Proyecto migrado: ${proyecto.nombre}`);
+          // Guardar mapeo de ID antiguo a nuevo
+          idMapping.proyectos.set(proyecto._id.toString(), insertedData.id);
+          console.log(`✅ Proyecto migrado: ${proyecto.nombre} (${proyecto._id} → ${insertedData.id})`);
           stats.proyectos.successful++;
         }
       } catch (error: any) {
@@ -128,7 +143,7 @@ async function migrateVehiculos() {
     for (const vehiculo of vehiculos) {
       try {
         const vehiculoData: any = {
-          id: vehiculo._id.toString(),
+          // No incluir id - dejar que Supabase genere UUID automáticamente
           nombre: vehiculo.nombre,
           tipo: vehiculo.tipo,
           no_economico: vehiculo.noEconomico,
@@ -140,9 +155,11 @@ async function migrateVehiculos() {
           fecha_creacion: vehiculo.fechaCreacion || new Date()
         };
 
-        const { error } = await supabaseAdmin
+        const { data: insertedData, error } = await supabaseAdmin
           .from('vehiculos')
-          .insert(vehiculoData);
+          .insert(vehiculoData)
+          .select()
+          .single();
 
         if (error) {
           if (error.code === '23505') { // Duplicate key
@@ -151,21 +168,37 @@ async function migrateVehiculos() {
             throw error;
           }
         } else {
+          // Guardar mapeo de ID antiguo a nuevo
+          idMapping.vehiculos.set(vehiculo._id.toString(), insertedData.id);
           console.log(`✅ Vehículo migrado: ${vehiculo.nombre} (${vehiculo.noEconomico})`);
 
-          // Migrar relación con proyectos
+          // Migrar relación con proyectos usando el mapeo de IDs
           if (vehiculo.proyectos && vehiculo.proyectos.length > 0) {
-            const vehiculoProyectos = vehiculo.proyectos.map((p: any) => ({
-              vehiculo_id: vehiculo._id.toString(),
-              proyecto_id: p.toString()
-            }));
+            const vehiculoProyectos = vehiculo.proyectos
+              .map((p: any) => {
+                const proyectoIdAntiguo = p.toString();
+                const proyectoIdNuevo = idMapping.proyectos.get(proyectoIdAntiguo);
 
-            const { error: relError } = await supabaseAdmin
-              .from('vehiculo_proyectos')
-              .insert(vehiculoProyectos);
+                if (!proyectoIdNuevo) {
+                  console.warn(`⚠️  Proyecto no encontrado en mapeo: ${proyectoIdAntiguo}`);
+                  return null;
+                }
 
-            if (relError && relError.code !== '23505') {
-              console.warn(`⚠️  Error asignando proyectos a vehículo:`, relError.message);
+                return {
+                  vehiculo_id: insertedData.id,
+                  proyecto_id: proyectoIdNuevo
+                };
+              })
+              .filter(Boolean); // Eliminar nulls
+
+            if (vehiculoProyectos.length > 0) {
+              const { error: relError } = await supabaseAdmin
+                .from('vehiculo_proyectos')
+                .insert(vehiculoProyectos);
+
+              if (relError && relError.code !== '23505') {
+                console.warn(`⚠️  Error asignando proyectos a vehículo:`, relError.message);
+              }
             }
           }
 
@@ -196,7 +229,7 @@ async function migrateCatalogos() {
   for (const material of materiales) {
     try {
       const { error } = await supabaseAdmin.from('cat_materiales').insert({
-        id: material._id.toString(),
+        // No incluir id - dejar que Supabase genere UUID automáticamente
         nombre: material.nombre,
         unidad: material.unidad || null,
         activo: material.activo !== undefined ? material.activo : true,
@@ -224,7 +257,7 @@ async function migrateCatalogos() {
   for (const capacidad of capacidades) {
     try {
       const { error } = await supabaseAdmin.from('cat_capacidades').insert({
-        id: capacidad._id.toString(),
+        // No incluir id - dejar que Supabase genere UUID automáticamente
         valor: capacidad.valor,
         etiqueta: capacidad.etiqueta || null,
         activo: capacidad.activo !== undefined ? capacidad.activo : true,
@@ -252,7 +285,7 @@ async function migrateCatalogos() {
   for (const origen of origenes) {
     try {
       const { error } = await supabaseAdmin.from('cat_origenes').insert({
-        id: origen._id.toString(),
+        // No incluir id - dejar que Supabase genere UUID automáticamente
         nombre: origen.nombre,
         activo: origen.activo !== undefined ? origen.activo : true,
         fecha_creacion: origen.fechaCreacion || new Date()
@@ -279,7 +312,7 @@ async function migrateCatalogos() {
   for (const destino of destinos) {
     try {
       const { error } = await supabaseAdmin.from('cat_destinos').insert({
-        id: destino._id.toString(),
+        // No incluir id - dejar que Supabase genere UUID automáticamente
         nombre: destino.nombre,
         activo: destino.activo !== undefined ? destino.activo : true,
         fecha_creacion: destino.fechaCreacion || new Date()
@@ -306,7 +339,7 @@ async function migrateCatalogos() {
   for (const tipo of tiposVehiculo) {
     try {
       const { error } = await supabaseAdmin.from('cat_tipos_vehiculo').insert({
-        id: tipo._id.toString(),
+        // No incluir id - dejar que Supabase genere UUID automáticamente
         nombre: tipo.nombre,
         activo: tipo.activo !== undefined ? tipo.activo : true,
         fecha_creacion: tipo.fechaCreacion || new Date()
@@ -333,6 +366,19 @@ async function migrateReportes() {
   initStats('reportes');
 
   try {
+    // Primero, cargar el mapeo de usuarios (ya migrados en script anterior)
+    console.log('📋 Cargando mapeo de usuarios...');
+    const { data: usuarios } = await supabaseAdmin.auth.admin.listUsers();
+    const mongoUsuarios = await Usuario.find();
+
+    mongoUsuarios.forEach(mongoUsuario => {
+      const supabaseUser = usuarios?.users.find(u => u.email === mongoUsuario.email);
+      if (supabaseUser) {
+        idMapping.usuarios.set(mongoUsuario._id.toString(), supabaseUser.id);
+      }
+    });
+    console.log(`✅ ${idMapping.usuarios.size} usuarios mapeados\n`);
+
     const reportes = await ReporteActividades.find().sort({ fechaCreacion: 1 });
     stats.reportes.total = reportes.length;
 
@@ -342,25 +388,32 @@ async function migrateReportes() {
       const reporte = reportes[i];
 
       try {
-        console.log(`\n[${i + 1}/${reportes.length}] Migrando reporte ${reporte._id}...`);
+        console.log(`\n[${i + 1}/${reportes.length}] Migrando reporte...`);
 
-        // Mapear usuario_id de MongoDB a Supabase Auth
-        const { data: usuarios } = await supabaseAdmin.auth.admin.listUsers();
-        const mongoUsuario = await Usuario.findById(reporte.usuarioId);
+        // Mapear IDs usando el mapeo creado
+        const proyectoIdAntiguo = reporte.proyectoId?.toString();
+        const usuarioIdAntiguo = reporte.usuarioId?.toString();
 
-        let supabaseUserId = reporte.usuarioId?.toString();
-        if (mongoUsuario) {
-          const supabaseUser = usuarios?.users.find(u => u.email === mongoUsuario.email);
-          if (supabaseUser) {
-            supabaseUserId = supabaseUser.id;
-          }
+        const proyectoIdNuevo = proyectoIdAntiguo ? idMapping.proyectos.get(proyectoIdAntiguo) : null;
+        const usuarioIdNuevo = usuarioIdAntiguo ? idMapping.usuarios.get(usuarioIdAntiguo) : null;
+
+        if (!proyectoIdNuevo) {
+          console.warn(`⚠️  Proyecto no encontrado en mapeo: ${proyectoIdAntiguo}`);
+          stats.reportes.failed++;
+          continue;
+        }
+
+        if (!usuarioIdNuevo) {
+          console.warn(`⚠️  Usuario no encontrado en mapeo: ${usuarioIdAntiguo}`);
+          stats.reportes.failed++;
+          continue;
         }
 
         // Insertar reporte principal
         const reporteData: any = {
-          id: reporte._id.toString(),
-          proyecto_id: reporte.proyectoId?.toString(),
-          usuario_id: supabaseUserId,
+          // No incluir id - dejar que Supabase genere UUID automáticamente
+          proyecto_id: proyectoIdNuevo,
+          usuario_id: usuarioIdNuevo,
           fecha: reporte.fecha,
           turno: reporte.turno || null,
           jefe_frente: reporte.jefeFrente || null,
@@ -369,9 +422,11 @@ async function migrateReportes() {
           fecha_creacion: reporte.fechaCreacion || new Date()
         };
 
-        const { error } = await supabaseAdmin
+        const { data: insertedReporte, error } = await supabaseAdmin
           .from('reportes')
-          .insert(reporteData);
+          .insert(reporteData)
+          .select()
+          .single();
 
         if (error) {
           if (error.code === '23505') {
@@ -382,12 +437,13 @@ async function migrateReportes() {
           }
         }
 
-        console.log(`✅ Reporte principal migrado`);
+        const reporteIdNuevo = insertedReporte.id;
+        console.log(`✅ Reporte principal migrado (${reporteIdNuevo})`);
 
         // Migrar control de acarreo
         if (reporte.controlAcarreo && reporte.controlAcarreo.length > 0) {
           const acarreoData = reporte.controlAcarreo.map((item: any) => ({
-            reporte_id: reporte._id.toString(),
+            reporte_id: reporteIdNuevo,
             no_viaje: item.noViaje || 1,
             horario: item.horario || null,
             material: item.material,
@@ -404,7 +460,7 @@ async function migrateReportes() {
         // Migrar control de material
         if (reporte.controlMaterial && reporte.controlMaterial.length > 0) {
           const materialData = reporte.controlMaterial.map((item: any) => ({
-            reporte_id: reporte._id.toString(),
+            reporte_id: reporteIdNuevo,
             material: item.material,
             cantidad: item.cantidad ? parseFloat(item.cantidad) : 0,
             unidad: item.unidad || 'M³'
@@ -417,7 +473,7 @@ async function migrateReportes() {
         // Migrar control de agua
         if (reporte.controlAgua && reporte.controlAgua.length > 0) {
           const aguaData = reporte.controlAgua.map((item: any) => ({
-            reporte_id: reporte._id.toString(),
+            reporte_id: reporteIdNuevo,
             viaje: item.viaje || 1,
             horario: item.horario || null,
             volumen: item.volumen ? parseFloat(item.volumen) : 0,
@@ -432,7 +488,7 @@ async function migrateReportes() {
         // Migrar control de maquinaria
         if (reporte.controlMaquinaria && reporte.controlMaquinaria.length > 0) {
           const maquinariaData = reporte.controlMaquinaria.map((item: any) => ({
-            reporte_id: reporte._id.toString(),
+            reporte_id: reporteIdNuevo,
             tipo: item.tipo,
             numero_economico: item.numeroEconomico || null,
             horometro_inicial: item.horometroInicial || 0,
