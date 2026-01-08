@@ -120,3 +120,29 @@ export const clearAuthCookies = (res: Response) => {
   res.clearCookie('accessToken');
   res.clearCookie('refreshToken');
 };
+
+/**
+ * Middleware para verificar que el usuario sea admin
+ */
+export const verificarAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (req.user?.rol !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      error: 'Acceso denegado. Se requieren permisos de administrador.'
+    });
+  }
+  next();
+};
+
+/**
+ * Middleware para verificar que el usuario sea admin o supervisor
+ */
+export const verificarAdminOSupervisor = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (req.user?.rol !== 'admin' && req.user?.rol !== 'supervisor') {
+    return res.status(403).json({
+      success: false,
+      error: 'Acceso denegado. Se requieren permisos de administrador o supervisor.'
+    });
+  }
+  next();
+};
