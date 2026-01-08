@@ -12,6 +12,28 @@ import type {
  */
 export class VehiculosService {
   /**
+   * Formatear vehículo para compatibilidad con frontend antiguo (MongoDB style)
+   */
+  private formatForFrontend(v: any): any {
+    if (!v) return null;
+    return {
+      ...v,
+      _id: v.id,
+      noEconomico: v.no_economico,
+      horometroInicial: v.horometro_inicial,
+      horometroFinal: v.horometro_final,
+      horasOperacion: v.horas_operacion,
+      fechaCreacion: v.fecha_creacion,
+      // Formatear proyectos si están presentes
+      proyectos: v.proyectos ? v.proyectos.map((p: any) => ({
+        ...p,
+        _id: p.id,
+        fechaCreacion: p.fecha_creacion
+      })) : undefined
+    };
+  }
+
+  /**
    * Obtener todos los vehículos con sus proyectos
    */
   async getVehiculos(activo?: boolean): Promise<VehiculoConProyectos[]> {
@@ -42,7 +64,7 @@ export class VehiculosService {
       })
     );
 
-    return vehiculosConProyectos;
+    return vehiculosConProyectos.map(v => this.formatForFrontend(v));
   }
 
   /**
@@ -72,7 +94,7 @@ export class VehiculosService {
       throw new Error(`Error obteniendo vehículos del proyecto: ${error.message}`);
     }
 
-    return data?.map((item: any) => item.vehiculos).filter(Boolean) || [];
+    return data?.map((item: any) => this.formatForFrontend(item.vehiculos)).filter(Boolean) || [];
   }
 
   /**
@@ -95,10 +117,10 @@ export class VehiculosService {
 
     const proyectos = await this.getProyectosDeVehiculo(id);
 
-    return {
+    return this.formatForFrontend({
       ...data,
       proyectos
-    };
+    });
   }
 
   /**
@@ -119,7 +141,7 @@ export class VehiculosService {
       throw new Error(`Error obteniendo vehículo: ${error.message}`);
     }
 
-    return data;
+    return this.formatForFrontend(data);
   }
 
   /**

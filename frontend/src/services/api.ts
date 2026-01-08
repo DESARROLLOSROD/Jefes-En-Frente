@@ -166,8 +166,8 @@ export const reporteService = {
 export const proyectoService = {
   async obtenerProyectos(): Promise<ApiResponse<Proyecto[]>> {
     try {
-      const response = await api.get<Proyecto[]>('/proyectos');
-      return { success: true, data: response.data };
+      const response = await api.get<ApiResponse<Proyecto[]>>('/proyectos');
+      return response.data;
     } catch (error: any) {
       return {
         success: false,
@@ -178,8 +178,8 @@ export const proyectoService = {
 
   async obtenerProyectoPorId(id: string): Promise<ApiResponse<Proyecto>> {
     try {
-      const response = await api.get<Proyecto>(`/proyectos/${id}`);
-      return { success: true, data: response.data };
+      const response = await api.get<ApiResponse<Proyecto>>(`/proyectos/${id}`);
+      return response.data;
     } catch (error: any) {
       return {
         success: false,
@@ -190,8 +190,8 @@ export const proyectoService = {
 
   async crearProyecto(proyecto: Omit<Proyecto, '_id' | 'fechaCreacion' | 'activo'>): Promise<ApiResponse<Proyecto>> {
     try {
-      const response = await api.post<Proyecto>('/proyectos', proyecto);
-      return { success: true, data: response.data };
+      const response = await api.post<ApiResponse<Proyecto>>('/proyectos', proyecto);
+      return response.data;
     } catch (error: any) {
       return {
         success: false,
@@ -202,8 +202,8 @@ export const proyectoService = {
 
   async actualizarProyecto(id: string, proyecto: Partial<Proyecto>): Promise<ApiResponse<Proyecto>> {
     try {
-      const response = await api.put<Proyecto>(`/proyectos/${id}`, proyecto);
-      return { success: true, data: response.data };
+      const response = await api.put<ApiResponse<Proyecto>>(`/proyectos/${id}`, proyecto);
+      return response.data;
     } catch (error: any) {
       return {
         success: false,
@@ -228,8 +228,8 @@ export const proyectoService = {
 export const vehiculoService = {
   async obtenerVehiculos(): Promise<ApiResponse<Vehiculo[]>> {
     try {
-      const response = await api.get<Vehiculo[]>('/vehiculos');
-      return { success: true, data: response.data };
+      const response = await api.get<ApiResponse<Vehiculo[]>>('/vehiculos');
+      return response.data;
     } catch (error: any) {
       return {
         success: false,
@@ -239,8 +239,8 @@ export const vehiculoService = {
   },
   async obtenerVehiculosPorProyecto(proyectoId: string): Promise<ApiResponse<Vehiculo[]>> {
     try {
-      const response = await api.get<Vehiculo[]>(`/vehiculos/proyecto/${proyectoId}`);
-      return { success: true, data: response.data };
+      const response = await api.get<ApiResponse<Vehiculo[]>>(`/vehiculos/proyecto/${proyectoId}`);
+      return response.data;
     } catch (error: any) {
       return {
         success: false,
@@ -251,8 +251,8 @@ export const vehiculoService = {
 
   async crearVehiculo(vehiculo: Omit<Vehiculo, '_id' | 'fechaCreacion' | 'activo'>): Promise<ApiResponse<Vehiculo>> {
     try {
-      const response = await api.post<Vehiculo>('/vehiculos', vehiculo);
-      return { success: true, data: response.data };
+      const response = await api.post<ApiResponse<Vehiculo>>('/vehiculos', vehiculo);
+      return response.data;
     } catch (error: any) {
       return {
         success: false,
@@ -263,8 +263,8 @@ export const vehiculoService = {
 
   async actualizarVehiculo(id: string, vehiculo: Partial<Vehiculo>): Promise<ApiResponse<Vehiculo>> {
     try {
-      const response = await api.put<Vehiculo>(`/vehiculos/${id}`, vehiculo);
-      return { success: true, data: response.data };
+      const response = await api.put<ApiResponse<Vehiculo>>(`/vehiculos/${id}`, vehiculo);
+      return response.data;
     } catch (error: any) {
       return {
         success: false,

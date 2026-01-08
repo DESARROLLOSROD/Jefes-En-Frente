@@ -13,6 +13,18 @@ import type {
 class CatalogoService<T extends { id: string; activo: boolean; fecha_creacion: string }> {
   constructor(private tableName: string) { }
 
+  /**
+   * Formatear para compatibilidad con frontend antiguo (MongoDB style)
+   */
+  private formatForFrontend(item: any): any {
+    if (!item) return null;
+    return {
+      ...item,
+      _id: item.id,
+      fechaCreacion: item.fecha_creacion
+    };
+  }
+
   async getAll(activoOnly: boolean = true): Promise<T[]> {
     const orderCol = this.tableName === 'cat_capacidades' ? 'valor' : 'nombre';
     let query = supabaseAdmin
@@ -31,7 +43,7 @@ class CatalogoService<T extends { id: string; activo: boolean; fecha_creacion: s
       throw new Error(`Error obteniendo ${this.tableName}: ${error.message}`);
     }
 
-    return data || [];
+    return (data || []).map(item => this.formatForFrontend(item));
   }
 
   async getById(id: string): Promise<T | null> {
@@ -49,7 +61,7 @@ class CatalogoService<T extends { id: string; activo: boolean; fecha_creacion: s
       throw new Error(`Error obteniendo item de ${this.tableName}: ${error.message}`);
     }
 
-    return data;
+    return this.formatForFrontend(data);
   }
 
   async create(input: Omit<T, 'id' | 'fecha_creacion' | 'activo'> & { activo?: boolean }): Promise<T> {

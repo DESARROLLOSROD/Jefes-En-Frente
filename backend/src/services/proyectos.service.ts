@@ -9,10 +9,7 @@ import type {
  * Servicio para operaciones de Proyectos en Supabase
  */
 export class ProyectosService {
-  /**
-   * Obtener todos los proyectos (opcionalmente filtrados por activo)
-   */
-  async getProyectos(activo?: boolean): Promise<Proyecto[]> {
+  async getProyectos(activo?: boolean): Promise<any[]> {
     let query = supabaseAdmin
       .from('proyectos')
       .select('*')
@@ -29,13 +26,32 @@ export class ProyectosService {
       throw new Error(`Error obteniendo proyectos: ${error.message}`);
     }
 
-    return data || [];
+    return (data || []).map(p => this.formatForFrontend(p));
+  }
+
+  /**
+   * Formatear proyecto para compatibilidad con frontend antiguo (MongoDB style)
+   */
+  private formatForFrontend(p: any): any {
+    if (!p) return null;
+    return {
+      ...p,
+      _id: p.id,
+      mapa: p.mapa_imagen_data ? {
+        imagen: {
+          data: p.mapa_imagen_data,
+          contentType: p.mapa_content_type || 'image/png'
+        },
+        width: p.mapa_width,
+        height: p.mapa_height
+      } : undefined
+    };
   }
 
   /**
    * Obtener un proyecto por ID
    */
-  async getProyectoById(id: string): Promise<Proyecto | null> {
+  async getProyectoById(id: string): Promise<any | null> {
     const { data, error } = await supabaseAdmin
       .from('proyectos')
       .select('*')
@@ -51,7 +67,7 @@ export class ProyectosService {
       throw new Error(`Error obteniendo proyecto: ${error.message}`);
     }
 
-    return data;
+    return this.formatForFrontend(data);
   }
 
   /**
@@ -139,8 +155,8 @@ export class ProyectosService {
       throw new Error(`Error obteniendo proyectos del usuario: ${error.message}`);
     }
 
-    // Extraer los proyectos del resultado
-    return data?.map((item: any) => item.proyectos).filter(Boolean) || [];
+    // Extraer los proyectos del resultado y formatearlos
+    return data?.map((item: any) => this.formatForFrontend(item.proyectos)).filter(Boolean) || [];
   }
 
   /**

@@ -6,6 +6,26 @@ import type { Perfil, PerfilConProyectos, Proyecto } from '../types/database.typ
  */
 export class UsuariosService {
   /**
+   * Formatear proyecto para compatibilidad con frontend antiguo
+   */
+  private formatProjectForFrontend(p: any): any {
+    if (!p) return null;
+    return {
+      ...p,
+      _id: p.id,
+      fechaCreacion: p.fecha_creacion,
+      mapa: p.mapa_imagen_data ? {
+        imagen: {
+          data: p.mapa_imagen_data,
+          contentType: p.mapa_content_type || 'image/png'
+        },
+        width: p.mapa_width,
+        height: p.mapa_height
+      } : undefined
+    };
+  }
+
+  /**
    * Obtener todos los usuarios con sus proyectos
    */
   async getUsuarios(): Promise<PerfilConProyectos[]> {
@@ -199,7 +219,7 @@ export class UsuariosService {
       return [];
     }
 
-    return data?.map((item: any) => item.proyectos).filter(Boolean) || [];
+    return data?.map((item: any) => this.formatProjectForFrontend(item.proyectos)).filter(Boolean) || [];
   }
 
   /**

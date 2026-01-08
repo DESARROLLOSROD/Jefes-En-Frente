@@ -19,6 +19,38 @@ import type {
  */
 export class ReportesService {
   /**
+   * Formatear reporte para compatibilidad con frontend antiguo (MongoDB style)
+   */
+  private formatForFrontend(r: any): any {
+    if (!r) return null;
+    return {
+      ...r,
+      _id: r.id,
+      usuarioId: r.usuario_id,
+      proyectoId: r.proyecto_id,
+      fechaCreacion: r.fecha_creacion,
+      inicioActividades: r.inicio_actividades,
+      termino_actividades: r.termino_actividades, // Keep both for now
+      terminoActividades: r.termino_actividades,
+      jefeFrente: r.jefe_frente,
+      offlineId: r.offline_id,
+      zonaTrabajo: {
+        zonaId: r.zona_id,
+        zonaNombre: r.zona_nombre
+      },
+      seccionTrabajo: {
+        seccionId: r.seccion_id,
+        seccionNombre: r.seccion_nombre
+      },
+      ubicacionMapa: {
+        pinX: r.ubicacion_mapa_pin_x,
+        pinY: r.ubicacion_mapa_pin_y,
+        colocado: r.ubicacion_mapa_colocado
+      }
+    };
+  }
+
+  /**
    * Obtener reportes con filtros
    */
   async getReportes(filtros: ReporteFiltros, limit?: number, offset?: number): Promise<Reporte[]> {
@@ -60,7 +92,7 @@ export class ReportesService {
       throw new Error(`Error obteniendo reportes: ${error.message}`);
     }
 
-    return data || [];
+    return (data || []).map(r => this.formatForFrontend(r));
   }
 
   /**
@@ -99,14 +131,30 @@ export class ReportesService {
       this.getHistorialModificaciones(id)
     ]);
 
+    const formattedReporte = this.formatForFrontend(reporte);
+
     return {
-      ...reporte,
-      controlAcarreo,
-      controlMaterial,
-      controlAgua,
-      controlMaquinaria,
-      pinesMapa,
-      historialModificaciones
+      ...formattedReporte,
+      controlAcarreo: controlAcarreo.map((a: any) => ({ ...a, _id: a.id })),
+      controlMaterial: controlMaterial.map((m: any) => ({ ...m, _id: m.id })),
+      controlAgua: controlAgua.map((w: any) => ({ ...w, _id: w.id, noEconomico: w.no_economico })),
+      controlMaquinaria: controlMaquinaria.map((mq: any) => ({
+        ...mq,
+        _id: mq.id,
+        vehiculoId: mq.vehiculo_id,
+        numeroEconomico: mq.numero_economico,
+        horometroInicial: mq.horometro_inicial,
+        horometroFinal: mq.horometro_final,
+        horasOperacion: mq.horas_operacion
+      })),
+      pinesMapa: pinesMapa.map((p: any) => ({ ...p, _id: p.id })),
+      historialModificaciones: historialModificaciones.map((h: any) => ({
+        ...h,
+        _id: h.id,
+        fechaModificacion: h.fecha_modificacion,
+        usuarioId: h.usuario_id,
+        usuarioNombre: h.usuario_nombre
+      }))
     };
   }
 
