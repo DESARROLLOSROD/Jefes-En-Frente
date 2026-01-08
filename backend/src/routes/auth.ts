@@ -24,7 +24,31 @@ router.post('/login', loginLimiter, validateLogin, async (req: Request, res: Res
 
     console.log('🔐 Intentando login con Supabase Auth para:', email);
 
-    // Autenticar con Supabase
+    // Autenticar con Supabase usando Admin API
+    // Primero verificar que el usuario existe y obtener su ID
+    const { data: users, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+
+    if (listError) {
+      console.log('❌ Error listando usuarios:', listError.message);
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'Error del servidor'
+      };
+      return res.status(500).json(response);
+    }
+
+    const existingUser = users.users.find(u => u.email === email);
+
+    if (!existingUser) {
+      console.log('❌ Usuario no encontrado:', email);
+      const response: ApiResponse<null> = {
+        success: false,
+        error: 'Credenciales inválidas'
+      };
+      return res.status(401).json(response);
+    }
+
+    // Intentar autenticar con Supabase
     const { data, error } = await supabaseAdmin.auth.signInWithPassword({
       email,
       password
