@@ -1,7 +1,7 @@
 import express from 'express';
-import mongoose from 'mongoose';
-import Proyecto from '../models/Proyecto.js';
+import { proyectosService } from '../services/proyectos.service.js';
 import { verificarToken, verificarAdmin } from './auth.js';
+import { ApiResponse } from '../types/reporte.js';
 
 export const proyectosRouter = express.Router();
 
@@ -11,35 +11,49 @@ proyectosRouter.use(verificarToken);
 // Obtener todos los proyectos
 proyectosRouter.get('/', async (req, res) => {
     try {
-        const proyectos = await Proyecto.find({ activo: true }).sort({ fechaCreacion: -1 });
-        res.json(proyectos);
+        const proyectos = await proyectosService.getProyectos(true); // Solo activos
+
+        const response: ApiResponse<any[]> = {
+            success: true,
+            data: proyectos
+        };
+        res.json(response);
     } catch (error) {
-        res.status(500).json({ message: 'Error al obtener proyectos', error });
+        console.error('Error al obtener proyectos:', error);
+        const response: ApiResponse<null> = {
+            success: false,
+            error: 'Error al obtener proyectos'
+        };
+        res.status(500).json(response);
     }
 });
 
 // Obtener proyecto por ID
 proyectosRouter.get('/:id', async (req, res) => {
     try {
-        // Validar que el ID sea válido
-        if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-            return res.status(400).json({ message: 'ID de proyecto inválido' });
-        }
-
-        const proyecto = await Proyecto.findById(req.params.id);
+        const proyecto = await proyectosService.getProyectoById(req.params.id);
         if (!proyecto) {
-            return res.status(404).json({ message: 'Proyecto no encontrado' });
+            const response: ApiResponse<null> = {
+                success: false,
+                error: 'Proyecto no encontrado'
+            };
+            return res.status(404).json(response);
         }
-        console.log('✅ Proyecto encontrado:', proyecto._id);
-        console.log('✅ Tiene mapa:', !!proyecto.mapa);
-        if (proyecto.mapa) {
-            console.log('✅ Mapa tiene imagen:', !!proyecto.mapa.imagen);
-            console.log('✅ Imagen tiene data:', !!proyecto.mapa.imagen?.data);
-        }
-        res.json(proyecto);
+        console.log('✅ Proyecto encontrado:', proyecto.id);
+        console.log('✅ Tiene mapa:', !!proyecto.mapa_imagen_data);
+
+        const response: ApiResponse<any> = {
+            success: true,
+            data: proyecto
+        };
+        res.json(response);
     } catch (error) {
         console.error('Error al obtener proyecto:', error);
-        res.status(500).json({ message: 'Error al obtener proyecto', error });
+        const response: ApiResponse<null> = {
+            success: false,
+            error: 'Error al obtener proyecto'
+        };
+        res.status(500).json(response);
     }
 });
 
@@ -48,17 +62,36 @@ proyectosRouter.post('/', verificarAdmin, async (req, res) => {
     try {
         const { nombre, ubicacion, descripcion, mapa } = req.body;
 
-        const nuevoProyecto = new Proyecto({
+        // Si viene un mapa en el formato antiguo (nested object), convertirlo
+        let mapaData: any = {};
+        if (mapa?.imagen?.data) {
+            mapaData = {
+                mapa_imagen_data: mapa.imagen.data,
+                mapa_content_type: mapa.imagen.contentType || 'image/png',
+                mapa_width: mapa.width || null,
+                mapa_height: mapa.height || null
+            };
+        }
+
+        const nuevoProyecto = await proyectosService.createProyecto({
             nombre,
             ubicacion,
             descripcion,
-            mapa
+            ...mapaData
         });
 
-        await nuevoProyecto.save();
-        res.status(201).json(nuevoProyecto);
+        const response: ApiResponse<any> = {
+            success: true,
+            data: nuevoProyecto
+        };
+        res.status(201).json(response);
     } catch (error) {
-        res.status(500).json({ message: 'Error al crear proyecto', error });
+        console.error('Error al crear proyecto:', error);
+        const response: ApiResponse<null> = {
+            success: false,
+            error: 'Error al crear proyecto'
+        };
+        res.status(500).json(response);
     }
 });
 
@@ -67,37 +100,63 @@ proyectosRouter.put('/:id', verificarAdmin, async (req, res) => {
     try {
         const { nombre, ubicacion, descripcion, activo, mapa } = req.body;
 
-        const proyectoActualizado = await Proyecto.findByIdAndUpdate(
-            req.params.id,
-            { nombre, ubicacion, descripcion, activo, mapa },
-            { new: true }
-        );
+        // Preparar datos de actualización
+        const updateData: any = {};
+        if (nombre !== undefined) updateData.nombre = nombre;
+        if (ubicacion !== undefined) updateData.ubicacion = ubicacion;
+        if (descripcion !== undefined) updateData.descripcion = descripcion;
+        if (activo !== undefined) updateData.activo = activo;
 
-        if (!proyectoActualizado) {
-            return res.status(404).json({ message: 'Proyecto no encontrado' });
+        // Si viene un mapa en el formato antiguo (nested object), convertirlo
+        if (mapa?.imagen?.data) {
+            updateData.mapa_imagen_data = mapa.imagen.data;
+            updateData.mapa_content_type = mapa.imagen.contentType || 'image/png';
+            updateData.mapa_width = mapa.width || null;
+            updateData.mapa_height = mapa.height || null;
         }
 
-        res.json(proyectoActualizado);
+        const proyectoActualizado = await proyectosService.updateProyecto(req.params.id, updateData);
+
+        if (!proyectoActualizado) {
+            const response: ApiResponse<null> = {
+                success: false,
+                error: 'Proyecto no encontrado'
+            };
+            return res.status(404).json(response);
+        }
+
+        const response: ApiResponse<any> = {
+            success: true,
+            data: proyectoActualizado
+        };
+        res.json(response);
     } catch (error) {
-        res.status(500).json({ message: 'Error al actualizar proyecto', error });
+        console.error('Error al actualizar proyecto:', error);
+        const response: ApiResponse<null> = {
+            success: false,
+            error: 'Error al actualizar proyecto'
+        };
+        res.status(500).json(response);
     }
 });
 
 // Eliminar proyecto (soft delete) (solo admin)
 proyectosRouter.delete('/:id', verificarAdmin, async (req, res) => {
     try {
-        const proyectoEliminado = await Proyecto.findByIdAndUpdate(
-            req.params.id,
-            { activo: false },
-            { new: true }
-        );
+        // Soft delete
+        await proyectosService.updateProyecto(req.params.id, { activo: false });
 
-        if (!proyectoEliminado) {
-            return res.status(404).json({ message: 'Proyecto no encontrado' });
-        }
-
-        res.json({ message: 'Proyecto eliminado correctamente' });
+        const response: ApiResponse<any> = {
+            success: true,
+            data: { message: 'Proyecto eliminado correctamente' }
+        };
+        res.json(response);
     } catch (error) {
-        res.status(500).json({ message: 'Error al eliminar proyecto', error });
+        console.error('Error al eliminar proyecto:', error);
+        const response: ApiResponse<null> = {
+            success: false,
+            error: 'Error al eliminar proyecto'
+        };
+        res.status(500).json(response);
     }
 });

@@ -1,5 +1,5 @@
 import express from 'express';
-import Origen from '../models/Origen.js';
+import { origenesService } from '../services/catalogos.service.js';
 import { ApiResponse } from '../types/reporte.js';
 import { verificarToken } from './auth.js';
 
@@ -8,7 +8,7 @@ const router = express.Router();
 // Obtener todos los orígenes
 router.get('/', verificarToken, async (req, res) => {
     try {
-        const origenes = await Origen.find({ activo: true }).sort({ nombre: 1 });
+        const origenes = await origenesService.getAll(true);
         const response: ApiResponse<any[]> = {
             success: true,
             data: origenes
@@ -38,16 +38,17 @@ router.post('/', verificarToken, async (req, res) => {
             });
         }
 
-        const origenExistente = await Origen.findOne({ nombre: nombre.toUpperCase() });
+        const origenExistente = await origenesService.getByNombre(nombre.toUpperCase());
         if (origenExistente) {
             console.log('⚠️ Origen ya existe:', origenExistente.nombre);
             if (!origenExistente.activo) {
                 console.log('🔄 Reactivando origen existente');
-                origenExistente.activo = true;
-                await origenExistente.save();
+                const origenActualizado = await origenesService.update(origenExistente.id, {
+                    activo: true
+                });
                 return res.json({
                     success: true,
-                    data: origenExistente
+                    data: origenActualizado
                 });
             }
             return res.status(400).json({
@@ -57,16 +58,15 @@ router.post('/', verificarToken, async (req, res) => {
         }
 
         console.log('✨ Creando nuevo origen en BD');
-        const nuevoOrigen = new Origen({
+        const nuevoOrigen = await origenesService.create({
             nombre: nombre.toUpperCase()
         });
 
-        const guardado = await nuevoOrigen.save();
-        console.log('✅ Origen guardado:', guardado);
+        console.log('✅ Origen guardado:', nuevoOrigen);
 
         res.status(201).json({
             success: true,
-            data: guardado
+            data: nuevoOrigen
         });
 
     } catch (error: any) {

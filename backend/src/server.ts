@@ -1,5 +1,4 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import helmet from 'helmet';
@@ -82,20 +81,18 @@ app.use(sanitizeInput); // Sanitizar inputs
 // Rate limiting global
 app.use('/api/', apiLimiter);
 
-// Conexión a MongoDB Atlas
-const MONGODB_URI = process.env.MONGODB_URI;
+// Verificar configuración de Supabase
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 
-if (!MONGODB_URI) {
-  console.error('❌ MONGODB_URI no está definida en las variables de entorno');
+if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+  console.error('❌ Variables de Supabase no configuradas (SUPABASE_URL, SUPABASE_ANON_KEY)');
+  console.error('⚠️  Por favor, configura las credenciales en el archivo .env');
   process.exit(1);
 }
 
-mongoose.connect(MONGODB_URI)
-  .then(() => console.log('✅ Conectado a MongoDB Atlas'))
-  .catch((err: Error) => {
-    console.error('❌ Error conectando a MongoDB Atlas:', err.message);
-    process.exit(1);
-  });
+console.log('✅ Cliente Supabase configurado correctamente');
+console.log(`📍 Supabase URL: ${SUPABASE_URL}`);
 
 // Rutas
 app.use('/api/auth', authRouter);
@@ -115,8 +112,9 @@ app.use('/api/destinos', destinosRouter);
 app.get('/', (req, res) => {
   res.json({
     message: '🚀 API Jefes en Frente funcionando!',
-    version: '2.0',
-    features: ['Autenticación JWT', 'Múltiples Proyectos', 'Gestión de Usuarios']
+    version: '3.0',
+    database: 'Supabase PostgreSQL',
+    features: ['Supabase Auth', 'Row Level Security', 'Múltiples Proyectos', 'Gestión de Usuarios']
   });
 });
 

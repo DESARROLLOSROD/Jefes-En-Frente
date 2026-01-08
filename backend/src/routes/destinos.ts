@@ -1,5 +1,5 @@
 import express from 'express';
-import Destino from '../models/Destino.js';
+import { destinosService } from '../services/catalogos.service.js';
 import { ApiResponse } from '../types/reporte.js';
 import { verificarToken } from './auth.js';
 
@@ -8,7 +8,7 @@ const router = express.Router();
 // Obtener todos los destinos
 router.get('/', verificarToken, async (req, res) => {
     try {
-        const destinos = await Destino.find({ activo: true }).sort({ nombre: 1 });
+        const destinos = await destinosService.getAll(true);
         const response: ApiResponse<any[]> = {
             success: true,
             data: destinos
@@ -38,16 +38,17 @@ router.post('/', verificarToken, async (req, res) => {
             });
         }
 
-        const destinoExistente = await Destino.findOne({ nombre: nombre.toUpperCase() });
+        const destinoExistente = await destinosService.getByNombre(nombre.toUpperCase());
         if (destinoExistente) {
             console.log('⚠️ Destino ya existe:', destinoExistente.nombre);
             if (!destinoExistente.activo) {
                 console.log('🔄 Reactivando destino existente');
-                destinoExistente.activo = true;
-                await destinoExistente.save();
+                const destinoActualizado = await destinosService.update(destinoExistente.id, {
+                    activo: true
+                });
                 return res.json({
                     success: true,
-                    data: destinoExistente
+                    data: destinoActualizado
                 });
             }
             return res.status(400).json({
@@ -57,16 +58,15 @@ router.post('/', verificarToken, async (req, res) => {
         }
 
         console.log('✨ Creando nuevo destino en BD');
-        const nuevoDestino = new Destino({
+        const nuevoDestino = await destinosService.create({
             nombre: nombre.toUpperCase()
         });
 
-        const guardado = await nuevoDestino.save();
-        console.log('✅ Destino guardado:', guardado);
+        console.log('✅ Destino guardado:', nuevoDestino);
 
         res.status(201).json({
             success: true,
-            data: guardado
+            data: nuevoDestino
         });
 
     } catch (error: any) {

@@ -1,5 +1,5 @@
 import express from 'express';
-import Material from '../models/Material.js';
+import { materialesService } from '../services/catalogos.service.js';
 import { ApiResponse } from '../types/reporte.js';
 import { verificarToken } from './auth.js';
 
@@ -8,7 +8,7 @@ const router = express.Router();
 // Obtener todos los materiales
 router.get('/', verificarToken, async (req, res) => {
     try {
-        const materiales = await Material.find({ activo: true }).sort({ nombre: 1 });
+        const materiales = await materialesService.getAll(true);
         const response: ApiResponse<any[]> = {
             success: true,
             data: materiales
@@ -38,17 +38,18 @@ router.post('/', verificarToken, async (req, res) => {
             });
         }
 
-        const materialExistente = await Material.findOne({ nombre: nombre.toUpperCase() });
+        const materialExistente = await materialesService.getByNombre(nombre.toUpperCase());
         if (materialExistente) {
             console.log('⚠️ Material ya existe:', materialExistente.nombre);
             if (!materialExistente.activo) {
                 console.log('🔄 Reactivando material existente');
-                materialExistente.activo = true;
-                if (unidad) materialExistente.unidad = unidad;
-                await materialExistente.save();
+                const materialActualizado = await materialesService.update(materialExistente.id, {
+                    activo: true,
+                    unidad: unidad ? unidad.toUpperCase() : materialExistente.unidad
+                });
                 return res.json({
                     success: true,
-                    data: materialExistente
+                    data: materialActualizado
                 });
             }
             return res.status(400).json({
@@ -58,17 +59,16 @@ router.post('/', verificarToken, async (req, res) => {
         }
 
         console.log('✨ Creando nuevo material en BD');
-        const nuevoMaterial = new Material({
+        const nuevoMaterial = await materialesService.create({
             nombre: nombre.toUpperCase(),
             unidad: unidad ? unidad.toUpperCase() : undefined
         });
 
-        const guardado = await nuevoMaterial.save();
-        console.log('✅ Material guardado:', guardado);
+        console.log('✅ Material guardado:', nuevoMaterial);
 
         res.status(201).json({
             success: true,
-            data: guardado
+            data: nuevoMaterial
         });
 
     } catch (error: any) {
