@@ -35,6 +35,19 @@ async function migrate() {
         console.log('📂 Migrando Proyectos...');
         const proyectos = await Proyecto.find();
         for (const p of proyectos) {
+            // Verificar si el proyecto ya existe por nombre
+            const { data: existingProject } = await supabase
+                .from('proyectos')
+                .select('id')
+                .eq('nombre', p.nombre)
+                .maybeSingle();
+
+            if (existingProject) {
+                console.log(`ℹ️ Proyecto ya existe: ${p.nombre}`);
+                projectMap.set(p._id.toString(), existingProject.id);
+                continue;
+            }
+
             const { data, error } = await supabase
                 .from('proyectos')
                 .insert({
@@ -59,35 +72,54 @@ async function migrate() {
         console.log('🚜 Migrando Vehículos...');
         const vehiculos = await Vehiculo.find();
         for (const v of vehiculos) {
-            const { data, error } = await supabase
+            // Verificar si el vehículo ya existe por número económico
+            const { data: existingVehiculo } = await supabase
                 .from('vehiculos')
-                .insert({
-                    nombre: v.nombre,
-                    tipo: v.tipo,
-                    no_economico: v.noEconomico,
-                    horometro_inicial: v.horometroInicial,
-                    horometro_final: v.horometroFinal,
-                    horas_operacion: v.horasOperacion,
-                    capacidad: v.capacidad,
-                    activo: v.activo,
-                    fecha_creacion: v.fechaCreacion
-                })
-                .select()
-                .single();
+                .select('id')
+                .eq('no_economico', v.noEconomico)
+                .maybeSingle();
 
-            if (error) console.error(`❌ Error migrando vehículo ${v.noEconomico}:`, error.message);
-            else {
-                vehicleMap.set(v._id.toString(), data.id);
-                // Migrar relación vehículo-proyecto
-                if (v.proyectos && v.proyectos.length > 0) {
-                    for (const pId of v.proyectos) {
-                        const supabaseProjectId = projectMap.get(pId.toString());
-                        if (supabaseProjectId) {
-                            await supabase.from('vehiculo_proyectos').insert({
-                                vehiculo_id: data.id,
-                                proyecto_id: supabaseProjectId
-                            });
-                        }
+            let vehiculoId: string;
+
+            if (existingVehiculo) {
+                console.log(`ℹ️ Vehículo ya existe: ${v.noEconomico}`);
+                vehiculoId = existingVehiculo.id;
+            } else {
+                const { data, error } = await supabase
+                    .from('vehiculos')
+                    .insert({
+                        nombre: v.nombre,
+                        tipo: v.tipo,
+                        no_economico: v.noEconomico,
+                        horometro_inicial: v.horometroInicial,
+                        horometro_final: v.horometroFinal,
+                        horas_operacion: v.horasOperacion,
+                        capacidad: v.capacidad,
+                        activo: v.activo,
+                        fecha_creacion: v.fechaCreacion
+                    })
+                    .select()
+                    .single();
+
+                if (error) {
+                    console.error(`❌ Error migrando vehículo ${v.noEconomico}:`, error.message);
+                    continue;
+                }
+                vehiculoId = data.id;
+            }
+
+            vehicleMap.set(v._id.toString(), vehiculoId);
+
+            // Migrar relación vehículo-proyecto
+            if (v.proyectos && v.proyectos.length > 0) {
+                for (const pId of v.proyectos) {
+                    const supabaseProjectId = projectMap.get(pId.toString());
+                    if (supabaseProjectId) {
+                        // Usar upsert o verificar antes para evitar duplicados en la relación
+                        await supabase.from('vehiculo_proyectos').upsert({
+                            vehiculo_id: vehiculoId,
+                            proyecto_id: supabaseProjectId
+                        }, { onConflict: 'vehiculo_id,proyecto_id' });
                     }
                 }
             }
@@ -107,6 +139,20 @@ async function migrate() {
         console.log('📝 Migrando Reportes...');
         const reportes = await ReporteActividades.find();
         for (const r of reportes) {
+            // Para reportes es un poco más difícil, usaremos offline_id si existe
+            if (r.offlineId) {
+                const { data: existingReporte } = await supabase
+                    .from('reportes')
+                    .select('id')
+                    .eq('offline_id', r.offlineId)
+                    .maybeSingle();
+
+                if (existingReporte) {
+                    console.log(`ℹ️ Reporte ya existe (offline_id): ${r.offlineId}`);
+                    continue;
+                }
+            }
+
             const { data: reporteData, error: reporteError } = await supabase
                 .from('reportes')
                 .insert({
@@ -123,7 +169,7 @@ async function migrate() {
                     sobrestante: r.sobrestante,
                     observaciones: r.observaciones,
                     creado_por: r.creadoPor,
-                    proyecto_id: projectMap.get(r.proyectoId),
+                    proyecto_id: projectMap.get(r.proyectoId.toString()),
                     offline_id: r.offlineId,
                     ubicacion_mapa_pin_x: r.ubicacionMapa?.pinX,
                     ubicacion_mapa_pin_y: r.ubicacionMapa?.pinY,

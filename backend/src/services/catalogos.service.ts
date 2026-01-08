@@ -11,13 +11,14 @@ import type {
  * Servicio genérico para operaciones CRUD en catálogos
  */
 class CatalogoService<T extends { id: string; activo: boolean; fecha_creacion: string }> {
-  constructor(private tableName: string) {}
+  constructor(private tableName: string) { }
 
   async getAll(activoOnly: boolean = true): Promise<T[]> {
+    const orderCol = this.tableName === 'cat_capacidades' ? 'valor' : 'nombre';
     let query = supabaseAdmin
       .from(this.tableName)
       .select('*')
-      .order('nombre' in ({} as T) ? 'nombre' : 'valor', { ascending: true });
+      .order(orderCol, { ascending: true });
 
     if (activoOnly) {
       query = query.eq('activo', true);
