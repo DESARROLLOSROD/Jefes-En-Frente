@@ -153,6 +153,7 @@ export interface ReporteActividades {
   controlMaterial: ControlMaterial[];
   controlAgua: ControlAgua[];
   controlMaquinaria: ControlMaquinaria[];
+  personalAsignado: PersonalReporte[];
   observaciones: string;
   ubicacionMapa?: {
     pinX: number;
@@ -203,4 +204,39 @@ export interface Capacidad {
   valor: string;
   etiqueta?: string;
   activo?: boolean;
+}
+
+// Personal y Cargos
+export interface Cargo {
+  _id: string;
+  nombre: string;
+  descripcion?: string;
+  activo: boolean;
+  fechaCreacion: Date;
+}
+
+export interface Personal {
+  _id: string;
+  nombreCompleto: string;
+  cargoId: string;
+  cargo?: Cargo;
+  numeroEmpleado?: string;
+  telefono?: string;
+  email?: string;
+  fechaIngreso?: Date;
+  fechaBaja?: Date;
+  activo: boolean;
+  observaciones?: string;
+  fotoUrl?: string;
+  proyectos?: string[];
+  fechaCreacion: Date;
+  fechaModificacion: Date;
+}
+
+export interface PersonalReporte {
+  personalId: string;
+  cargoId?: string;
+  actividadRealizada?: string;
+  horasTrabajadas?: number;
+  observaciones?: string;
 }

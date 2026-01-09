@@ -15,6 +15,8 @@ import {
   Origen,
   Destino,
   Capacidad,
+  Personal,
+  Cargo,
   ApiResponse,
 } from '../types';
 
@@ -473,6 +475,59 @@ class ApiService {
     const response = await this.api.post<ApiResponse<Capacidad>>('/capacidades', capacidad);
     if (!response.data.data) throw new Error(response.data.error || 'ERROR AL CREAR CAPACIDAD');
     return response.data.data;
+  }
+
+  // Personal
+  async getPersonal(cargo?: string, proyecto?: string): Promise<Personal[]> {
+    const params: any = {};
+    if (cargo) params.cargo = cargo;
+    if (proyecto) params.proyecto = proyecto;
+    const response = await this.api.get<ApiResponse<Personal[]>>('/personal', { params });
+    return response.data.data || [];
+  }
+
+  async getPersonalById(id: string): Promise<Personal> {
+    const response = await this.api.get<ApiResponse<Personal>>(`/personal/${id}`);
+    if (!response.data.data) throw new Error('PERSONAL NO ENCONTRADO');
+    return response.data.data;
+  }
+
+  async createPersonal(personal: Partial<Personal>): Promise<Personal> {
+    const response = await this.api.post<ApiResponse<Personal>>('/personal', personal);
+    if (!response.data.data) throw new Error(response.data.error || 'ERROR AL CREAR PERSONAL');
+    return response.data.data;
+  }
+
+  async updatePersonal(id: string, personal: Partial<Personal>): Promise<Personal> {
+    const response = await this.api.put<ApiResponse<Personal>>(`/personal/${id}`, personal);
+    if (!response.data.data) throw new Error(response.data.error || 'ERROR AL ACTUALIZAR PERSONAL');
+    return response.data.data;
+  }
+
+  async deletePersonal(id: string): Promise<void> {
+    await this.api.delete(`/personal/${id}`);
+  }
+
+  // Cargos
+  async getCargos(): Promise<Cargo[]> {
+    const response = await this.api.get<ApiResponse<Cargo[]>>('/personal/catalogos/cargos');
+    return response.data.data || [];
+  }
+
+  async createCargo(cargo: Partial<Cargo>): Promise<Cargo> {
+    const response = await this.api.post<ApiResponse<Cargo>>('/personal/catalogos/cargos', cargo);
+    if (!response.data.data) throw new Error(response.data.error || 'ERROR AL CREAR CARGO');
+    return response.data.data;
+  }
+
+  async updateCargo(id: string, cargo: Partial<Cargo>): Promise<Cargo> {
+    const response = await this.api.put<ApiResponse<Cargo>>(`/personal/catalogos/cargos/${id}`, cargo);
+    if (!response.data.data) throw new Error(response.data.error || 'ERROR AL ACTUALIZAR CARGO');
+    return response.data.data;
+  }
+
+  async deleteCargo(id: string): Promise<void> {
+    await this.api.delete(`/personal/catalogos/cargos/${id}`);
   }
 }
 
