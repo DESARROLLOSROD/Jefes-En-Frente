@@ -138,9 +138,9 @@ const FormularioPersonal: React.FC<FormularioPersonalProps> = ({ personal, onClo
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full mx-4 my-8 flex flex-col max-h-[90vh]">
-                <div className="p-6 border-b bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg md:max-w-2xl flex flex-col max-h-[90vh]">
+                <div className="p-6 border-b bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg flex-none">
                     <h3 className="text-xl font-bold">
                         {personal ? '✏️ EDITAR PERSONAL' : '➕ NUEVO PERSONAL'}
                     </h3>

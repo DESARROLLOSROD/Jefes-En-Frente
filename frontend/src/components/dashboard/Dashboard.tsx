@@ -25,6 +25,7 @@ const Dashboard: React.FC = () => {
   const [mostrarModalFormato, setMostrarModalFormato] = useState(false);
   const [proyectos, setProyectos] = useState<Proyecto[]>([]);
   const [proyectoSeleccionado, setProyectoSeleccionado] = useState<string | undefined>(undefined);
+  const [mostrarMenuMovil, setMostrarMenuMovil] = useState(false);
 
   // Estados para estadísticas
   const [estadisticas, setEstadisticas] = useState<EstadisticasResponse | null>(null);
@@ -172,18 +173,27 @@ const Dashboard: React.FC = () => {
       <div className="fixed inset-0 z-[-10] bg-black bg-opacity-60"></div>
 
       {/* Header */}
-      <header className="bg-blue-900 text-white p-4 shadow-xl relative z-10">
+      <header className="bg-blue-900 text-white p-4 shadow-xl relative z-20">
         <div className="container mx-auto">
           <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-blue-200 text-2xl font-bold">🏗️ JEFES EN FRENTE</h1>
-              <p className="text-blue-200 text-sm">
-                {proyecto?.nombre} - {proyecto?.ubicacion}
-              </p>
+            <div className="flex items-center">
+              {/* Hamburger Button (Mobile Only) */}
+              <button
+                className="md:hidden mr-3 text-white focus:outline-none"
+                onClick={() => setMostrarMenuMovil(!mostrarMenuMovil)}
+              >
+                <span className="text-2xl">☰</span>
+              </button>
+              <div>
+                <h1 className="text-blue-200 text-xl md:text-2xl font-bold">🏗️ JEFES EN FRENTE</h1>
+                <p className="text-blue-200 text-xs md:text-sm">
+                  {proyecto?.nombre} - {proyecto?.ubicacion}
+                </p>
+              </div>
             </div>
 
-            <div className="flex items-center space-x-4">
-              <div className="text-right">
+            <div className="flex items-center space-x-2 md:space-x-4">
+              <div className="text-right hidden md:block">
                 <p className="font-semibold uppercase">{user?.nombre}</p>
                 <p className="text-blue-200 text-sm uppercase">{user?.rol}</p>
               </div>
@@ -193,25 +203,25 @@ const Dashboard: React.FC = () => {
                   <button
                     onClick={abrirModalProyectos}
                     disabled={loadingGeneral}
-                    className={`px-3 py-1 rounded text-sm ${loadingGeneral
+                    className={`hidden md:block px-3 py-1 rounded text-sm ${loadingGeneral
                       ? 'bg-gray-500 cursor-not-allowed'
                       : 'bg-green-600 hover:bg-green-500'
                       }`}
                   >
-                    {loadingGeneral ? '⏳ GENERANDO...' : '📊 REPORTE GENERAL'}
+                    {loadingGeneral ? '⏳' : '📊 GENERAL'}
                   </button>
                 )}
                 <button
                   onClick={cambiarProyecto}
-                  className="bg-orange-500 hover:bg-orange-400 px-3 py-1 rounded text-sm"
+                  className="hidden md:block bg-orange-500 hover:bg-orange-400 px-3 py-1 rounded text-sm"
                 >
-                  🔄 CAMBIAR PROYECTO
+                  🔄
                 </button>
                 <button
                   onClick={handleLogout}
                   className="bg-red-500 hover:bg-red-400 px-3 py-1 rounded text-sm"
                 >
-                  🚪 SALIR
+                  🚪
                 </button>
               </div>
             </div>
@@ -219,74 +229,74 @@ const Dashboard: React.FC = () => {
         </div>
       </header>
 
-      {/* Navegación */}
-      <nav className="bg-white shadow-lg relative z-10">
-        <div className="container mx-auto px-6">
-          <div className="flex space-x-8 overflow-x-auto">
+      {/* Navegación (Responsive) */}
+      <nav className={`bg-white shadow-lg relative z-10 transition-all duration-300 ${mostrarMenuMovil ? 'block' : 'hidden'} md:block`}>
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="flex flex-col md:flex-row md:space-x-8 space-y-2 md:space-y-0 py-2 md:py-0 overflow-x-auto">
             <button
               onClick={() => {
                 setVistaActual('formulario');
                 setReporteEditar(null);
+                setMostrarMenuMovil(false);
               }}
-              className={`py-4 px-6 font-semibold text-lg transition-all duration-300 whitespace-nowrap ${vistaActual === 'formulario'
-                ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
+              className={`py-3 md:py-4 px-4 md:px-6 font-semibold text-left md:text-center text-base md:text-lg transition-all duration-300 rounded md:rounded-none whitespace-nowrap ${vistaActual === 'formulario'
+                ? 'text-orange-600 md:border-b-4 md:border-orange-600 bg-orange-50'
                 : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
                 }`}
             >
               📝 NUEVO REPORTE
             </button>
             <button
-              onClick={() => setVistaActual('lista')}
-              className={`py-4 px-6 font-semibold text-lg transition-all duration-300 whitespace-nowrap ${vistaActual === 'lista'
-                ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
+              onClick={() => { setVistaActual('lista'); setMostrarMenuMovil(false); }}
+              className={`py-3 md:py-4 px-4 md:px-6 font-semibold text-left md:text-center text-base md:text-lg transition-all duration-300 rounded md:rounded-none whitespace-nowrap ${vistaActual === 'lista'
+                ? 'text-orange-600 md:border-b-4 md:border-orange-600 bg-orange-50'
                 : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
                 }`}
             >
               📋 VER REPORTES
             </button>
             <button
-              onClick={() => setVistaActual('zonas')}
-              className={`py-4 px-6 font-semibold text-lg transition-all duration-300 whitespace-nowrap ${vistaActual === 'zonas'
-                ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
+              onClick={() => { setVistaActual('zonas'); setMostrarMenuMovil(false); }}
+              className={`py-3 md:py-4 px-4 md:px-6 font-semibold text-left md:text-center text-base md:text-lg transition-all duration-300 rounded md:rounded-none whitespace-nowrap ${vistaActual === 'zonas'
+                ? 'text-orange-600 md:border-b-4 md:border-orange-600 bg-orange-50'
                 : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
                 }`}
             >
-              📍 ZONAS DE TRABAJO
+              📍 ZONAS
             </button>
             {(user?.rol === 'admin' || user?.rol === 'supervisor') && (
               <>
                 <button
-                  onClick={() => setVistaActual('usuarios')}
-                  className={`py-4 px-6 font-semibold text-lg transition-all duration-300 whitespace-nowrap ${vistaActual === 'usuarios'
-                    ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
+                  onClick={() => { setVistaActual('usuarios'); setMostrarMenuMovil(false); }}
+                  className={`py-3 md:py-4 px-4 md:px-6 font-semibold text-left md:text-center text-base md:text-lg transition-all duration-300 rounded md:rounded-none whitespace-nowrap ${vistaActual === 'usuarios'
+                    ? 'text-orange-600 md:border-b-4 md:border-orange-600 bg-orange-50'
                     : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
                     }`}
                 >
                   👥 USUARIOS
                 </button>
                 <button
-                  onClick={() => setVistaActual('personal')}
-                  className={`py-4 px-6 font-semibold text-lg transition-all duration-300 whitespace-nowrap ${vistaActual === 'personal'
-                    ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
+                  onClick={() => { setVistaActual('personal'); setMostrarMenuMovil(false); }}
+                  className={`py-3 md:py-4 px-4 md:px-6 font-semibold text-left md:text-center text-base md:text-lg transition-all duration-300 rounded md:rounded-none whitespace-nowrap ${vistaActual === 'personal'
+                    ? 'text-orange-600 md:border-b-4 md:border-orange-600 bg-orange-50'
                     : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
                     }`}
                 >
                   👷 PERSONAL
                 </button>
                 <button
-                  onClick={() => setVistaActual('vehiculos')}
-                  className={`py-4 px-6 font-semibold text-lg transition-all duration-300 whitespace-nowrap ${vistaActual === 'vehiculos'
-                    ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
+                  onClick={() => { setVistaActual('vehiculos'); setMostrarMenuMovil(false); }}
+                  className={`py-3 md:py-4 px-4 md:px-6 font-semibold text-left md:text-center text-base md:text-lg transition-all duration-300 rounded md:rounded-none whitespace-nowrap ${vistaActual === 'vehiculos'
+                    ? 'text-orange-600 md:border-b-4 md:border-orange-600 bg-orange-50'
                     : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
                     }`}
                 >
                   🚙 VEHÍCULOS
                 </button>
-
                 <button
-                  onClick={() => setVistaActual('estadisticas')}
-                  className={`py-4 px-6 font-semibold text-lg transition-all duration-300 whitespace-nowrap ${vistaActual === 'estadisticas'
-                    ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
+                  onClick={() => { setVistaActual('estadisticas'); setMostrarMenuMovil(false); }}
+                  className={`py-3 md:py-4 px-4 md:px-6 font-semibold text-left md:text-center text-base md:text-lg transition-all duration-300 rounded md:rounded-none whitespace-nowrap ${vistaActual === 'estadisticas'
+                    ? 'text-orange-600 md:border-b-4 md:border-orange-600 bg-orange-50'
                     : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
                     }`}
                 >
@@ -296,9 +306,9 @@ const Dashboard: React.FC = () => {
             )}
             {user?.rol === 'admin' && (
               <button
-                onClick={() => setVistaActual('proyectos')}
-                className={`py-4 px-6 font-semibold text-lg transition-all duration-300 whitespace-nowrap ${vistaActual === 'proyectos'
-                  ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
+                onClick={() => { setVistaActual('proyectos'); setMostrarMenuMovil(false); }}
+                className={`py-3 md:py-4 px-4 md:px-6 font-semibold text-left md:text-center text-base md:text-lg transition-all duration-300 rounded md:rounded-none whitespace-nowrap ${vistaActual === 'proyectos'
+                  ? 'text-orange-600 md:border-b-4 md:border-orange-600 bg-orange-50'
                   : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
                   }`}
               >
