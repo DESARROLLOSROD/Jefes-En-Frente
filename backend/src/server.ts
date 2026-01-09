@@ -11,6 +11,7 @@ import { vehiculosRouter } from './routes/vehiculos.js';
 import { workZoneRouter } from './routes/workZone.routes.js';
 import bibliotecaMapaRouter from './routes/bibliotecaMapa.routes.js';
 import catalogosRouter from './routes/catalogos.js';
+import personalRouter from './routes/personal.js';
 import { sanitizeInput, preventInjection } from './middleware/sanitizer.js';
 import { apiLimiter } from './middleware/rateLimiter.js';
 
@@ -102,6 +103,7 @@ app.use('/api/vehiculos', vehiculosRouter);
 app.use('/api', workZoneRouter);
 app.use('/api/biblioteca-mapas', bibliotecaMapaRouter);
 app.use('/api', catalogosRouter); // Incluye /materiales, /origenes, /destinos, /capacidades, /tipos-vehiculo
+app.use('/api/personal', personalRouter); // Gestión de personal y cargos
 
 // Ruta de prueba
 app.get('/', (req, res) => {

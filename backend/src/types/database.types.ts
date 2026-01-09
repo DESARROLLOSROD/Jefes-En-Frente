@@ -242,6 +242,57 @@ export interface CatTipoVehiculo {
   fecha_creacion: string; // TIMESTAMPTZ
 }
 
+export interface CatCargo {
+  id: string; // UUID
+  nombre: string; // UNIQUE
+  descripcion?: string;
+  activo: boolean;
+  fecha_creacion: string; // TIMESTAMPTZ
+}
+
+// =====================================================
+// MÓDULO DE PERSONAL
+// =====================================================
+
+export interface Personal {
+  id: string; // UUID
+  nombre_completo: string;
+  cargo_id: string; // UUID foreign key
+  numero_empleado?: string; // UNIQUE
+  telefono?: string;
+  email?: string;
+  fecha_ingreso?: string; // DATE
+  fecha_baja?: string; // DATE (NULL si activo)
+  activo: boolean;
+  observaciones?: string;
+  foto_url?: string;
+  fecha_creacion: string; // TIMESTAMPTZ
+  fecha_modificacion: string; // TIMESTAMPTZ
+}
+
+export interface PersonalProyecto {
+  id: string; // UUID
+  personal_id: string; // UUID foreign key
+  proyecto_id: string; // UUID foreign key
+  fecha_asignacion: string; // DATE
+  fecha_desasignacion?: string; // DATE
+  activo: boolean;
+  fecha_creacion: string; // TIMESTAMPTZ
+}
+
+export interface PersonalAsistencia {
+  id: string; // UUID
+  personal_id: string; // UUID foreign key
+  proyecto_id: string; // UUID foreign key
+  fecha: string; // DATE
+  hora_entrada?: string; // TIME
+  hora_salida?: string; // TIME
+  horas_trabajadas?: number; // DECIMAL(5,2)
+  presente: boolean;
+  observaciones?: string;
+  fecha_creacion: string; // TIMESTAMPTZ
+}
+
 // =====================================================
 // TIPOS COMPUESTOS (CON RELACIONES)
 // =====================================================
@@ -273,6 +324,14 @@ export interface PerfilConProyectos extends Perfil {
  * Vehículo con proyectos asociados
  */
 export interface VehiculoConProyectos extends Vehiculo {
+  proyectos?: Proyecto[];
+}
+
+/**
+ * Personal con cargo y proyectos asociados
+ */
+export interface PersonalConRelaciones extends Personal {
+  cargo?: CatCargo;
   proyectos?: Proyecto[];
 }
 
@@ -317,6 +376,15 @@ export type UpdateWorkZoneInput = Partial<Omit<WorkZone, 'id' | 'created_at' | '
 
 export type CreateBibliotecaMapaInput = Omit<BibliotecaMapa, 'id' | 'fecha_creacion'>;
 export type UpdateBibliotecaMapaInput = Partial<Omit<BibliotecaMapa, 'id' | 'fecha_creacion'>>;
+
+export type CreatePersonalInput = Omit<Personal, 'id' | 'fecha_creacion' | 'fecha_modificacion' | 'activo'> & {
+  activo?: boolean;
+  proyectos?: string[]; // Array de proyecto_ids para asignación inicial
+};
+
+export type UpdatePersonalInput = Partial<Omit<Personal, 'id' | 'fecha_creacion' | 'fecha_modificacion'>> & {
+  proyectos?: string[]; // Array de proyecto_ids para actualizar asignaciones
+};
 
 // =====================================================
 // TIPOS PARA RESPUESTAS DE API
