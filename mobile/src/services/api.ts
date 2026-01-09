@@ -15,6 +15,7 @@ import {
   Origen,
   Destino,
   Capacidad,
+  ApiResponse,
 } from '../types';
 
 class ApiService {
@@ -244,7 +245,7 @@ class ApiService {
     console.log('📤 Datos:', { email, password: '***' });
 
     try {
-      const response = await this.api.post<{ success: boolean; data: { token: string; user: any } }>('/auth/login', {
+      const response = await this.api.post<ApiResponse<{ token: string; user: any }>>('/auth/login', {
         email,
         password,
       });
@@ -252,7 +253,9 @@ class ApiService {
       console.log('✅ Respuesta recibida:', response.status);
 
       // Transformar la respuesta de la API al formato esperado
-      const { data } = response.data;
+      const data = response.data.data;
+      if (!data) throw new Error(response.data.error || 'ERROR EN LOGIN');
+
       return {
         token: data.token,
         usuario: data.user,
@@ -267,8 +270,8 @@ class ApiService {
   }
 
   async getProyectosDisponibles(): Promise<Proyecto[]> {
-    const response = await this.api.get<Proyecto[]>('/auth/proyectos');
-    return response.data;
+    const response = await this.api.get<ApiResponse<Proyecto[]>>('/auth/proyectos');
+    return response.data.data || [];
   }
 
   // Reportes
@@ -299,23 +302,26 @@ class ApiService {
 
   // Proyectos
   async getProyectos(): Promise<Proyecto[]> {
-    const response = await this.api.get<Proyecto[]>('/proyectos');
-    return response.data;
+    const response = await this.api.get<ApiResponse<Proyecto[]>>('/proyectos');
+    return response.data.data || [];
   }
 
   async getProyectoById(id: string): Promise<Proyecto> {
-    const response = await this.api.get<Proyecto>(`/proyectos/${id}`);
-    return response.data;
+    const response = await this.api.get<ApiResponse<Proyecto>>(`/proyectos/${id}`);
+    if (!response.data.data) throw new Error('PROYECTO NO ENCONTRADO');
+    return response.data.data;
   }
 
   async createProyecto(proyecto: Partial<Proyecto>): Promise<Proyecto> {
-    const response = await this.api.post<Proyecto>('/proyectos', proyecto);
-    return response.data;
+    const response = await this.api.post<ApiResponse<Proyecto>>('/proyectos', proyecto);
+    if (!response.data.data) throw new Error(response.data.error || 'ERROR AL CREAR PROYECTO');
+    return response.data.data;
   }
 
   async updateProyecto(id: string, proyecto: Partial<Proyecto>): Promise<Proyecto> {
-    const response = await this.api.put<Proyecto>(`/proyectos/${id}`, proyecto);
-    return response.data;
+    const response = await this.api.put<ApiResponse<Proyecto>>(`/proyectos/${id}`, proyecto);
+    if (!response.data.data) throw new Error(response.data.error || 'ERROR AL ACTUALIZAR PROYECTO');
+    return response.data.data;
   }
 
   async deleteProyecto(id: string): Promise<void> {
@@ -324,23 +330,26 @@ class ApiService {
 
   // Usuarios
   async getUsuarios(): Promise<User[]> {
-    const response = await this.api.get<User[]>('/usuarios');
-    return response.data;
+    const response = await this.api.get<ApiResponse<User[]>>('/usuarios');
+    return response.data.data || [];
   }
 
   async getUsuarioById(id: string): Promise<User> {
-    const response = await this.api.get<User>(`/usuarios/${id}`);
-    return response.data;
+    const response = await this.api.get<ApiResponse<User>>(`/usuarios/${id}`);
+    if (!response.data.data) throw new Error('USUARIO NO ENCONTRADO');
+    return response.data.data;
   }
 
   async createUsuario(usuario: Partial<User> & { password: string }): Promise<User> {
-    const response = await this.api.post<User>('/usuarios', usuario);
-    return response.data;
+    const response = await this.api.post<ApiResponse<User>>('/usuarios', usuario);
+    if (!response.data.data) throw new Error(response.data.error || 'ERROR AL CREAR USUARIO');
+    return response.data.data;
   }
 
   async updateUsuario(id: string, usuario: Partial<User>): Promise<User> {
-    const response = await this.api.put<User>(`/usuarios/${id}`, usuario);
-    return response.data;
+    const response = await this.api.put<ApiResponse<User>>(`/usuarios/${id}`, usuario);
+    if (!response.data.data) throw new Error(response.data.error || 'ERROR AL ACTUALIZAR USUARIO');
+    return response.data.data;
   }
 
   async deleteUsuario(id: string): Promise<void> {
@@ -349,23 +358,25 @@ class ApiService {
 
   // Vehículos
   async getVehiculos(): Promise<Vehiculo[]> {
-    const response = await this.api.get<{ success: boolean; data: Vehiculo[] } | Vehiculo[]>('/vehiculos');
-    return Array.isArray(response.data) ? response.data : response.data.data;
+    const response = await this.api.get<ApiResponse<Vehiculo[]>>('/vehiculos');
+    return response.data.data || [];
   }
 
   async getVehiculosByProyecto(proyectoId: string): Promise<Vehiculo[]> {
-    const response = await this.api.get<{ success: boolean; data: Vehiculo[] } | Vehiculo[]>(`/vehiculos/proyecto/${proyectoId}`);
-    return Array.isArray(response.data) ? response.data : response.data.data;
+    const response = await this.api.get<ApiResponse<Vehiculo[]>>(`/vehiculos/proyecto/${proyectoId}`);
+    return response.data.data || [];
   }
 
   async createVehiculo(vehiculo: Partial<Vehiculo>): Promise<Vehiculo> {
-    const response = await this.api.post<Vehiculo>('/vehiculos', vehiculo);
-    return response.data;
+    const response = await this.api.post<ApiResponse<Vehiculo>>('/vehiculos', vehiculo);
+    if (!response.data.data) throw new Error(response.data.error || 'ERROR AL CREAR VEHÍCULO');
+    return response.data.data;
   }
 
   async updateVehiculo(id: string, vehiculo: Partial<Vehiculo>): Promise<Vehiculo> {
-    const response = await this.api.put<Vehiculo>(`/vehiculos/${id}`, vehiculo);
-    return response.data;
+    const response = await this.api.put<ApiResponse<Vehiculo>>(`/vehiculos/${id}`, vehiculo);
+    if (!response.data.data) throw new Error(response.data.error || 'ERROR AL ACTUALIZAR VEHÍCULO');
+    return response.data.data;
   }
 
   async deleteVehiculo(id: string): Promise<void> {
@@ -374,25 +385,26 @@ class ApiService {
 
   // Zonas de trabajo
   async getZonesByProject(projectId: string): Promise<WorkZone[]> {
-    const response = await this.api.get<{ success: boolean; data: WorkZone[] } | WorkZone[]>(`/projects/${projectId}/zones`);
-    return Array.isArray(response.data) ? response.data : response.data.data;
+    const response = await this.api.get<ApiResponse<WorkZone[]>>(`/projects/${projectId}/zones`);
+    return response.data.data || [];
   }
 
   async getZoneById(zoneId: string): Promise<WorkZone> {
-    const response = await this.api.get<{ success: boolean; data: WorkZone } | WorkZone | WorkZone[]>(`/zones/${zoneId}`);
-    if (Array.isArray(response.data)) return response.data[0];
-    const body = response.data as any;
-    return body.data || body;
+    const response = await this.api.get<ApiResponse<WorkZone>>(`/zones/${zoneId}`);
+    if (!response.data.data) throw new Error('ZONA NO ENCONTRADA');
+    return response.data.data;
   }
 
   async createZone(zone: Partial<WorkZone>): Promise<WorkZone> {
-    const response = await this.api.post<WorkZone>('/zones', zone);
-    return response.data;
+    const response = await this.api.post<ApiResponse<WorkZone>>('/zones', zone);
+    if (!response.data.data) throw new Error(response.data.error || 'ERROR AL CREAR ZONA');
+    return response.data.data;
   }
 
   async updateZone(zoneId: string, zone: Partial<WorkZone>): Promise<WorkZone> {
-    const response = await this.api.put<WorkZone>(`/zones/${zoneId}`, zone);
-    return response.data;
+    const response = await this.api.put<ApiResponse<WorkZone>>(`/zones/${zoneId}`, zone);
+    if (!response.data.data) throw new Error(response.data.error || 'ERROR AL ACTUALIZAR ZONA');
+    return response.data.data;
   }
 
   async deleteZone(zoneId: string): Promise<void> {
@@ -400,13 +412,15 @@ class ApiService {
   }
 
   async addSection(zoneId: string, section: any): Promise<WorkZone> {
-    const response = await this.api.post<WorkZone>(`/zones/${zoneId}/sections`, section);
-    return response.data;
+    const response = await this.api.post<ApiResponse<WorkZone>>(`/zones/${zoneId}/sections`, section);
+    if (!response.data.data) throw new Error(response.data.error || 'ERROR AL AGREGAR SECCIÓN');
+    return response.data.data;
   }
 
   async updateSection(zoneId: string, sectionId: string, section: any): Promise<WorkZone> {
-    const response = await this.api.put<WorkZone>(`/zones/${zoneId}/sections/${sectionId}`, section);
-    return response.data;
+    const response = await this.api.put<ApiResponse<WorkZone>>(`/zones/${zoneId}/sections/${sectionId}`, section);
+    if (!response.data.data) throw new Error(response.data.error || 'ERROR AL ACTUALIZAR SECCIÓN');
+    return response.data.data;
   }
 
   async deleteSection(zoneId: string, sectionId: string): Promise<void> {
@@ -415,50 +429,50 @@ class ApiService {
 
   // Materiales
   async getMateriales(): Promise<Material[]> {
-    const response = await this.api.get<{ success: boolean; data: Material[] } | Material[]>('/materiales');
-    return Array.isArray(response.data) ? response.data : response.data.data;
+    const response = await this.api.get<ApiResponse<Material[]>>('/materiales');
+    return response.data.data || [];
   }
 
   async createMaterial(material: Partial<Material>): Promise<Material> {
-    const response = await this.api.post<{ success: boolean; data: Material } | Material>('/materiales', material);
-    const body = response.data as any;
-    return body.data || body;
+    const response = await this.api.post<ApiResponse<Material>>('/materiales', material);
+    if (!response.data.data) throw new Error(response.data.error || 'ERROR AL CREAR MATERIAL');
+    return response.data.data;
   }
 
   // Orígenes
   async getOrigenes(): Promise<Origen[]> {
-    const response = await this.api.get<{ success: boolean; data: Origen[] } | Origen[]>('/origenes');
-    return Array.isArray(response.data) ? response.data : response.data.data;
+    const response = await this.api.get<ApiResponse<Origen[]>>('/origenes');
+    return response.data.data || [];
   }
 
   async createOrigen(origen: Partial<Origen>): Promise<Origen> {
-    const response = await this.api.post<{ success: boolean; data: Origen } | Origen>('/origenes', origen);
-    const body = response.data as any;
-    return body.data || body;
+    const response = await this.api.post<ApiResponse<Origen>>('/origenes', origen);
+    if (!response.data.data) throw new Error(response.data.error || 'ERROR AL CREAR ORIGEN');
+    return response.data.data;
   }
 
   // Destinos
   async getDestinos(): Promise<Destino[]> {
-    const response = await this.api.get<{ success: boolean; data: Destino[] } | Destino[]>('/destinos');
-    return Array.isArray(response.data) ? response.data : response.data.data;
+    const response = await this.api.get<ApiResponse<Destino[]>>('/destinos');
+    return response.data.data || [];
   }
 
   async createDestino(destino: Partial<Destino>): Promise<Destino> {
-    const response = await this.api.post<{ success: boolean; data: Destino } | Destino>('/destinos', destino);
-    const body = response.data as any;
-    return body.data || body;
+    const response = await this.api.post<ApiResponse<Destino>>('/destinos', destino);
+    if (!response.data.data) throw new Error(response.data.error || 'ERROR AL CREAR DESTINO');
+    return response.data.data;
   }
 
   // Capacidades
   async getCapacidades(): Promise<Capacidad[]> {
-    const response = await this.api.get<{ success: boolean; data: Capacidad[] } | Capacidad[]>('/capacidades');
-    return Array.isArray(response.data) ? response.data : response.data.data;
+    const response = await this.api.get<ApiResponse<Capacidad[]>>('/capacidades');
+    return response.data.data || [];
   }
 
   async createCapacidad(capacidad: Partial<Capacidad>): Promise<Capacidad> {
-    const response = await this.api.post<{ success: boolean; data: Capacidad } | Capacidad>('/capacidades', capacidad);
-    const body = response.data as any;
-    return body.data || body;
+    const response = await this.api.post<ApiResponse<Capacidad>>('/capacidades', capacidad);
+    if (!response.data.data) throw new Error(response.data.error || 'ERROR AL CREAR CAPACIDAD');
+    return response.data.data;
   }
 }
 

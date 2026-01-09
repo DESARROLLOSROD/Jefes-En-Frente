@@ -1,3 +1,10 @@
+// Tipos generales
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+}
+
 // Tipos de usuario y roles
 export type UserRole = 'admin' | 'supervisor' | 'jefe en frente';
 
