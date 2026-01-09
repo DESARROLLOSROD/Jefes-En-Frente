@@ -168,7 +168,7 @@ router.put('/:id/proyectos', verificarAdminOSupervisor, async (req: AuthRequest,
 // ========== CARGOS ==========
 
 // GET /api/cargos - Listar todos los cargos
-router.get('/catalogos/cargos', async (req: AuthRequest, res) => {
+router.get('/cargos', async (req: AuthRequest, res) => {
   try {
     const cargos = await cargosService.getCargos(true);
 
@@ -189,7 +189,7 @@ router.get('/catalogos/cargos', async (req: AuthRequest, res) => {
 });
 
 // POST /api/cargos - Crear nuevo cargo (solo admin y supervisor)
-router.post('/catalogos/cargos', verificarAdminOSupervisor, async (req: AuthRequest, res) => {
+router.post('/cargos', verificarAdminOSupervisor, async (req: AuthRequest, res) => {
   try {
     const cargo = await cargosService.createCargo(req.body);
 
@@ -211,7 +211,7 @@ router.post('/catalogos/cargos', verificarAdminOSupervisor, async (req: AuthRequ
 });
 
 // PUT /api/cargos/:id - Actualizar cargo (solo admin)
-router.put('/catalogos/cargos/:id', verificarAdmin, async (req: AuthRequest, res) => {
+router.put('/cargos/:id', verificarAdmin, async (req: AuthRequest, res) => {
   try {
     const cargo = await cargosService.updateCargo(req.params.id, req.body);
 
@@ -233,7 +233,7 @@ router.put('/catalogos/cargos/:id', verificarAdmin, async (req: AuthRequest, res
 });
 
 // DELETE /api/cargos/:id - Eliminar cargo (solo admin)
-router.delete('/catalogos/cargos/:id', verificarAdmin, async (req: AuthRequest, res) => {
+router.delete('/cargos/:id', verificarAdmin, async (req: AuthRequest, res) => {
   try {
     await cargosService.deleteCargo(req.params.id);
 

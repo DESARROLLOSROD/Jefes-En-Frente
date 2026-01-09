@@ -152,8 +152,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       if (response.success && response.data) {
         console.log('Proyecto recargado exitosamente. Tiene mapa:', !!response.data.mapa);
+
+        // Actualizar estado
         setProyecto(response.data);
-        localStorage.setItem('proyecto', JSON.stringify(response.data));
+
+        // Guardar en localStorage SIN el mapa para evitar QuotaExceededError
+        const { mapa, ...proyectoLigero } = response.data;
+        try {
+          localStorage.setItem('proyecto', JSON.stringify(proyectoLigero));
+        } catch (e) {
+          console.warn('No se pudo guardar proyecto en localStorage (posiblemente muy grande):', e);
+        }
 
         // También actualizar en la lista de proyectos del usuario
         if (user) {
@@ -164,7 +173,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             )
           };
           setUser(usuarioActualizado);
-          localStorage.setItem('user', JSON.stringify(usuarioActualizado));
+
+          // Guardar usuario limpio
+          try {
+            // Limpiar proyectos del usuario también si tienen mapas
+            const usuarioParaGuardar = {
+              ...usuarioActualizado,
+              proyectos: usuarioActualizado.proyectos.map(p => {
+                const { mapa, ...pLigero } = p;
+                return pLigero;
+              })
+            };
+            localStorage.setItem('user', JSON.stringify(usuarioParaGuardar));
+          } catch (e) {
+            console.warn('Error guardando usuario en localStorage:', e);
+          }
         }
       } else {
         console.error('Error al recargar proyecto:', response.error);

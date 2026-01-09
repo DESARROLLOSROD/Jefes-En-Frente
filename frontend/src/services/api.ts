@@ -346,7 +346,7 @@ export const personalService = {
 export const cargosService = {
   async getCargos(): Promise<ApiResponse<CatCargo[]>> {
     try {
-      const response = await api.get<ApiResponse<CatCargo[]>>('/catalogos/cargos');
+      const response = await api.get<ApiResponse<CatCargo[]>>('/personal/cargos');
       return response.data;
     } catch (error: any) {
       return {
@@ -358,7 +358,7 @@ export const cargosService = {
 
   async createCargo(cargo: { nombre: string; descripcion?: string }): Promise<ApiResponse<CatCargo>> {
     try {
-      const response = await api.post<ApiResponse<CatCargo>>('/catalogos/cargos', cargo);
+      const response = await api.post<ApiResponse<CatCargo>>('/personal/cargos', cargo);
       return response.data;
     } catch (error: any) {
       return {
