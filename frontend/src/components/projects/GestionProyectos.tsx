@@ -237,116 +237,120 @@ const GestionProyectos: React.FC = () => {
             </div>
 
             {mostrarModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-8 max-w-md w-full">
-                        <h3 className="text-xl font-bold mb-4">
-                            {proyectoEditar ? 'EDITAR PROYECTO' : 'NUEVO PROYECTO'}
-                        </h3>
-                        <form onSubmit={handleSubmit}>
-                            <div className="mb-4">
-                                <label className="block text-gray-700 text-sm font-bold mb-2 uppercase">
-                                    NOMBRE *
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.nombre}
-                                    onChange={(e) => setFormData({ ...formData, nombre: e.target.value.toUpperCase() })}
-                                    className="w-full border rounded px-3 py-2 uppercase"
-                                    placeholder="NOMBRE DEL PROYECTO"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-gray-700 text-sm font-bold mb-2 uppercase">
-                                    UBICACIÓN *
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.ubicacion}
-                                    onChange={(e) => setFormData({ ...formData, ubicacion: e.target.value.toUpperCase() })}
-                                    className="w-full border rounded px-3 py-2 uppercase"
-                                    placeholder="UBICACIÓN DEL PROYECTO"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-gray-700 text-sm font-bold mb-2 uppercase">
-                                    DESCRIPCIÓN *
-                                </label>
-                                <textarea
-                                    value={formData.descripcion}
-                                    onChange={(e) => setFormData({ ...formData, descripcion: e.target.value.toUpperCase() })}
-                                    className="w-full border rounded px-3 py-2 uppercase"
-                                    rows={3}
-                                    placeholder="DESCRIPCIÓN DEL PROYECTO"
-                                    required
-                                />
-                            </div>
-                            <div className="mb-6">
-                                <label className="block text-gray-700 text-sm font-bold mb-2 uppercase">
-                                    MAPA DEL PROYECTO (Opcional)
-                                </label>
-                                <p className="text-xs text-gray-500 mb-2">
-                                    PNG o JPG, máximo 10MB (se comprimirá automáticamente)
-                                </p>
-                                {comprimiendo && (
-                                    <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded mb-3">
-                                        COMPRIMIENDO IMAGEN...
-                                    </div>
-                                )}
-                                {previewMapa ? (
-                                    <div className="relative">
-                                        <img src={previewMapa} alt="Preview mapa" className="w-full h-48 object-contain border rounded bg-gray-50" />
-                                        {infoCompresion && (
-                                            <div className="mt-2 text-xs text-gray-600 bg-green-50 p-2 rounded">
-                                                TAMAÑO ORIGINAL: {formatearTamano(infoCompresion.original)} →
-                                                COMPRIMIDO: {formatearTamano(infoCompresion.comprimido)}
-                                                ({calcularReduccion(infoCompresion.original, infoCompresion.comprimido)}% REDUCIDO)
-                                            </div>
-                                        )}
-                                        <button
-                                            type="button"
-                                            onClick={eliminarMapa}
-                                            className="absolute top-2 right-2 bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
-                                        >
-                                            ELIMINAR
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <>
-                                        <input
-                                            type="file"
-                                            accept="image/png,image/jpeg,image/jpg"
-                                            onChange={handleMapaChange}
-                                            className="w-full border rounded px-3 py-2 mb-2"
-                                            disabled={comprimiendo}
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setMostrarBiblioteca(true)}
-                                            className="w-full bg-purple-600 text-white px-3 py-2 rounded hover:bg-purple-700"
-                                        >
-                                            SELECCIONAR DESDE BIBLIOTECA
-                                        </button>
-                                    </>
-                                )}
-                            </div>
-                            <div className="flex justify-end space-x-3">
-                                <button
-                                    type="button"
-                                    onClick={cerrarModal}
-                                    className="px-4 py-2 text-gray-600 hover:text-gray-800"
-                                >
-                                    CANCELAR
-                                </button>
-                                <button
-                                    type="submit"
-                                    className="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700"
-                                >
-                                    GUARDAR
-                                </button>
-                            </div>
-                        </form>
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg p-0 max-w-md w-full flex flex-col max-h-[90vh]">
+                        <div className="p-6 border-b flex-none">
+                            <h3 className="text-xl font-bold">
+                                {proyectoEditar ? 'EDITAR PROYECTO' : 'NUEVO PROYECTO'}
+                            </h3>
+                        </div>
+                        <div className="p-6 overflow-y-auto flex-1">
+                            <form onSubmit={handleSubmit}>
+                                <div className="mb-4">
+                                    <label className="block text-gray-700 text-sm font-bold mb-2 uppercase">
+                                        NOMBRE *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.nombre}
+                                        onChange={(e) => setFormData({ ...formData, nombre: e.target.value.toUpperCase() })}
+                                        className="w-full border rounded px-3 py-2 uppercase"
+                                        placeholder="NOMBRE DEL PROYECTO"
+                                        required
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label className="block text-gray-700 text-sm font-bold mb-2 uppercase">
+                                        UBICACIÓN *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.ubicacion}
+                                        onChange={(e) => setFormData({ ...formData, ubicacion: e.target.value.toUpperCase() })}
+                                        className="w-full border rounded px-3 py-2 uppercase"
+                                        placeholder="UBICACIÓN DEL PROYECTO"
+                                        required
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label className="block text-gray-700 text-sm font-bold mb-2 uppercase">
+                                        DESCRIPCIÓN *
+                                    </label>
+                                    <textarea
+                                        value={formData.descripcion}
+                                        onChange={(e) => setFormData({ ...formData, descripcion: e.target.value.toUpperCase() })}
+                                        className="w-full border rounded px-3 py-2 uppercase"
+                                        rows={3}
+                                        placeholder="DESCRIPCIÓN DEL PROYECTO"
+                                        required
+                                    />
+                                </div>
+                                <div className="mb-6">
+                                    <label className="block text-gray-700 text-sm font-bold mb-2 uppercase">
+                                        MAPA DEL PROYECTO (Opcional)
+                                    </label>
+                                    <p className="text-xs text-gray-500 mb-2">
+                                        PNG o JPG, máximo 10MB (se comprimirá automáticamente)
+                                    </p>
+                                    {comprimiendo && (
+                                        <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded mb-3">
+                                            COMPRIMIENDO IMAGEN...
+                                        </div>
+                                    )}
+                                    {previewMapa ? (
+                                        <div className="relative">
+                                            <img src={previewMapa} alt="Preview mapa" className="w-full h-48 object-contain border rounded bg-gray-50" />
+                                            {infoCompresion && (
+                                                <div className="mt-2 text-xs text-gray-600 bg-green-50 p-2 rounded">
+                                                    TAMAÑO ORIGINAL: {formatearTamano(infoCompresion.original)} →
+                                                    COMPRIMIDO: {formatearTamano(infoCompresion.comprimido)}
+                                                    ({calcularReduccion(infoCompresion.original, infoCompresion.comprimido)}% REDUCIDO)
+                                                </div>
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={eliminarMapa}
+                                                className="absolute top-2 right-2 bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700"
+                                            >
+                                                ELIMINAR
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <input
+                                                type="file"
+                                                accept="image/png,image/jpeg,image/jpg"
+                                                onChange={handleMapaChange}
+                                                className="w-full border rounded px-3 py-2 mb-2"
+                                                disabled={comprimiendo}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setMostrarBiblioteca(true)}
+                                                className="w-full bg-purple-600 text-white px-3 py-2 rounded hover:bg-purple-700"
+                                            >
+                                                SELECCIONAR DESDE BIBLIOTECA
+                                            </button>
+                                        </>
+                                    )}
+                                </div>
+                                <div className="flex justify-end space-x-3">
+                                    <button
+                                        type="button"
+                                        onClick={cerrarModal}
+                                        className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                                    >
+                                        CANCELAR
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700"
+                                    >
+                                        GUARDAR
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             )}

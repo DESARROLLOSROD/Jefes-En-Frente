@@ -177,7 +177,6 @@ const Dashboard: React.FC = () => {
         <div className="container mx-auto">
           <div className="flex justify-between items-center">
             <div className="flex items-center">
-              {/* Hamburger Button (Mobile Only) */}
               <button
                 className="md:hidden mr-3 text-white focus:outline-none"
                 onClick={() => setMostrarMenuMovil(!mostrarMenuMovil)}
