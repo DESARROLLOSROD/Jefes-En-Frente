@@ -80,7 +80,7 @@ export const prepararDatosReporte = (reporte: ReporteActividades) => {
             p.personal?.nombreCompleto || 'N/A',
             p.cargo?.nombre || 'N/A',
             p.actividadRealizada || '-',
-            p.horasTrabajadas.toString(),
+            (p.horasTrabajadas || 0).toString(),
             p.observaciones || '-'
         ])
         : [];

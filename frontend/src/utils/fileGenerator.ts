@@ -372,7 +372,7 @@ export const generarExcelGeneral = async (reportes: ReporteActividades[], proyec
     // KPIs Rápidos
     const totalReportes = reportes.length;
     const totalVolAcarreo = reportes.reduce((acc, r) => acc + (r.controlAcarreo?.reduce((s, i) => s + (parseFloat(i.volSuelto) || 0), 0) || 0), 0);
-    const totalVolAgua = reportes.reduce((acc, r) => acc + (r.controlAgua?.reduce((s, i) => s + (parseFloat(i.volumen) || 0), 0) || 0), 0);
+    // Removed unused totalVolAgua
     const totalHorasMaq = reportes.reduce((acc, r) => acc + (r.controlMaquinaria?.reduce((s, i) => s + (i.horasOperacion || 0), 0) || 0), 0);
     const totalHorasPersonal = reportes.reduce((acc, r) => acc + (r.personalAsignado?.reduce((s, p) => s + (p.horasTrabajadas || 0), 0) || 0), 0);
 
