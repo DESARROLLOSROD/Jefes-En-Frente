@@ -25,6 +25,7 @@ import {
   ControlAgua,
   ControlMaquinaria,
   PinMapa,
+  PersonalReporte,
 } from '../../types';
 import { useCreateReporte } from '../../hooks/useReportes';
 import { useZonesByProject } from '../../hooks/useZones';
@@ -43,6 +44,7 @@ import ModalControlAcarreo from '../../components/modals/ModalControlAcarreo';
 import ModalControlMaterial from '../../components/modals/ModalControlMaterial';
 import ModalControlAgua from '../../components/modals/ModalControlAgua';
 import ModalControlMaquinaria from '../../components/modals/ModalControlMaquinaria';
+import PersonalSection from '../../components/reports/PersonalSection';
 import MapPinSelector from '../../components/MapPinSelector';
 import ProjectMap from '../../components/ProjectMap';
 
@@ -85,6 +87,7 @@ const ReportFormWebStyle = () => {
   const [controlMaterial, setControlMaterial] = useState<ControlMaterial[]>([]);
   const [controlAgua, setControlAgua] = useState<ControlAgua[]>([]);
   const [controlMaquinaria, setControlMaquinaria] = useState<ControlMaquinaria[]>([]);
+  const [personalAsignado, setPersonalAsignado] = useState<PersonalReporte[]>([]);
 
   // Modales
   const [showAcarreoModal, setShowAcarreoModal] = useState(false);
@@ -145,6 +148,7 @@ const ReportFormWebStyle = () => {
       controlMaterial: controlMaterial.filter(m => m.material && Number(m.cantidad) > 0),
       controlAgua: controlAgua.filter(a => a.noEconomico && (Number(a.viaje) > 0 || Number(a.capacidad) > 0)),
       controlMaquinaria: controlMaquinaria.filter(m => m.tipo && (Number(m.horasOperacion) > 0 || (m.horometroFinal !== undefined && m.horometroFinal > 0))),
+      personalAsignado,
       ubicacionMapa: !isMultiPin && pinX !== undefined && pinY !== undefined ? {
         pinX: pinX!,
         pinY: pinY!,
@@ -484,6 +488,13 @@ const ReportFormWebStyle = () => {
             <Text style={styles.sectionTitle}>CONTROL DE MAQUINARIA</Text>
             <View style={styles.controlInfo}><Text style={styles.controlCount}>({controlMaquinaria.length} REGISTROS)</Text></View>
             <TouchableOpacity style={[styles.button, styles.buttonPurple]} onPress={() => setShowMaquinariaModal(true)}><Text style={styles.buttonText}>AGREGAR MAQUINARIA</Text></TouchableOpacity>
+          </View>
+
+          <View style={[styles.section, { borderColor: '#F59E0B', backgroundColor: '#FFFBEB' }]}>
+            <PersonalSection
+              items={personalAsignado}
+              onChange={setPersonalAsignado}
+            />
           </View>
 
           <View style={[styles.section, styles.sectionGray]}>
