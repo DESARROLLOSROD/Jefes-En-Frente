@@ -10,7 +10,8 @@ import type {
   ReporteMaterial,
   ReporteAgua,
   ReporteMaquinaria,
-  PinMapa
+  PinMapa,
+  ReportePersonal
 } from '../types/database.types.js';
 
 /**
@@ -121,6 +122,7 @@ export class ReportesService {
       controlAgua,
       controlMaquinaria,
       pinesMapa,
+      personalAsignado,
       historialModificaciones
     ] = await Promise.all([
       this.getControlAcarreo(id),
@@ -128,6 +130,7 @@ export class ReportesService {
       this.getControlAgua(id),
       this.getControlMaquinaria(id),
       this.getPinesMapa(id),
+      this.getPersonalAsignado(id),
       this.getHistorialModificaciones(id)
     ]);
 
@@ -148,6 +151,16 @@ export class ReportesService {
         horasOperacion: mq.horas_operacion
       })),
       pinesMapa: pinesMapa.map((p: any) => ({ ...p, _id: p.id })),
+      personalAsignado: personalAsignado.map((p: any) => ({
+        ...p,
+        _id: p.id,
+        reporteId: p.reporte_id,
+        personalId: p.personal_id,
+        cargoId: p.cargo_id,
+        actividadRealizada: p.actividad_realizada,
+        horasTrabajadas: p.horas_trabajadas,
+        fechaCreacion: p.fecha_creacion
+      })),
       historialModificaciones: historialModificaciones.map((h: any) => ({
         ...h,
         _id: h.id,
@@ -178,6 +191,7 @@ export class ReportesService {
       controlAgua,
       controlMaquinaria,
       pinesMapa,
+      personalAsignado,
       ...reporteData
     } = input;
 
@@ -211,6 +225,9 @@ export class ReportesService {
         : Promise.resolve(),
       pinesMapa && pinesMapa.length > 0
         ? this.insertPinesMapa(reporteId, pinesMapa)
+        : Promise.resolve(),
+      personalAsignado && personalAsignado.length > 0
+        ? this.insertPersonalAsignado(reporteId, personalAsignado)
         : Promise.resolve()
     ]);
 
@@ -246,6 +263,7 @@ export class ReportesService {
       controlAgua,
       controlMaquinaria,
       pinesMapa,
+      personalAsignado,
       ...reporteData
     } = input;
 
@@ -287,6 +305,10 @@ export class ReportesService {
 
     if (pinesMapa !== undefined) {
       updatePromises.push(this.replacePinesMapa(id, pinesMapa));
+    }
+
+    if (personalAsignado !== undefined) {
+      updatePromises.push(this.replacePersonalAsignado(id, personalAsignado));
     }
 
     await Promise.all(updatePromises);
@@ -491,6 +513,20 @@ export class ReportesService {
     return data || [];
   }
 
+  private async getPersonalAsignado(reporteId: string): Promise<ReportePersonal[]> {
+    const { data, error } = await supabaseAdmin
+      .from('reporte_personal')
+      .select('*')
+      .eq('reporte_id', reporteId);
+
+    if (error) {
+      console.error('Error obteniendo personal asignado:', error);
+      return [];
+    }
+
+    return data || [];
+  }
+
   /**
    * Obtener historial de modificaciones de un reporte
    */
@@ -600,6 +636,21 @@ export class ReportesService {
     }
   }
 
+  private async insertPersonalAsignado(reporteId: string, items: any[]): Promise<void> {
+    const inserts = items.map(item => ({
+      reporte_id: reporteId,
+      ...item
+    }));
+
+    const { error } = await supabaseAdmin
+      .from('reporte_personal')
+      .insert(inserts);
+
+    if (error) {
+      throw new Error(`Error insertando personal asignado: ${error.message}`);
+    }
+  }
+
   // Métodos para reemplazar nested data (delete + insert)
   private async replaceControlAcarreo(reporteId: string, items: any[]): Promise<void> {
     await supabaseAdmin.from('reporte_acarreo').delete().eq('reporte_id', reporteId);
@@ -633,6 +684,13 @@ export class ReportesService {
     await supabaseAdmin.from('pines_mapa').delete().eq('reporte_id', reporteId);
     if (items.length > 0) {
       await this.insertPinesMapa(reporteId, items);
+    }
+  }
+
+  private async replacePersonalAsignado(reporteId: string, items: any[]): Promise<void> {
+    await supabaseAdmin.from('reporte_personal').delete().eq('reporte_id', reporteId);
+    if (items.length > 0) {
+      await this.insertPersonalAsignado(reporteId, items);
     }
   }
 

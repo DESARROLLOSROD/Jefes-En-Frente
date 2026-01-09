@@ -293,6 +293,17 @@ export interface PersonalAsistencia {
   fecha_creacion: string; // TIMESTAMPTZ
 }
 
+export interface ReportePersonal {
+  id: string; // UUID
+  reporte_id: string; // UUID foreign key
+  personal_id: string; // UUID foreign key
+  cargo_id?: string; // UUID foreign key
+  actividad_realizada?: string;
+  horas_trabajadas?: number; // DECIMAL(5,2)
+  observaciones?: string;
+  fecha_creacion: string; // TIMESTAMPTZ
+}
+
 // =====================================================
 // TIPOS COMPUESTOS (CON RELACIONES)
 // =====================================================
@@ -307,6 +318,7 @@ export interface ReporteCompleto extends Reporte {
   controlAgua?: ReporteAgua[];
   controlMaquinaria?: ReporteMaquinaria[];
   pinesMapa?: PinMapa[];
+  personalAsignado?: ReportePersonal[];
   historialModificaciones?: (ReporteHistorial & {
     cambios?: ReporteCambio[];
   })[];
@@ -361,6 +373,7 @@ export type CreateReporteInput = Omit<Reporte, 'id' | 'fecha_creacion'> & {
   controlAgua?: Omit<ReporteAgua, 'id' | 'reporte_id'>[];
   controlMaquinaria?: Omit<ReporteMaquinaria, 'id' | 'reporte_id'>[];
   pinesMapa?: Omit<PinMapa, 'id' | 'reporte_id'>[];
+  personalAsignado?: Omit<ReportePersonal, 'id' | 'reporte_id' | 'fecha_creacion'>[];
 };
 
 export type UpdateReporteInput = Partial<Omit<Reporte, 'id' | 'fecha_creacion'>> & {
@@ -369,6 +382,7 @@ export type UpdateReporteInput = Partial<Omit<Reporte, 'id' | 'fecha_creacion'>>
   controlAgua?: Omit<ReporteAgua, 'id' | 'reporte_id'>[];
   controlMaquinaria?: Omit<ReporteMaquinaria, 'id' | 'reporte_id'>[];
   pinesMapa?: Omit<PinMapa, 'id' | 'reporte_id'>[];
+  personalAsignado?: Omit<ReportePersonal, 'id' | 'reporte_id' | 'fecha_creacion'>[];
 };
 
 export type CreateWorkZoneInput = Omit<WorkZone, 'id' | 'created_at' | 'updated_at'>;
