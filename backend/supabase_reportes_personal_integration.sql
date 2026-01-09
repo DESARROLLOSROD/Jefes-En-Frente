@@ -81,7 +81,7 @@ CREATE POLICY "Solo creador o admin pueden eliminar personal de reportes"
         EXISTS (
             SELECT 1 FROM reportes r
             WHERE r.id = reporte_personal.reporte_id
-            AND r.usuario_creacion_id = auth.uid()
+            AND r.usuario_id = auth.uid()
         )
         OR
         EXISTS (
