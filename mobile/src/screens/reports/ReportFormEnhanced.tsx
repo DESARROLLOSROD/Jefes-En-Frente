@@ -18,11 +18,13 @@ import {
   ControlMaterial,
   ControlAgua,
   ControlMaquinaria,
+  PersonalReporte,
 } from '../../types';
 import { TURNOS } from '../../constants/config';
 import Button from '../../components/Button';
 import Input from '../../components/Input';
 import Card from '../../components/Card';
+import PersonalSection from '../../components/reports/PersonalSection';
 import { useCreateReporte } from '../../hooks/useReportes';
 import { useZonesByProject } from '../../hooks/useZones';
 import { useVehiculosByProyecto } from '../../hooks/useVehiculos';
@@ -59,6 +61,7 @@ const ReportFormEnhanced = () => {
   const [controlMaterial, setControlMaterial] = useState<ControlMaterial[]>([]);
   const [controlAgua, setControlAgua] = useState<ControlAgua[]>([]);
   const [controlMaquinaria, setControlMaquinaria] = useState<ControlMaquinaria[]>([]);
+  const [personalAsignado, setPersonalAsignado] = useState<PersonalReporte[]>([]);
 
   // Modales
   const [showAcarreoModal, setShowAcarreoModal] = useState(false);
@@ -111,6 +114,7 @@ const ReportFormEnhanced = () => {
       controlMaterial,
       controlAgua,
       controlMaquinaria,
+      personalAsignado,
       pinesMapa: [],
     };
 
@@ -255,6 +259,13 @@ const ReportFormEnhanced = () => {
             count={controlMaquinaria.length}
             onAdd={() => setShowMaquinariaModal(true)}
             theme={theme}
+          />
+        </Card>
+
+        <Card>
+          <PersonalSection
+            items={personalAsignado}
+            onChange={setPersonalAsignado}
           />
         </Card>
 
