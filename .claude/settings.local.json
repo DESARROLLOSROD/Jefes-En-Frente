@@ -42,7 +42,8 @@
       "Bash(npx tsx:*)",
       "Bash(railway logs:*)",
       "Bash(timeout 10 npm run dev:*)",
-      "Bash(timeout 15 npm start)"
+      "Bash(timeout 15 npm start)",
+      "Bash(ls:*)"
     ],
     "deny": [],
     "ask": []

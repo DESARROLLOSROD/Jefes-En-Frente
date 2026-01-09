@@ -84,6 +84,8 @@ export interface ModificacionReporte {
   observacion?: string;
 }
 
+import { ReportePersonal } from './personal';
+
 export interface ReporteActividades {
   _id?: string;
   // NUEVO: Campos de autenticación
@@ -102,6 +104,7 @@ export interface ReporteActividades {
   controlMaterial: ControlMaterial[];
   controlAgua: ControlAgua[];
   controlMaquinaria: ControlMaquinaria[];
+  personalAsignado?: ReportePersonal[]; // ✨ NUEVO - Personal asignado al reporte
   observaciones: string;
   ubicacionMapa?: {
     pinX: number;

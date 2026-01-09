@@ -8,6 +8,7 @@ import { WorkZone } from '../../types/workZone.types';
 import SeccionControlAcarreo from './sections/SeccionControlAcarreo';
 import SeccionControlMaterial from './sections/SeccionControlMaterial';
 import SeccionControlAgua from './sections/SeccionControlAgua';
+import SeccionPersonal from './sections/SeccionPersonal'; // ✨ NUEVO
 import MapaPinSelector from '../mapas/MapaPinSelector';
 import MapaMultiplesPins from '../mapas/MapaMultiplesPins';
 
@@ -61,7 +62,8 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
     observaciones: '',
     ubicacionMapa: undefined,
     pinesMapa: [],
-    creadoPor: user?.nombre || ''
+    creadoPor: user?.nombre || '',
+    personalAsignado: [] // ✨ NUEVO
   });
 
   const [usarMultiplesPins, setUsarMultiplesPins] = useState(false);
@@ -71,6 +73,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
     recargarProyectoActual();
   }, []);
 
+  // Cargar datos si estamos editando
   // Cargar datos si estamos editando
   useEffect(() => {
     if (reporteInicial) {
@@ -89,7 +92,8 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
           horasOperacion: 0,
           operador: '',
           actividad: ''
-        }]
+        }],
+        personalAsignado: reporteInicial.personalAsignado || []
       };
 
       const { _id, fechaCreacion, ...restoDatos } = datosCargados;
@@ -496,11 +500,10 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
                 <button
                   type="button"
                   onClick={() => setUsarMultiplesPins(!usarMultiplesPins)}
-                  className={`px-3 py-1 rounded text-sm font-semibold ${
-                    usarMultiplesPins
-                      ? 'bg-green-600 text-white'
-                      : 'bg-gray-300 text-gray-700'
-                  }`}
+                  className={`px-3 py-1 rounded text-sm font-semibold ${usarMultiplesPins
+                    ? 'bg-green-600 text-white'
+                    : 'bg-gray-300 text-gray-700'
+                    }`}
                 >
                   {usarMultiplesPins ? 'ACTIVADO' : 'DESACTIVADO'}
                 </button>
@@ -548,7 +551,14 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
           proyectoId={proyecto?._id}
         />
 
-        {/* SECCIÓN 5: CONTROL DE MAQUINARIA */}
+        {/* SECCIÓN 5: CONTROL DE PERSONAL (NUEVO) */}
+        <SeccionPersonal
+          personalAsignado={formData.personalAsignado || []}
+          onPersonalChange={(personal) => setFormData(prev => ({ ...prev, personalAsignado: personal }))}
+          proyectoId={proyecto?._id}
+        />
+
+        {/* SECCIÓN 6: CONTROL DE MAQUINARIA */}
         <div className="border-2 border-purple-400 rounded-lg p-6 bg-purple-50">
           <h3 className="text-xl font-bold mb-4 text-purple-800 border-b pb-2">CONTROL DE MAQUINARIA</h3>
           {formData.controlMaquinaria.map((maq, index) => (
@@ -641,7 +651,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
           </button>
         </div>
 
-        {/* SECCIÓN 6: OBSERVACIONES */}
+        {/* SECCIÓN 7: OBSERVACIONES */}
         <div className="border-2 border-gray-400 rounded-lg p-6 bg-gray-50">
           <h3 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2">OBSERVACIONES</h3>
           <textarea

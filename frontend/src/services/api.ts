@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { ReporteActividades, ApiResponse } from '../types/reporte';
 import { Proyecto, Vehiculo } from '../types/gestion';
+import { Personal, PersonalInput, CatCargo } from '../types/personal';
 import { API_BASE_URL } from '../config/env';
 
 export const api = axios.create({
@@ -281,6 +282,76 @@ export const vehiculoService = {
       return {
         success: false,
         error: error.response?.data?.message || 'Error al eliminar vehículo',
+      };
+    }
+  }
+};
+
+export const personalService = {
+  async getPersonal(cargoId?: string, proyectoId?: string): Promise<ApiResponse<Personal[]>> {
+    try {
+      let url = '/personal';
+      const params = new URLSearchParams();
+      if (cargoId) params.append('cargo', cargoId);
+      if (proyectoId) params.append('proyecto', proyectoId);
+      if (params.toString()) url += `?${params.toString()}`;
+
+      const response = await api.get<ApiResponse<Personal[]>>(url);
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Error al obtener personal',
+      };
+    }
+  },
+
+  async createPersonal(personal: PersonalInput): Promise<ApiResponse<Personal>> {
+    try {
+      const response = await api.post<ApiResponse<Personal>>('/personal', personal);
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Error al crear personal',
+      };
+    }
+  },
+
+  async updatePersonal(id: string, personal: Partial<PersonalInput>): Promise<ApiResponse<Personal>> {
+    try {
+      const response = await api.put<ApiResponse<Personal>>(`/personal/${id}`, personal);
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Error al actualizar personal',
+      };
+    }
+  },
+
+  async deletePersonal(id: string): Promise<ApiResponse<null>> {
+    try {
+      const response = await api.delete<ApiResponse<null>>(`/personal/${id}`);
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Error al eliminar personal',
+      };
+    }
+  }
+};
+
+export const cargosService = {
+  async getCargos(): Promise<ApiResponse<CatCargo[]>> {
+    try {
+      const response = await api.get<ApiResponse<CatCargo[]>>('/catalogos/cargos');
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Error al obtener cargos',
       };
     }
   }

@@ -5,6 +5,7 @@ import ListaReportes from '../reports/ListaReportes';
 import GestionUsuarios from '../users/GestionUsuarios';
 import GestionProyectos from '../projects/GestionProyectos';
 import GestionVehiculos from '../vehicles/GestionVehiculos';
+import GestionPersonal from '../personal/GestionPersonal'; // ✨ NUEVO
 import { WorkZoneManager } from '../WorkZones';
 import { EstadisticasReporte } from '../reports/EstadisticasReporte';
 import { ReporteActividades } from '../../types/reporte';
@@ -16,7 +17,7 @@ import { Proyecto } from '../../types/gestion';
 import LogoROD from '../../Logo_ROD.png';
 
 const Dashboard: React.FC = () => {
-  const [vistaActual, setVistaActual] = useState<'formulario' | 'lista' | 'usuarios' | 'proyectos' | 'vehiculos' | 'zonas' | 'estadisticas'>('formulario');
+  const [vistaActual, setVistaActual] = useState<'formulario' | 'lista' | 'usuarios' | 'proyectos' | 'vehiculos' | 'zonas' | 'estadisticas' | 'personal'>('formulario');
   const [reporteEditar, setReporteEditar] = useState<ReporteActividades | null>(null);
   const { user, proyecto, logout } = useAuth();
   const [loadingGeneral, setLoadingGeneral] = useState(false);
@@ -264,6 +265,15 @@ const Dashboard: React.FC = () => {
                   👥 USUARIOS
                 </button>
                 <button
+                  onClick={() => setVistaActual('personal')}
+                  className={`py-4 px-6 font-semibold text-lg transition-all duration-300 whitespace-nowrap ${vistaActual === 'personal'
+                    ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
+                    : 'text-gray-600 hover:text-orange-500 hover:bg-orange-25'
+                    }`}
+                >
+                  👷 PERSONAL
+                </button>
+                <button
                   onClick={() => setVistaActual('vehiculos')}
                   className={`py-4 px-6 font-semibold text-lg transition-all duration-300 whitespace-nowrap ${vistaActual === 'vehiculos'
                     ? 'text-orange-600 border-b-4 border-orange-600 bg-orange-50'
@@ -398,6 +408,7 @@ const Dashboard: React.FC = () => {
           <>
             {vistaActual === 'usuarios' && <GestionUsuarios userRol={user.rol} />}
             {vistaActual === 'vehiculos' && <GestionVehiculos userRol={user.rol} />}
+            {vistaActual === 'personal' && <GestionPersonal userRol={user.rol} />}
           </>
         )}
         {user?.rol === 'admin' && vistaActual === 'proyectos' && <GestionProyectos />}
