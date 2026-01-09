@@ -328,6 +328,16 @@ export const generarPDFReporte = async (
         );
     }
 
+    // @ts-ignore
+    if (datos.controlPersonal && datos.controlPersonal.length) {
+        renderTable(
+            "CONTROL DE PERSONAL",
+            [["Personal", "Cargo", "Actividad", "Horas", "Observaciones"]],
+            // @ts-ignore
+            datos.controlPersonal
+        );
+    }
+
     // ------------------------------------------------
     // OBSERVACIONES
     // ------------------------------------------------

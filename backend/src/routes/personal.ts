@@ -188,8 +188,8 @@ router.get('/catalogos/cargos', async (req: AuthRequest, res) => {
   }
 });
 
-// POST /api/cargos - Crear nuevo cargo (solo admin)
-router.post('/catalogos/cargos', verificarAdmin, async (req: AuthRequest, res) => {
+// POST /api/cargos - Crear nuevo cargo (solo admin y supervisor)
+router.post('/catalogos/cargos', verificarAdminOSupervisor, async (req: AuthRequest, res) => {
   try {
     const cargo = await cargosService.createCargo(req.body);
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Personal, CatCargo, ReportePersonal } from '../../../types/personal';
 
-
 interface ModalReportePersonalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -46,7 +45,7 @@ const ModalReportePersonal: React.FC<ModalReportePersonalProps> = ({
         setFormData(prev => ({
             ...prev,
             personalId: id,
-            cargoId: persona?.cargoId || prev.cargoId // Auto-select cargo if available
+            cargoId: persona?.cargoId || prev.cargoId
         }));
     };
 

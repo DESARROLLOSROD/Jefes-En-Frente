@@ -75,11 +75,22 @@ export const prepararDatosReporte = (reporte: ReporteActividades) => {
         ])
         : [];
 
+    const controlPersonal = reporte.personalAsignado?.length
+        ? reporte.personalAsignado.map(p => [
+            p.personal?.nombreCompleto || 'N/A',
+            p.cargo?.nombre || 'N/A',
+            p.actividadRealizada || '-',
+            p.horasTrabajadas.toString(),
+            p.observaciones || '-'
+        ])
+        : [];
+
     return {
         controlAcarreo,
         controlMaterial,
         controlAgua,
         controlMaquinaria,
+        controlPersonal
     };
 };
 

@@ -354,5 +354,17 @@ export const cargosService = {
         error: error.response?.data?.error || 'Error al obtener cargos',
       };
     }
+  },
+
+  async createCargo(cargo: { nombre: string; descripcion?: string }): Promise<ApiResponse<CatCargo>> {
+    try {
+      const response = await api.post<ApiResponse<CatCargo>>('/catalogos/cargos', cargo);
+      return response.data;
+    } catch (error: any) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Error al crear cargo',
+      };
+    }
   }
 };

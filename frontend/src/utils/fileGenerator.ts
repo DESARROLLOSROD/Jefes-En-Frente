@@ -290,6 +290,9 @@ export const generarExcelReporte = async (
     addTableSection('CONTROL DE AGUA', '💧', ['Económico', 'Viajes', 'Capacidad', 'Volumen', 'Origen', 'Destino'], datos.controlAgua, true);
     addTableSection('CONTROL DE MAQUINARIA', '🚜', ['Tipo', 'Económico', 'H. Inicio', 'H. Fin', 'H. Oper.', 'Operador', 'Actividad'], datos.controlMaquinaria);
 
+    // @ts-ignore
+    addTableSection('CONTROL DE PERSONAL', '👷', ['Personal', 'Cargo', 'Actividad', 'Horas', 'Observaciones'], datos.controlPersonal || []);
+
     // === OBSERVACIONES ===
     if (reporte.observaciones) {
         worksheet.getRow(currentRow).getCell(1).value = '📝 OBSERVACIONES';
@@ -371,12 +374,13 @@ export const generarExcelGeneral = async (reportes: ReporteActividades[], proyec
     const totalVolAcarreo = reportes.reduce((acc, r) => acc + (r.controlAcarreo?.reduce((s, i) => s + (parseFloat(i.volSuelto) || 0), 0) || 0), 0);
     const totalVolAgua = reportes.reduce((acc, r) => acc + (r.controlAgua?.reduce((s, i) => s + (parseFloat(i.volumen) || 0), 0) || 0), 0);
     const totalHorasMaq = reportes.reduce((acc, r) => acc + (r.controlMaquinaria?.reduce((s, i) => s + (i.horasOperacion || 0), 0) || 0), 0);
+    const totalHorasPersonal = reportes.reduce((acc, r) => acc + (r.personalAsignado?.reduce((s, p) => s + (p.horasTrabajadas || 0), 0) || 0), 0);
 
     const kpis = [
         ['Total Reportes', totalReportes, 'docs'],
         ['Volumen Acarreo', `${totalVolAcarreo.toLocaleString()} m³`, 'truck'],
-        ['Volumen Agua', `${totalVolAgua.toLocaleString()} m³`, 'drop'],
-        ['Horas Maquinaria', `${totalHorasMaq.toLocaleString()} hrs`, 'tool']
+        ['Horas Maquinaria', `${totalHorasMaq.toLocaleString()} hrs`, 'tool'],
+        ['Horas Personal', `${totalHorasPersonal.toLocaleString()} hrs`, 'user']
     ];
 
     kpis.forEach((kpi) => {

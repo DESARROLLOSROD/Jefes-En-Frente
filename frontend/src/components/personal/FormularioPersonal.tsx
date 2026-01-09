@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Personal, PersonalInput, CatCargo } from '../../types/personal';
-import { cargosService } from '../../services/api'; // Corrected import source
+import { cargosService } from '../../services/api';
 import { proyectoService } from '../../services/api';
 import { Proyecto } from '../../types/gestion';
+import AutocompleteInput from '../shared/AutocompleteInput';
 
 interface FormularioPersonalProps {
     personal?: Personal | null;
@@ -25,6 +26,7 @@ const FormularioPersonal: React.FC<FormularioPersonalProps> = ({ personal, onClo
     });
 
     const [cargos, setCargos] = useState<CatCargo[]>([]);
+    const [cargoNombre, setCargoNombre] = useState(''); // Text input for autocomplete
     const [proyectos, setProyectos] = useState<Proyecto[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -46,6 +48,14 @@ const FormularioPersonal: React.FC<FormularioPersonalProps> = ({ personal, onClo
             });
         }
     }, [personal]);
+
+    // Sync cargoNombre when cargos are loaded or personal is set
+    useEffect(() => {
+        if (personal && cargos.length > 0) {
+            const cargo = cargos.find(c => c._id === personal.cargoId);
+            if (cargo) setCargoNombre(cargo.nombre);
+        }
+    }, [personal, cargos]);
 
     const cargarCatalogos = async () => {
         try {
@@ -71,13 +81,55 @@ const FormularioPersonal: React.FC<FormularioPersonalProps> = ({ personal, onClo
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleCargoChange = (nombre: string) => {
+        const nombreUpper = nombre.toUpperCase();
+        setCargoNombre(nombreUpper);
+
+        const cargo = cargos.find(c => c.nombre === nombreUpper);
+        if (cargo) {
+            setFormData(prev => ({ ...prev, cargoId: cargo._id }));
+        } else {
+            setFormData(prev => ({ ...prev, cargoId: '' })); // Reset ID if custom
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
         setError('');
 
         try {
-            await onGuardar(formData, personal?._id);
+            let finalCargoId = formData.cargoId;
+            const nombreCargoFinal = cargoNombre.trim().toUpperCase();
+
+            // Logic to create cargo if it doesn't exist
+            if (!finalCargoId && nombreCargoFinal) {
+                const existe = cargos.find(c => c.nombre === nombreCargoFinal);
+                if (existe) {
+                    finalCargoId = existe._id;
+                } else {
+                    const confirmar = window.confirm(`El cargo "${nombreCargoFinal}" no existe. ¿Desea crearlo ahora?`);
+                    if (confirmar) {
+                        const res = await cargosService.createCargo({ nombre: nombreCargoFinal });
+                        if (res.success && res.data) {
+                            finalCargoId = res.data._id;
+                            setCargos(prev => [...prev, res.data!]);
+                        } else {
+                            throw new Error('Error al crear el cargo: ' + (res.error || 'Desconocido'));
+                        }
+                    } else {
+                        setLoading(false);
+                        return;
+                    }
+                }
+            }
+
+            if (!finalCargoId) {
+                throw new Error('Debe seleccionar o crear un cargo válido');
+            }
+
+            // Save with valid ID
+            await onGuardar({ ...formData, cargoId: finalCargoId }, personal?._id);
         } catch (err: any) {
             setError(err.message || 'Error al guardar');
         } finally {
@@ -117,23 +169,19 @@ const FormularioPersonal: React.FC<FormularioPersonalProps> = ({ personal, onClo
                                 />
                             </div>
 
-                            {/* Cargo */}
+                            {/* Cargo (Autocomplete) */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">CARGO / PUESTO *</label>
-                                <select
-                                    name="cargoId"
+                                <AutocompleteInput
+                                    label="CARGO / PUESTO"
+                                    value={cargoNombre}
+                                    onChange={handleCargoChange}
+                                    options={cargos.map(c => c.nombre)}
+                                    placeholder="SELECCIONE O ESCRIBA..."
                                     required
-                                    value={formData.cargoId}
-                                    onChange={handleChange}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 uppercase"
-                                >
-                                    <option value="">SELECCIONE UN CARGO</option>
-                                    {cargos.map(cargo => (
-                                        <option key={cargo._id} value={cargo._id}>
-                                            {cargo.nombre}
-                                        </option>
-                                    ))}
-                                </select>
+                                />
+                                <p className="text-xs text-gray-500 mt-1">
+                                    * Si el cargo no existe, se le preguntará si desea crearlo.
+                                </p>
                             </div>
 
                             {/* Número de Empleado */}
