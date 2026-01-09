@@ -212,15 +212,15 @@ const Dashboard: React.FC = () => {
                 )}
                 <button
                   onClick={cambiarProyecto}
-                  className="hidden md:block bg-orange-500 hover:bg-orange-400 px-3 py-1 rounded text-sm"
+                  className="bg-orange-500 hover:bg-orange-400 px-3 py-1 rounded text-sm"
                 >
-                  🔄
+                  🔄 CAMBIAR PROYECTO
                 </button>
                 <button
                   onClick={handleLogout}
                   className="bg-red-500 hover:bg-red-400 px-3 py-1 rounded text-sm"
                 >
-                  🚪
+                  🚪 SALIR
                 </button>
               </div>
             </div>
