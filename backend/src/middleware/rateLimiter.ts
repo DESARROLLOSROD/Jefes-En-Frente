@@ -16,7 +16,7 @@ export const loginLimiter = rateLimit({
 // Rate limiter para creación de recursos (moderado)
 export const createLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 30, // máximo 30 creaciones
+  max: 100, // máximo 100 creaciones (aumentado de 30)
   message: {
     success: false,
     error: 'Demasiadas solicitudes. Por favor intente más tarde.'
@@ -28,7 +28,7 @@ export const createLimiter = rateLimit({
 // Rate limiter para APIs generales (menos restrictivo)
 export const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutos
-  max: 100, // máximo 100 requests
+  max: 1000, // máximo 1000 requests (aumentado de 100)
   message: {
     success: false,
     error: 'Demasiadas solicitudes. Por favor intente más tarde.'
@@ -40,7 +40,7 @@ export const apiLimiter = rateLimit({
 // Rate limiter para endpoints de lectura
 export const readLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minuto
-  max: 60, // máximo 60 requests por minuto
+  max: 300, // máximo 300 requests por minuto (aumentado de 60)
   message: {
     success: false,
     error: 'Demasiadas solicitudes. Por favor intente más tarde.'
