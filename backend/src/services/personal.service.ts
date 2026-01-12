@@ -144,12 +144,13 @@ export class PersonalService {
    */
   async createPersonal(input: CreatePersonalInput): Promise<PersonalConRelaciones> {
     const { proyectos, ...personalData } = input;
+    const dbData = this.toDbFormat(personalData);
 
     const { data, error } = await supabaseAdmin
       .from('personal')
       .insert({
-        ...personalData,
-        activo: personalData.activo ?? true
+        ...dbData,
+        activo: dbData.activo ?? true
       })
       .select(`
         *,
@@ -181,10 +182,11 @@ export class PersonalService {
    */
   async updatePersonal(id: string, input: UpdatePersonalInput): Promise<PersonalConRelaciones> {
     const { proyectos, ...personalData } = input;
+    const dbData = this.toDbFormat(personalData);
 
     const { data, error } = await supabaseAdmin
       .from('personal')
-      .update(personalData)
+      .update(dbData)
       .eq('id', id)
       .select(`
         *,
