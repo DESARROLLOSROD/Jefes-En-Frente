@@ -26,9 +26,14 @@ const ModalReportePersonal: React.FC<ModalReportePersonalProps> = ({
         observaciones: ''
     });
 
+    const [searchTerm, setSearchTerm] = useState('');
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
     useEffect(() => {
         if (dataInicial) {
             setFormData(dataInicial);
+            const personalSeleccionado = personalDisponibles.find(p => p._id === dataInicial.personalId);
+            setSearchTerm(personalSeleccionado ? personalSeleccionado.nombreCompleto : '');
         } else {
             setFormData({
                 personalId: '',
@@ -37,17 +42,36 @@ const ModalReportePersonal: React.FC<ModalReportePersonalProps> = ({
                 horasTrabajadas: 0,
                 observaciones: ''
             });
+            setSearchTerm('');
         }
-    }, [dataInicial, isOpen]);
+        setShowSuggestions(false);
+    }, [dataInicial, isOpen, personalDisponibles]);
 
-    const handlePersonalChange = (id: string) => {
-        const persona = personalDisponibles.find(p => p._id === id);
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.toUpperCase();
+        setSearchTerm(value);
+        setShowSuggestions(true);
+        // Reset personalId if user types, forcing them to select a valid option
+        // or we could keep it if we want to allow partial matches (but ID is needed)
+        // For strict selection:
+        if (formData.personalId) {
+            setFormData(prev => ({ ...prev, personalId: '' }));
+        }
+    };
+
+    const handleSelectPersonal = (personal: Personal) => {
+        setSearchTerm(personal.nombreCompleto);
         setFormData(prev => ({
             ...prev,
-            personalId: id,
-            cargoId: persona?.cargoId || prev.cargoId
+            personalId: personal._id,
+            cargoId: personal.cargoId || prev.cargoId
         }));
+        setShowSuggestions(false);
     };
+
+    const filteredPersonal = personalDisponibles.filter(p =>
+        p.nombreCompleto.toUpperCase().includes(searchTerm)
+    );
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -68,22 +92,38 @@ const ModalReportePersonal: React.FC<ModalReportePersonalProps> = ({
 
                 <div className="flex-1 overflow-y-auto p-6">
                     <form onSubmit={handleSubmit} className="space-y-4">
-                        {/* Personal Selection */}
-                        <div>
+                        {/* Personal Selection - Searchable */}
+                        <div className="relative">
                             <label className="block text-sm font-medium text-gray-700 mb-1">PERSONAL *</label>
-                            <select
-                                value={formData.personalId}
-                                onChange={(e) => handlePersonalChange(e.target.value)}
-                                required
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={handleSearch}
+                                onFocus={() => setShowSuggestions(true)}
+                                // onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} // Delay to allow click
+                                placeholder="BUSCAR PERSONAL..."
                                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 uppercase"
-                            >
-                                <option value="">SELECCIONE PERSONAL</option>
-                                {personalDisponibles.map(p => (
-                                    <option key={p._id} value={p._id}>
-                                        {p.nombreCompleto}
-                                    </option>
-                                ))}
-                            </select>
+                                autoComplete="off"
+                            />
+                            {showSuggestions && searchTerm && !formData.personalId && (
+                                <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-b-lg shadow-lg max-h-60 overflow-y-auto mt-1">
+                                    {filteredPersonal.length > 0 ? (
+                                        filteredPersonal.map(p => (
+                                            <li
+                                                key={p._id}
+                                                onClick={() => handleSelectPersonal(p)}
+                                                className="px-4 py-2 hover:bg-green-50 cursor-pointer text-sm border-b last:border-b-0 uppercase"
+                                            >
+                                                {p.nombreCompleto}
+                                            </li>
+                                        ))
+                                    ) : (
+                                        <li className="px-4 py-2 text-gray-500 text-sm">No se encontraron resultados</li>
+                                    )}
+                                </ul>
+                            )}
+                            {/* Hidden input to ensure required validation works or handle manually */}
+                            {!formData.personalId && <div className="text-red-500 text-xs mt-1">Seleccione una persona de la lista</div>}
                         </div>
 
                         {/* Cargo Selection */}
@@ -142,11 +182,6 @@ const ModalReportePersonal: React.FC<ModalReportePersonalProps> = ({
                             />
                         </div>
 
-                        {/* Botones - Dentro del scroll o fuera? Mejor fuera (Footer fijo) o al final del scroll.
-                            En este caso, si queremos que esté siempre visible, movemos a un div externo.
-                            Si lo dejamos aquí, scrolleará con el contenido.
-                            Viendo el otro modal, el footer está fijo. Hagamos footer fijo aquí también.
-                        */}
                     </form>
                 </div>
 
@@ -160,8 +195,12 @@ const ModalReportePersonal: React.FC<ModalReportePersonalProps> = ({
                     </button>
                     <button
                         type="button"
-                        onClick={handleSubmit} // Submit trigger form? No, button is outside form. Must change logic.
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold shadow-md"
+                        onClick={handleSubmit}
+                        disabled={!formData.personalId || !formData.cargoId}
+                        className={`px-4 py-2 rounded-lg font-semibold shadow-md text-white ${(!formData.personalId || !formData.cargoId)
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-green-600 hover:bg-green-700'
+                            }`}
                     >
                         GUARDAR
                     </button>
