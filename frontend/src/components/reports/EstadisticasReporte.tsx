@@ -391,7 +391,7 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                                     cx="50%"
                                     cy="50%"
                                     outerRadius={80}
-                                    label={(entry) => `${entry.nombre}: ${entry.totalHoras}h`}
+                                    label
                                 >
                                     {estadisticas.personal.personal.slice(0, 5).map((_, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
