@@ -9,6 +9,94 @@ const router = express.Router();
 // Aplicar middleware de autenticación a todas las rutas
 router.use(verificarToken);
 
+// ========== CARGOS (IMPORTANTE: Definir antes de /:id para evitar conflictos) ==========
+
+// GET /api/personal/cargos - Listar todos los cargos
+router.get('/cargos', async (req: AuthRequest, res) => {
+  try {
+    const cargos = await cargosService.getCargos(true);
+
+    const response: ApiResponse<any[]> = {
+      success: true,
+      data: cargos
+    };
+
+    res.json(response);
+  } catch (error: any) {
+    console.error('Error en GET /cargos:', error);
+    const response: ApiResponse<null> = {
+      success: false,
+      error: 'Error al obtener cargos'
+    };
+    res.status(500).json(response);
+  }
+});
+
+// POST /api/personal/cargos - Crear nuevo cargo (solo admin y supervisor)
+router.post('/cargos', verificarAdminOSupervisor, async (req: AuthRequest, res) => {
+  try {
+    const cargo = await cargosService.createCargo(req.body);
+
+    const response: ApiResponse<any> = {
+      success: true,
+      data: cargo,
+      message: 'Cargo creado exitosamente'
+    };
+
+    res.status(201).json(response);
+  } catch (error: any) {
+    console.error('Error en POST /cargos:', error);
+    const response: ApiResponse<null> = {
+      success: false,
+      error: error.message || 'Error al crear cargo'
+    };
+    res.status(500).json(response);
+  }
+});
+
+// PUT /api/personal/cargos/:id - Actualizar cargo (solo admin)
+router.put('/cargos/:id', verificarAdmin, async (req: AuthRequest, res) => {
+  try {
+    const cargo = await cargosService.updateCargo(req.params.id, req.body);
+
+    const response: ApiResponse<any> = {
+      success: true,
+      data: cargo,
+      message: 'Cargo actualizado exitosamente'
+    };
+
+    res.json(response);
+  } catch (error: any) {
+    console.error('Error en PUT /cargos/:id:', error);
+    const response: ApiResponse<null> = {
+      success: false,
+      error: error.message || 'Error al actualizar cargo'
+    };
+    res.status(500).json(response);
+  }
+});
+
+// DELETE /api/personal/cargos/:id - Eliminar cargo (solo admin)
+router.delete('/cargos/:id', verificarAdmin, async (req: AuthRequest, res) => {
+  try {
+    await cargosService.deleteCargo(req.params.id);
+
+    const response: ApiResponse<null> = {
+      success: true,
+      message: 'Cargo eliminado exitosamente'
+    };
+
+    res.json(response);
+  } catch (error: any) {
+    console.error('Error en DELETE /cargos/:id:', error);
+    const response: ApiResponse<null> = {
+      success: false,
+      error: 'Error al eliminar cargo'
+    };
+    res.status(500).json(response);
+  }
+});
+
 // ========== PERSONAL ==========
 
 // GET /api/personal - Listar todo el personal
@@ -160,94 +248,6 @@ router.put('/:id/proyectos', verificarAdminOSupervisor, async (req: AuthRequest,
     const response: ApiResponse<null> = {
       success: false,
       error: 'Error al asignar proyectos'
-    };
-    res.status(500).json(response);
-  }
-});
-
-// ========== CARGOS ==========
-
-// GET /api/cargos - Listar todos los cargos
-router.get('/cargos', async (req: AuthRequest, res) => {
-  try {
-    const cargos = await cargosService.getCargos(true);
-
-    const response: ApiResponse<any[]> = {
-      success: true,
-      data: cargos
-    };
-
-    res.json(response);
-  } catch (error: any) {
-    console.error('Error en GET /cargos:', error);
-    const response: ApiResponse<null> = {
-      success: false,
-      error: 'Error al obtener cargos'
-    };
-    res.status(500).json(response);
-  }
-});
-
-// POST /api/cargos - Crear nuevo cargo (solo admin y supervisor)
-router.post('/cargos', verificarAdminOSupervisor, async (req: AuthRequest, res) => {
-  try {
-    const cargo = await cargosService.createCargo(req.body);
-
-    const response: ApiResponse<any> = {
-      success: true,
-      data: cargo,
-      message: 'Cargo creado exitosamente'
-    };
-
-    res.status(201).json(response);
-  } catch (error: any) {
-    console.error('Error en POST /cargos:', error);
-    const response: ApiResponse<null> = {
-      success: false,
-      error: error.message || 'Error al crear cargo'
-    };
-    res.status(500).json(response);
-  }
-});
-
-// PUT /api/cargos/:id - Actualizar cargo (solo admin)
-router.put('/cargos/:id', verificarAdmin, async (req: AuthRequest, res) => {
-  try {
-    const cargo = await cargosService.updateCargo(req.params.id, req.body);
-
-    const response: ApiResponse<any> = {
-      success: true,
-      data: cargo,
-      message: 'Cargo actualizado exitosamente'
-    };
-
-    res.json(response);
-  } catch (error: any) {
-    console.error('Error en PUT /cargos/:id:', error);
-    const response: ApiResponse<null> = {
-      success: false,
-      error: error.message || 'Error al actualizar cargo'
-    };
-    res.status(500).json(response);
-  }
-});
-
-// DELETE /api/cargos/:id - Eliminar cargo (solo admin)
-router.delete('/cargos/:id', verificarAdmin, async (req: AuthRequest, res) => {
-  try {
-    await cargosService.deleteCargo(req.params.id);
-
-    const response: ApiResponse<null> = {
-      success: true,
-      message: 'Cargo eliminado exitosamente'
-    };
-
-    res.json(response);
-  } catch (error: any) {
-    console.error('Error en DELETE /cargos/:id:', error);
-    const response: ApiResponse<null> = {
-      success: false,
-      error: 'Error al eliminar cargo'
     };
     res.status(500).json(response);
   }
