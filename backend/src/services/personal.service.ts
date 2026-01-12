@@ -32,6 +32,24 @@ export class PersonalService {
   }
 
   /**
+   * Convertir de frontend (camelCase) a DB (snake_case)
+   */
+  private toDbFormat(input: any): any {
+    const dbData: any = {};
+    if (input.nombreCompleto) dbData.nombre_completo = input.nombreCompleto;
+    if (input.cargoId) dbData.cargo_id = input.cargoId;
+    if (input.numeroEmpleado) dbData.numero_empleado = input.numeroEmpleado;
+    if (input.telefono) dbData.telefono = input.telefono;
+    if (input.email) dbData.email = input.email;
+    if (input.fechaIngreso) dbData.fecha_ingreso = input.fechaIngreso;
+    if (input.fechaBaja) dbData.fecha_baja = input.fechaBaja;
+    if (input.activo !== undefined) dbData.activo = input.activo;
+    if (input.observaciones) dbData.observaciones = input.observaciones;
+    if (input.fotoUrl) dbData.foto_url = input.fotoUrl;
+    return dbData;
+  }
+
+  /**
    * Obtener todo el personal con sus relaciones (cargo y proyectos)
    */
   async getPersonal(activoOnly: boolean = true): Promise<PersonalConRelaciones[]> {
