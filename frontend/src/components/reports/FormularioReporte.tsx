@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { ReporteActividades, ControlMaquinaria } from '../../types/reporte';
-import { reporteService, vehiculoService } from '../../services/api';
+import { reporteService, vehiculoService, personalService } from '../../services/api';
 import { workZoneService } from '../../services/workZone.service';
 import { useAuth } from '../../contexts/AuthContext';
 import { Vehiculo } from '../../types/gestion';
+import { Personal } from '../../types/personal';
 import { WorkZone } from '../../types/workZone.types';
 import SeccionControlAcarreo from './sections/SeccionControlAcarreo';
 import SeccionControlMaterial from './sections/SeccionControlMaterial';
@@ -24,6 +25,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
   const [vehiculosDisponibles, setVehiculosDisponibles] = useState<Vehiculo[]>([]);
   const [zonasDisponibles, setZonasDisponibles] = useState<WorkZone[]>([]);
   const [zonaSeleccionada, setZonaSeleccionada] = useState<WorkZone | null>(null);
+  const [operadores, setOperadores] = useState<Personal[]>([]);
 
   const [formData, setFormData] = useState<Omit<ReporteActividades, '_id' | 'fechaCreacion'>>({
     fecha: new Date().toISOString().split('T')[0],
@@ -146,6 +148,27 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
       }
     };
     cargarVehiculos();
+  }, [proyecto]);
+
+  // Cargar operadores (Personal con cargo que incluye "OPERADOR")
+  useEffect(() => {
+    const cargarOperadores = async () => {
+      if (proyecto?._id) {
+        try {
+          const response = await personalService.getPersonal(undefined, proyecto._id);
+          if (response.success && response.data) {
+            // Filtrar solo los que tienen "OPERADOR" en su cargo
+            const soloOperadores = response.data.filter(p =>
+              p.cargo?.nombre.toUpperCase().includes('OPERADOR')
+            );
+            setOperadores(soloOperadores);
+          }
+        } catch (error) {
+          console.error('Error al cargar operadores:', error);
+        }
+      }
+    };
+    cargarOperadores();
   }, [proyecto]);
 
   // Actualizar usuarioId
@@ -625,10 +648,17 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
                   <label className="block text-sm font-medium text-gray-700">OPERADOR</label>
                   <input
                     type="text"
+                    list={`operadores-list-${index}`}
                     value={maq.operador}
                     onChange={(e) => actualizarControlMaquinaria(index, 'operador', e.target.value.toUpperCase())}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 p-2 border uppercase"
+                    placeholder="BUSCAR OPERADOR..."
                   />
+                  <datalist id={`operadores-list-${index}`}>
+                    {operadores.map((op) => (
+                      <option key={op._id} value={op.nombreCompleto} />
+                    ))}
+                  </datalist>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">ACTIVIDAD</label>
