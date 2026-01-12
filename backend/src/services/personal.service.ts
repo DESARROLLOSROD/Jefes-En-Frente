@@ -301,10 +301,12 @@ export class PersonalService {
    * Obtener personal por proyecto
    */
   async getPersonalByProyecto(proyectoId: string, activoOnly: boolean = true): Promise<PersonalConRelaciones[]> {
+    console.log('🔍 Buscando personal para proyecto:', proyectoId);
+
     let query = supabaseAdmin
       .from('personal_proyectos')
       .select(`
-        personal:personal!inner (
+        personal:personal (
           *,
           cargo:cat_cargos(*)
         )
@@ -315,8 +317,13 @@ export class PersonalService {
     const { data, error } = await query;
 
     if (error) {
-      console.error('Error obteniendo personal del proyecto:', error);
+      console.error('❌ Error obteniendo personal del proyecto:', error);
       throw new Error(`Error obteniendo personal del proyecto: ${error.message}`);
+    }
+
+    console.log(`✅ Encontrados ${data?.length || 0} registros en personal_proyectos`);
+    if (data && data.length > 0) {
+      console.log('📋 Muestra primer registro:', JSON.stringify(data[0]));
     }
 
     // Filtrar por activo si es necesario
