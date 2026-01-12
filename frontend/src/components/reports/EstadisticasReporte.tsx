@@ -342,6 +342,100 @@ export const EstadisticasReporte: React.FC<Props> = ({ estadisticas }) => {
                     </div>
                 </div>
             )}
+
+            {/* Personal */}
+            {estadisticas.personal && estadisticas.personal.personal.length > 0 && (
+                <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-green-500">
+                    <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                        <span className="mr-2" role="img" aria-label="Personal">👷</span> CONTROL DE PERSONAL
+                    </h3>
+                    <div className="mb-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div className="bg-green-50 p-3 rounded">
+                            <p className="text-xs text-gray-600">Total de Personal</p>
+                            <p className="font-bold text-xl text-green-600">{estadisticas.personal.totalPersonal}</p>
+                        </div>
+                        <div className="bg-blue-50 p-3 rounded">
+                            <p className="text-xs text-gray-600">Total Horas Trabajadas</p>
+                            <p className="font-bold text-xl text-blue-600">{estadisticas.personal.totalHoras.toLocaleString()} hrs</p>
+                        </div>
+                        <div className="bg-purple-50 p-3 rounded">
+                            <p className="text-xs text-gray-600">Personal más activo</p>
+                            <p className="font-semibold text-sm text-purple-600">{estadisticas.personal.personalMasActivo}</p>
+                        </div>
+                    </div>
+
+                    {/* Gráfica de Horas por Personal */}
+                    <div className="mb-6">
+                        <h4 className="text-lg font-semibold text-gray-700 mb-3">Horas Trabajadas por Personal</h4>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <BarChart data={estadisticas.personal.personal.slice(0, 10)}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="nombre" angle={-45} textAnchor="end" height={100} />
+                                <YAxis />
+                                <Tooltip formatter={(value: number) => `${value.toLocaleString()} hrs`} />
+                                <Legend />
+                                <Bar dataKey="totalHoras" fill="#10B981" name="Horas Trabajadas" />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    {/* Gráfica de Pie de Distribución de Horas */}
+                    <div className="mb-6">
+                        <h4 className="text-lg font-semibold text-gray-700 mb-3">Distribución de Horas por Personal (Top 5)</h4>
+                        <ResponsiveContainer width="100%" height={300}>
+                            <PieChart>
+                                <Pie
+                                    data={estadisticas.personal.personal.slice(0, 5)}
+                                    dataKey="totalHoras"
+                                    nameKey="nombre"
+                                    cx="50%"
+                                    cy="50%"
+                                    outerRadius={80}
+                                    label={(entry) => `${entry.nombre}: ${entry.totalHoras}h`}
+                                >
+                                    {estadisticas.personal.personal.slice(0, 5).map((_, index) => (
+                                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip formatter={(value: number) => `${value.toLocaleString()} hrs`} />
+                                <Legend />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+
+                    {/* Tabla Detallada de Personal */}
+                    <div className="overflow-x-auto">
+                        <h4 className="text-lg font-semibold text-gray-700 mb-3">Detalle de Personal</h4>
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <caption className="sr-only">Detalle de horas trabajadas por personal</caption>
+                            <thead className="bg-green-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cargo</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Horas Trabajadas</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Reportes</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Porcentaje</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {estadisticas.personal.personal.map((persona, index) => (
+                                    <tr key={`personal-${persona.personalId}`} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{persona.nombre}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                                            <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                                                {persona.cargoNombre}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-700">{persona.totalHoras.toLocaleString()} hrs</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{persona.reportesCount}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{persona.porcentaje}%</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

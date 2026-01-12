@@ -356,6 +356,8 @@ export class ReportesService {
     fechaInicio?: Date,
     fechaFin?: Date
   ): Promise<any> {
+    console.log('📊 Calculando estadísticas detalladas...');
+
     let query = supabaseAdmin
       .from('reportes')
       .select('*');
@@ -379,43 +381,279 @@ export class ReportesService {
       throw new Error(`Error obteniendo estadísticas: ${error.message}`);
     }
 
-    // Calcular estadísticas básicas
     const totalReportes = reportes?.length || 0;
-    const proyectosUnicos = new Set(reportes?.map(r => r.proyecto_id)).size;
-    const usuariosUnicos = new Set(reportes?.map(r => r.usuario_id)).size;
 
-    // Obtener totales de sub-tablas si hay reportes
-    let totalAcarreos = 0;
-    let totalMateriales = 0;
-    let totalAgua = 0;
-    let totalMaquinaria = 0;
-
-    if (reportes && reportes.length > 0) {
-      const reporteIds = reportes.map(r => r.id);
-
-      const [acarreos, materiales, agua, maquinaria] = await Promise.all([
-        supabaseAdmin.from('reporte_acarreo').select('*', { count: 'exact', head: true }).in('reporte_id', reporteIds),
-        supabaseAdmin.from('reporte_material').select('*', { count: 'exact', head: true }).in('reporte_id', reporteIds),
-        supabaseAdmin.from('reporte_agua').select('*', { count: 'exact', head: true }).in('reporte_id', reporteIds),
-        supabaseAdmin.from('reporte_maquinaria').select('*', { count: 'exact', head: true }).in('reporte_id', reporteIds)
-      ]);
-
-      totalAcarreos = acarreos.count || 0;
-      totalMateriales = materiales.count || 0;
-      totalAgua = agua.count || 0;
-      totalMaquinaria = maquinaria.count || 0;
+    // Si no hay reportes, retornar estructura vacía
+    if (!reportes || reportes.length === 0) {
+      return {
+        rangoFechas: {
+          inicio: fechaInicio?.toISOString().split('T')[0] || '',
+          fin: fechaFin?.toISOString().split('T')[0] || ''
+        },
+        totalReportes: 0,
+        totalViajes: 0,
+        acarreo: {
+          materiales: [],
+          totalVolumen: 0,
+          totalViajes: 0,
+          materialMasMovido: 'N/A'
+        },
+        material: {
+          materiales: [],
+          materialMasUtilizado: 'N/A'
+        },
+        agua: {
+          porOrigen: [],
+          volumenTotal: 0,
+          totalViajes: 0,
+          origenMasUtilizado: 'N/A'
+        },
+        vehiculos: {
+          vehiculos: [],
+          totalHoras: 0,
+          vehiculoMasUtilizado: 'N/A'
+        },
+        personal: {
+          personal: [],
+          totalHoras: 0,
+          personalMasActivo: 'N/A',
+          totalPersonal: 0
+        }
+      };
     }
 
+    const reporteIds = reportes.map(r => r.id);
+
+    // Obtener datos detallados de todas las tablas en paralelo
+    const [
+      acarreoData,
+      materialData,
+      aguaData,
+      maquinariaData,
+      personalData
+    ] = await Promise.all([
+      supabaseAdmin.from('reporte_acarreo').select('*').in('reporte_id', reporteIds),
+      supabaseAdmin.from('reporte_material').select('*').in('reporte_id', reporteIds),
+      supabaseAdmin.from('reporte_agua').select('*').in('reporte_id', reporteIds),
+      supabaseAdmin.from('reporte_maquinaria').select('*').in('reporte_id', reporteIds),
+      supabaseAdmin.from('reporte_personal').select(`
+        *,
+        personal:personal(nombre_completo),
+        cargo:cat_cargos(nombre)
+      `).in('reporte_id', reporteIds)
+    ]);
+
+    // ========== ESTADÍSTICAS DE ACARREO ==========
+    const acarreoMap = new Map<string, { volumen: number; viajes: number }>();
+    let totalVolumenAcarreo = 0;
+    let totalViajesAcarreo = 0;
+
+    acarreoData.data?.forEach((item: any) => {
+      const material = item.material || 'SIN ESPECIFICAR';
+      const volumen = parseFloat(item.vol_suelto) || 0;
+      const viajes = parseInt(item.no_viaje) || 0;
+
+      if (!acarreoMap.has(material)) {
+        acarreoMap.set(material, { volumen: 0, viajes: 0 });
+      }
+      const current = acarreoMap.get(material)!;
+      current.volumen += volumen;
+      current.viajes += viajes;
+
+      totalVolumenAcarreo += volumen;
+      totalViajesAcarreo += viajes;
+    });
+
+    const acarreoMateriales = Array.from(acarreoMap.entries())
+      .map(([nombre, data]) => ({
+        nombre,
+        volumen: parseFloat(data.volumen.toFixed(2)),
+        viajes: data.viajes,
+        porcentaje: totalVolumenAcarreo > 0
+          ? parseFloat(((data.volumen / totalVolumenAcarreo) * 100).toFixed(2))
+          : 0
+      }))
+      .sort((a, b) => b.volumen - a.volumen);
+
+    const materialMasMovido = acarreoMateriales.length > 0
+      ? acarreoMateriales[0].nombre
+      : 'N/A';
+
+    // ========== ESTADÍSTICAS DE MATERIAL ==========
+    const materialMap = new Map<string, { cantidad: number; unidad: string }>();
+
+    materialData.data?.forEach((item: any) => {
+      const material = item.material || 'SIN ESPECIFICAR';
+      const cantidad = parseFloat(item.cantidad) || 0;
+      const unidad = item.unidad || 'UNI';
+
+      if (!materialMap.has(material)) {
+        materialMap.set(material, { cantidad: 0, unidad });
+      }
+      materialMap.get(material)!.cantidad += cantidad;
+    });
+
+    const materiales = Array.from(materialMap.entries())
+      .map(([nombre, data]) => ({
+        nombre,
+        cantidad: parseFloat(data.cantidad.toFixed(2)),
+        unidad: data.unidad
+      }))
+      .sort((a, b) => b.cantidad - a.cantidad);
+
+    const materialMasUtilizado = materiales.length > 0
+      ? materiales[0].nombre
+      : 'N/A';
+
+    // ========== ESTADÍSTICAS DE AGUA ==========
+    const aguaMap = new Map<string, { volumen: number; viajes: number }>();
+    let totalVolumenAgua = 0;
+    let totalViajesAgua = 0;
+
+    aguaData.data?.forEach((item: any) => {
+      const origen = item.origen || 'SIN ESPECIFICAR';
+      const volumen = parseFloat(item.volumen) || 0;
+      const viajes = parseInt(item.viaje) || 0;
+
+      if (!aguaMap.has(origen)) {
+        aguaMap.set(origen, { volumen: 0, viajes: 0 });
+      }
+      const current = aguaMap.get(origen)!;
+      current.volumen += volumen;
+      current.viajes += viajes;
+
+      totalVolumenAgua += volumen;
+      totalViajesAgua += viajes;
+    });
+
+    const aguaPorOrigen = Array.from(aguaMap.entries())
+      .map(([origen, data]) => ({
+        origen,
+        volumen: parseFloat(data.volumen.toFixed(2)),
+        viajes: data.viajes,
+        porcentaje: totalVolumenAgua > 0
+          ? parseFloat(((data.volumen / totalVolumenAgua) * 100).toFixed(2))
+          : 0
+      }))
+      .sort((a, b) => b.volumen - a.volumen);
+
+    const origenMasUtilizado = aguaPorOrigen.length > 0
+      ? aguaPorOrigen[0].origen
+      : 'N/A';
+
+    // ========== ESTADÍSTICAS DE VEHÍCULOS/MAQUINARIA ==========
+    const vehiculoMap = new Map<string, { nombre: string; horas: number }>();
+    let totalHorasVehiculos = 0;
+
+    maquinariaData.data?.forEach((item: any) => {
+      const noEconomico = item.numero_economico || 'SIN NÚMERO';
+      const nombre = item.tipo || 'SIN TIPO';
+      const horas = parseFloat(item.horas_operacion) || 0;
+
+      if (!vehiculoMap.has(noEconomico)) {
+        vehiculoMap.set(noEconomico, { nombre, horas: 0 });
+      }
+      vehiculoMap.get(noEconomico)!.horas += horas;
+      totalHorasVehiculos += horas;
+    });
+
+    const vehiculos = Array.from(vehiculoMap.entries())
+      .map(([noEconomico, data]) => ({
+        nombre: data.nombre,
+        noEconomico,
+        horasOperacion: parseFloat(data.horas.toFixed(2)),
+        porcentaje: totalHorasVehiculos > 0
+          ? parseFloat(((data.horas / totalHorasVehiculos) * 100).toFixed(2))
+          : 0
+      }))
+      .sort((a, b) => b.horasOperacion - a.horasOperacion);
+
+    const vehiculoMasUtilizado = vehiculos.length > 0
+      ? `${vehiculos[0].nombre} (${vehiculos[0].noEconomico})`
+      : 'N/A';
+
+    // ========== ESTADÍSTICAS DE PERSONAL ==========
+    const personalMap = new Map<string, {
+      nombre: string;
+      cargoNombre: string;
+      horas: number;
+      reportes: Set<string>;
+    }>();
+    let totalHorasPersonal = 0;
+
+    personalData.data?.forEach((item: any) => {
+      const personalId = item.personal_id || 'SIN_ID';
+      const nombre = item.personal?.nombre_completo || 'SIN NOMBRE';
+      const cargoNombre = item.cargo?.nombre || 'SIN CARGO';
+      const horas = parseFloat(item.horas_trabajadas) || 0;
+      const reporteId = item.reporte_id;
+
+      if (!personalMap.has(personalId)) {
+        personalMap.set(personalId, {
+          nombre,
+          cargoNombre,
+          horas: 0,
+          reportes: new Set()
+        });
+      }
+      const current = personalMap.get(personalId)!;
+      current.horas += horas;
+      current.reportes.add(reporteId);
+      totalHorasPersonal += horas;
+    });
+
+    const personalStats = Array.from(personalMap.entries())
+      .map(([personalId, data]) => ({
+        personalId,
+        nombre: data.nombre,
+        cargoNombre: data.cargoNombre,
+        totalHoras: parseFloat(data.horas.toFixed(2)),
+        reportesCount: data.reportes.size,
+        porcentaje: totalHorasPersonal > 0
+          ? parseFloat(((data.horas / totalHorasPersonal) * 100).toFixed(2))
+          : 0
+      }))
+      .sort((a, b) => b.totalHoras - a.totalHoras);
+
+    const personalMasActivo = personalStats.length > 0
+      ? personalStats[0].nombre
+      : 'N/A';
+
+    // ========== RETORNAR ESTADÍSTICAS COMPLETAS ==========
     return {
+      rangoFechas: {
+        inicio: fechaInicio?.toISOString().split('T')[0] || '',
+        fin: fechaFin?.toISOString().split('T')[0] || ''
+      },
       totalReportes,
-      proyectosUnicos,
-      usuariosUnicos,
-      totalAcarreos,
-      totalMateriales,
-      totalAgua,
-      totalMaquinaria,
-      fechaInicio: fechaInicio?.toISOString(),
-      fechaFin: fechaFin?.toISOString()
+      totalViajes: totalViajesAcarreo + totalViajesAgua,
+      acarreo: {
+        materiales: acarreoMateriales,
+        totalVolumen: parseFloat(totalVolumenAcarreo.toFixed(2)),
+        totalViajes: totalViajesAcarreo,
+        materialMasMovido
+      },
+      material: {
+        materiales,
+        materialMasUtilizado
+      },
+      agua: {
+        porOrigen: aguaPorOrigen,
+        volumenTotal: parseFloat(totalVolumenAgua.toFixed(2)),
+        totalViajes: totalViajesAgua,
+        origenMasUtilizado
+      },
+      vehiculos: {
+        vehiculos,
+        totalHoras: parseFloat(totalHorasVehiculos.toFixed(2)),
+        vehiculoMasUtilizado
+      },
+      personal: {
+        personal: personalStats,
+        totalHoras: parseFloat(totalHorasPersonal.toFixed(2)),
+        personalMasActivo,
+        totalPersonal: personalStats.length
+      }
     };
   }
 

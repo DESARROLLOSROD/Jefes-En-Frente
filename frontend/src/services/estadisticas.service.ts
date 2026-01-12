@@ -49,6 +49,19 @@ export interface EstadisticasResponse {
         totalHoras: number;
         vehiculoMasUtilizado: string;
     };
+    personal: {
+        personal: Array<{
+            personalId: string;
+            nombre: string;
+            cargoNombre: string;
+            totalHoras: number;
+            reportesCount: number;
+            porcentaje: number;
+        }>;
+        totalHoras: number;
+        personalMasActivo: string;
+        totalPersonal: number;
+    };
 }
 
 export const obtenerEstadisticas = async (
