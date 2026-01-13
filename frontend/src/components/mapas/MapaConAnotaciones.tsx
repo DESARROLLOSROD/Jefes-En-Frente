@@ -1,5 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
-import { exportarMapaConPins } from '../../utils/mapaExporter';
+import React, { useRef, useState } from 'react';
 
 interface Pin {
   id: string;
