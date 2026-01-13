@@ -93,6 +93,48 @@ export interface IReporteActividades extends Document {
     etiqueta: string;
     color?: string;
   }>;
+  // Anotaciones de texto
+  textosAnotacion?: Array<{
+    id: string;
+    x: number;
+    y: number;
+    texto: string;
+    color: string;
+    fontSize: number;
+  }>;
+  // Dibujos libres
+  dibujosLibres?: Array<{
+    id: string;
+    puntos: Array<{
+      x: number;
+      y: number;
+    }>;
+    color: string;
+    grosor: number;
+    tipo: string;
+  }>;
+  // Formas (rectángulos y círculos)
+  formasMapa?: Array<{
+    id: string;
+    tipo: string;
+    x: number;
+    y: number;
+    ancho?: number;
+    alto?: number;
+    radio?: number;
+    color: string;
+    relleno: boolean;
+  }>;
+  // Medidas
+  medidasMapa?: Array<{
+    id: string;
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+    distancia: number;
+    color: string;
+  }>;
   fechaCreacion: Date;
   historialModificaciones?: Types.Array<IModificacionReporte>;
 }
