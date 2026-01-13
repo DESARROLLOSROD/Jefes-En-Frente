@@ -119,6 +119,42 @@ export interface ReporteActividades {
     etiqueta: string;
     color?: string;
   }>;
+  // Anotaciones del mapa
+  textosAnotacion?: Array<{
+    id: string;
+    x: number;
+    y: number;
+    texto: string;
+    color: string;
+    fontSize: number;
+  }>;
+  dibujosLibres?: Array<{
+    id: string;
+    puntos: { x: number; y: number }[];
+    color: string;
+    grosor: number;
+    tipo: 'linea' | 'flecha';
+  }>;
+  formasMapa?: Array<{
+    id: string;
+    tipo: 'rectangulo' | 'circulo';
+    x: number;
+    y: number;
+    ancho?: number;
+    alto?: number;
+    radio?: number;
+    color: string;
+    relleno: boolean;
+  }>;
+  medidasMapa?: Array<{
+    id: string;
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+    distancia: number;
+    color: string;
+  }>;
   // REMOVER: creadoPor ya no es necesario
   fechaCreacion?: string;
   creadoPor?: string; // Optional as per usage in FormularioReporte.tsx line 47

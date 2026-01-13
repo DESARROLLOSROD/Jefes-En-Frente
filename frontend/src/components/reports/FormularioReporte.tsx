@@ -11,7 +11,7 @@ import SeccionControlMaterial from './sections/SeccionControlMaterial';
 import SeccionControlAgua from './sections/SeccionControlAgua';
 import SeccionPersonal from './sections/SeccionPersonal'; // ✨ NUEVO
 import MapaPinSelector from '../mapas/MapaPinSelector';
-import MapaMultiplesPins from '../mapas/MapaMultiplesPins';
+import MapaConAnotaciones from '../mapas/MapaConAnotaciones';
 
 interface FormularioReporteProps {
   reporteInicial?: ReporteActividades | null;
@@ -64,6 +64,10 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
     observaciones: '',
     ubicacionMapa: undefined,
     pinesMapa: [],
+    textosAnotacion: [],
+    dibujosLibres: [],
+    formasMapa: [],
+    medidasMapa: [],
     creadoPor: user?.nombre || '',
     personalAsignado: [] // ✨ NUEVO
   });
@@ -534,14 +538,22 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
             </div>
             <p className="text-sm text-gray-600 mb-4">
               {usarMultiplesPins
-                ? 'AGREGUE MÚLTIPLES PINS CON ETIQUETAS PARA MARCAR DIFERENTES UBICACIONES'
+                ? 'AGREGUE PINS, ANOTACIONES, DIBUJOS, FORMAS Y MEDIDAS PARA DOCUMENTAR EL TRABAJO'
                 : 'COLOQUE UN PIN EN EL MAPA PARA INDICAR DÓNDE SE REALIZÓ EL TRABAJO (OPCIONAL)'}
             </p>
             {usarMultiplesPins ? (
-              <MapaMultiplesPins
+              <MapaConAnotaciones
                 mapaImagen={`data:${proyecto.mapa.imagen.contentType};base64,${proyecto.mapa.imagen.data}`}
                 pins={formData.pinesMapa || []}
                 onPinsChange={handlePinsMultiplesChange}
+                textos={formData.textosAnotacion || []}
+                onTextosChange={(textos) => setFormData(prev => ({ ...prev, textosAnotacion: textos }))}
+                dibujos={formData.dibujosLibres || []}
+                onDibujosChange={(dibujos) => setFormData(prev => ({ ...prev, dibujosLibres: dibujos }))}
+                formas={formData.formasMapa || []}
+                onFormasChange={(formas) => setFormData(prev => ({ ...prev, formasMapa: formas }))}
+                medidas={formData.medidasMapa || []}
+                onMedidasChange={(medidas) => setFormData(prev => ({ ...prev, medidasMapa: medidas }))}
               />
             ) : (
               <MapaPinSelector
