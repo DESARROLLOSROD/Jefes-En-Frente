@@ -122,6 +122,10 @@ export class ReportesService {
       controlAgua,
       controlMaquinaria,
       pinesMapa,
+      textosAnotacion,
+      dibujosLibres,
+      formasMapa,
+      medidasMapa,
       personalAsignado,
       historialModificaciones
     ] = await Promise.all([
@@ -130,6 +134,10 @@ export class ReportesService {
       this.getControlAgua(id),
       this.getControlMaquinaria(id),
       this.getPinesMapa(id),
+      this.getTextosAnotacion(id),
+      this.getDibujosLibres(id),
+      this.getFormasMapa(id),
+      this.getMedidasMapa(id),
       this.getPersonalAsignado(id),
       this.getHistorialModificaciones(id)
     ]);
@@ -151,6 +159,41 @@ export class ReportesService {
         horasOperacion: mq.horas_operacion
       })),
       pinesMapa: pinesMapa.map((p: any) => ({ ...p, _id: p.id })),
+      textosAnotacion: textosAnotacion.map((t: any) => ({
+        id: t.texto_id,
+        x: parseFloat(t.x),
+        y: parseFloat(t.y),
+        texto: t.texto,
+        color: t.color,
+        fontSize: t.font_size
+      })),
+      dibujosLibres: dibujosLibres.map((d: any) => ({
+        id: d.dibujo_id,
+        puntos: d.puntos,
+        color: d.color,
+        grosor: d.grosor,
+        tipo: d.tipo
+      })),
+      formasMapa: formasMapa.map((f: any) => ({
+        id: f.forma_id,
+        tipo: f.tipo,
+        x: parseFloat(f.x),
+        y: parseFloat(f.y),
+        ancho: f.ancho ? parseFloat(f.ancho) : undefined,
+        alto: f.alto ? parseFloat(f.alto) : undefined,
+        radio: f.radio ? parseFloat(f.radio) : undefined,
+        color: f.color,
+        relleno: f.relleno
+      })),
+      medidasMapa: medidasMapa.map((m: any) => ({
+        id: m.medida_id,
+        x1: parseFloat(m.x1),
+        y1: parseFloat(m.y1),
+        x2: parseFloat(m.x2),
+        y2: parseFloat(m.y2),
+        distancia: parseFloat(m.distancia),
+        color: m.color
+      })),
       personalAsignado: personalAsignado.map((p: any) => ({
         ...p,
         _id: p.id,
@@ -191,6 +234,10 @@ export class ReportesService {
       controlAgua,
       controlMaquinaria,
       pinesMapa,
+      textosAnotacion,
+      dibujosLibres,
+      formasMapa,
+      medidasMapa,
       personalAsignado,
       ...reporteData
     } = input;
@@ -225,6 +272,18 @@ export class ReportesService {
         : Promise.resolve(),
       pinesMapa && pinesMapa.length > 0
         ? this.insertPinesMapa(reporteId, pinesMapa)
+        : Promise.resolve(),
+      textosAnotacion && textosAnotacion.length > 0
+        ? this.insertTextosAnotacion(reporteId, textosAnotacion)
+        : Promise.resolve(),
+      dibujosLibres && dibujosLibres.length > 0
+        ? this.insertDibujosLibres(reporteId, dibujosLibres)
+        : Promise.resolve(),
+      formasMapa && formasMapa.length > 0
+        ? this.insertFormasMapa(reporteId, formasMapa)
+        : Promise.resolve(),
+      medidasMapa && medidasMapa.length > 0
+        ? this.insertMedidasMapa(reporteId, medidasMapa)
         : Promise.resolve(),
       personalAsignado && personalAsignado.length > 0
         ? this.insertPersonalAsignado(reporteId, personalAsignado)
@@ -263,6 +322,10 @@ export class ReportesService {
       controlAgua,
       controlMaquinaria,
       pinesMapa,
+      textosAnotacion,
+      dibujosLibres,
+      formasMapa,
+      medidasMapa,
       personalAsignado,
       ...reporteData
     } = input;
@@ -305,6 +368,22 @@ export class ReportesService {
 
     if (pinesMapa !== undefined) {
       updatePromises.push(this.replacePinesMapa(id, pinesMapa));
+    }
+
+    if (textosAnotacion !== undefined) {
+      updatePromises.push(this.replaceTextosAnotacion(id, textosAnotacion));
+    }
+
+    if (dibujosLibres !== undefined) {
+      updatePromises.push(this.replaceDibujosLibres(id, dibujosLibres));
+    }
+
+    if (formasMapa !== undefined) {
+      updatePromises.push(this.replaceFormasMapa(id, formasMapa));
+    }
+
+    if (medidasMapa !== undefined) {
+      updatePromises.push(this.replaceMedidasMapa(id, medidasMapa));
     }
 
     if (personalAsignado !== undefined) {
@@ -751,6 +830,62 @@ export class ReportesService {
     return data || [];
   }
 
+  private async getTextosAnotacion(reporteId: string): Promise<any[]> {
+    const { data, error } = await supabaseAdmin
+      .from('textos_anotacion')
+      .select('*')
+      .eq('reporte_id', reporteId);
+
+    if (error) {
+      console.error('Error obteniendo textos anotacion:', error);
+      return [];
+    }
+
+    return data || [];
+  }
+
+  private async getDibujosLibres(reporteId: string): Promise<any[]> {
+    const { data, error } = await supabaseAdmin
+      .from('dibujos_libres')
+      .select('*')
+      .eq('reporte_id', reporteId);
+
+    if (error) {
+      console.error('Error obteniendo dibujos libres:', error);
+      return [];
+    }
+
+    return data || [];
+  }
+
+  private async getFormasMapa(reporteId: string): Promise<any[]> {
+    const { data, error } = await supabaseAdmin
+      .from('formas_mapa')
+      .select('*')
+      .eq('reporte_id', reporteId);
+
+    if (error) {
+      console.error('Error obteniendo formas mapa:', error);
+      return [];
+    }
+
+    return data || [];
+  }
+
+  private async getMedidasMapa(reporteId: string): Promise<any[]> {
+    const { data, error} = await supabaseAdmin
+      .from('medidas_mapa')
+      .select('*')
+      .eq('reporte_id', reporteId);
+
+    if (error) {
+      console.error('Error obteniendo medidas mapa:', error);
+      return [];
+    }
+
+    return data || [];
+  }
+
   private async getPersonalAsignado(reporteId: string): Promise<ReportePersonal[]> {
     const { data, error } = await supabaseAdmin
       .from('reporte_personal')
@@ -874,6 +1009,89 @@ export class ReportesService {
     }
   }
 
+  private async insertTextosAnotacion(reporteId: string, items: any[]): Promise<void> {
+    const inserts = items.map(item => ({
+      reporte_id: reporteId,
+      texto_id: item.id,
+      x: item.x,
+      y: item.y,
+      texto: item.texto,
+      color: item.color,
+      font_size: item.fontSize
+    }));
+
+    const { error } = await supabaseAdmin
+      .from('textos_anotacion')
+      .insert(inserts);
+
+    if (error) {
+      throw new Error(`Error insertando textos anotacion: ${error.message}`);
+    }
+  }
+
+  private async insertDibujosLibres(reporteId: string, items: any[]): Promise<void> {
+    const inserts = items.map(item => ({
+      reporte_id: reporteId,
+      dibujo_id: item.id,
+      puntos: item.puntos,
+      color: item.color,
+      grosor: item.grosor,
+      tipo: item.tipo
+    }));
+
+    const { error } = await supabaseAdmin
+      .from('dibujos_libres')
+      .insert(inserts);
+
+    if (error) {
+      throw new Error(`Error insertando dibujos libres: ${error.message}`);
+    }
+  }
+
+  private async insertFormasMapa(reporteId: string, items: any[]): Promise<void> {
+    const inserts = items.map(item => ({
+      reporte_id: reporteId,
+      forma_id: item.id,
+      tipo: item.tipo,
+      x: item.x,
+      y: item.y,
+      ancho: item.ancho,
+      alto: item.alto,
+      radio: item.radio,
+      color: item.color,
+      relleno: item.relleno
+    }));
+
+    const { error } = await supabaseAdmin
+      .from('formas_mapa')
+      .insert(inserts);
+
+    if (error) {
+      throw new Error(`Error insertando formas mapa: ${error.message}`);
+    }
+  }
+
+  private async insertMedidasMapa(reporteId: string, items: any[]): Promise<void> {
+    const inserts = items.map(item => ({
+      reporte_id: reporteId,
+      medida_id: item.id,
+      x1: item.x1,
+      y1: item.y1,
+      x2: item.x2,
+      y2: item.y2,
+      distancia: item.distancia,
+      color: item.color
+    }));
+
+    const { error } = await supabaseAdmin
+      .from('medidas_mapa')
+      .insert(inserts);
+
+    if (error) {
+      throw new Error(`Error insertando medidas mapa: ${error.message}`);
+    }
+  }
+
   private async insertPersonalAsignado(reporteId: string, items: any[]): Promise<void> {
     const inserts = items.map(item => ({
       reporte_id: reporteId,
@@ -922,6 +1140,34 @@ export class ReportesService {
     await supabaseAdmin.from('pines_mapa').delete().eq('reporte_id', reporteId);
     if (items.length > 0) {
       await this.insertPinesMapa(reporteId, items);
+    }
+  }
+
+  private async replaceTextosAnotacion(reporteId: string, items: any[]): Promise<void> {
+    await supabaseAdmin.from('textos_anotacion').delete().eq('reporte_id', reporteId);
+    if (items.length > 0) {
+      await this.insertTextosAnotacion(reporteId, items);
+    }
+  }
+
+  private async replaceDibujosLibres(reporteId: string, items: any[]): Promise<void> {
+    await supabaseAdmin.from('dibujos_libres').delete().eq('reporte_id', reporteId);
+    if (items.length > 0) {
+      await this.insertDibujosLibres(reporteId, items);
+    }
+  }
+
+  private async replaceFormasMapa(reporteId: string, items: any[]): Promise<void> {
+    await supabaseAdmin.from('formas_mapa').delete().eq('reporte_id', reporteId);
+    if (items.length > 0) {
+      await this.insertFormasMapa(reporteId, items);
+    }
+  }
+
+  private async replaceMedidasMapa(reporteId: string, items: any[]): Promise<void> {
+    await supabaseAdmin.from('medidas_mapa').delete().eq('reporte_id', reporteId);
+    if (items.length > 0) {
+      await this.insertMedidasMapa(reporteId, items);
     }
   }
 
