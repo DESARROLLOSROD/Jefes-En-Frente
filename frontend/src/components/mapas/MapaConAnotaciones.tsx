@@ -530,6 +530,8 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
         {/* SVG overlay para dibujos, formas y medidas */}
         <svg
           ref={svgRef}
+          viewBox="0 0 100 100"
+          preserveAspectRatio="none"
           className="absolute top-0 left-0 w-full h-full pointer-events-none"
           style={{
             transform: `scale(${zoom}) translate(${panX / zoom}px, ${panY / zoom}px)`,
@@ -543,7 +545,7 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
               points={dibujo.puntos.map(p => `${p.x},${p.y}`).join(' ')}
               fill="none"
               stroke={dibujo.color}
-              strokeWidth={dibujo.grosor / zoom}
+              strokeWidth={dibujo.grosor * 0.1}
               strokeLinecap="round"
               strokeLinejoin="round"
               className="pointer-events-auto cursor-pointer"
@@ -561,7 +563,7 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
               points={puntosLinea.map(p => `${p.x},${p.y}`).join(' ')}
               fill="none"
               stroke={colorSeleccionado}
-              strokeWidth={grosorLinea / zoom}
+              strokeWidth={grosorLinea * 0.1}
               strokeLinecap="round"
               strokeLinejoin="round"
               opacity="0.5"
@@ -579,7 +581,7 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
                   height={forma.alto}
                   fill={forma.relleno ? forma.color : 'none'}
                   stroke={forma.color}
-                  strokeWidth={2 / zoom}
+                  strokeWidth={0.3}
                   className="pointer-events-auto cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -595,7 +597,7 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
                   r={forma.radio}
                   fill={forma.relleno ? forma.color : 'none'}
                   stroke={forma.color}
-                  strokeWidth={2 / zoom}
+                  strokeWidth={0.3}
                   className="pointer-events-auto cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation();
@@ -616,7 +618,7 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
                 x2={medida.x2}
                 y2={medida.y2}
                 stroke={medida.color}
-                strokeWidth={2 / zoom}
+                strokeWidth={0.3}
                 className="pointer-events-auto cursor-pointer"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -628,12 +630,12 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
                 x={(medida.x1 + medida.x2) / 2}
                 y={(medida.y1 + medida.y2) / 2}
                 fill={medida.color}
-                fontSize={12 / zoom}
+                fontSize={2}
                 fontWeight="bold"
                 textAnchor="middle"
                 className="pointer-events-none"
               >
-                {medida.distancia.toFixed(1)}
+                {medida.distancia.toFixed(1)}m
               </text>
             </g>
           ))}
