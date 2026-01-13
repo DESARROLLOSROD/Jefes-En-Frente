@@ -159,6 +159,7 @@ export interface PinMapa {
   pin_y: number;
   etiqueta?: string;
   color?: string;
+  fijado?: boolean;
 }
 
 // =====================================================

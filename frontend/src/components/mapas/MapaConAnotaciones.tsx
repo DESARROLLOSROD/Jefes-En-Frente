@@ -6,6 +6,7 @@ interface Pin {
   pinY: number;
   etiqueta: string;
   color?: string;
+  fijado?: boolean;
 }
 
 interface TextoAnotacion {
@@ -114,6 +115,8 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
 
   const [elementoSeleccionado, setElementoSeleccionado] = useState<string | null>(null);
   const [tipoElementoSeleccionado, setTipoElementoSeleccionado] = useState<'pin' | 'texto' | 'dibujo' | 'forma' | 'medida' | null>(null);
+  const [pinSeleccionadoParaMedida, setPinSeleccionadoParaMedida] = useState<string | null>(null);
+  const [modoSeleccionPines, setModoSeleccionPines] = useState(false);
 
   const getCoordinatesFromEvent = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = canvasRef.current?.getBoundingClientRect();
@@ -130,6 +133,9 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
 
   const handleMapClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (readOnly || isPanning) return;
+
+    // Si estamos en modo selección de pines para medidas, no hacer nada
+    if (modoSeleccionPines) return;
 
     const coords = getCoordinatesFromEvent(e);
     if (!coords) return;
@@ -161,11 +167,14 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
         }
         break;
       case 'medida':
-        if (!puntoInicialMedida) {
-          setPuntoInicialMedida(coords);
-        } else {
-          agregarMedida(puntoInicialMedida, coords);
-          setPuntoInicialMedida(null);
+        // Solo permitir clicks libres si no estamos en modo selección de pines
+        if (!modoSeleccionPines) {
+          if (!puntoInicialMedida) {
+            setPuntoInicialMedida(coords);
+          } else {
+            agregarMedida(puntoInicialMedida, coords);
+            setPuntoInicialMedida(null);
+          }
         }
         break;
     }
@@ -177,10 +186,33 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
       pinX: x,
       pinY: y,
       etiqueta: etiquetaNueva || `PIN ${pins.length + 1}`,
-      color: colorSeleccionado
+      color: colorSeleccionado,
+      fijado: false
     };
     onPinsChange([...pins, nuevoPin]);
     setEtiquetaNueva('');
+  };
+
+  const toggleFijarPin = (pinId: string) => {
+    const pinsActualizados = pins.map(pin =>
+      pin.id === pinId ? { ...pin, fijado: !pin.fijado } : pin
+    );
+    onPinsChange(pinsActualizados);
+  };
+
+  const seleccionarPinParaMedida = (pinId: string) => {
+    const pin = pins.find(p => p.id === pinId);
+    if (!pin || !pin.fijado) return;
+
+    if (!puntoInicialMedida) {
+      setPuntoInicialMedida({ x: pin.pinX, y: pin.pinY });
+      setPinSeleccionadoParaMedida(pinId);
+    } else {
+      agregarMedida(puntoInicialMedida, { x: pin.pinX, y: pin.pinY });
+      setPuntoInicialMedida(null);
+      setPinSeleccionadoParaMedida(null);
+      setModoSeleccionPines(false);
+    }
   };
 
   const agregarTexto = (x: number, y: number) => {
@@ -308,6 +340,8 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
     setPuntoInicialMedida(null);
     setTextoNuevo('');
     setEtiquetaNueva('');
+    setModoSeleccionPines(false);
+    setPinSeleccionadoParaMedida(null);
   };
 
   return (
@@ -452,6 +486,37 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
                 </>
               )}
 
+              {herramientaActiva === 'medida' && (
+                <div className="space-y-2">
+                  {pins.some(p => p.fijado) && (
+                    <button
+                      type="button"
+                      onClick={() => setModoSeleccionPines(!modoSeleccionPines)}
+                      className={`w-full px-3 py-2 rounded font-semibold text-sm ${
+                        modoSeleccionPines
+                          ? 'bg-green-600 text-white hover:bg-green-700'
+                          : 'bg-blue-600 text-white hover:bg-blue-700'
+                      }`}
+                    >
+                      {modoSeleccionPines ? '✓ MODO PINES FIJOS' : '📍 USAR PINES FIJOS'}
+                    </button>
+                  )}
+                  {modoSeleccionPines && (
+                    <div className="text-xs text-blue-700 bg-blue-50 p-2 rounded">
+                      {!puntoInicialMedida
+                        ? 'Haz click en un pin fijo para el punto inicial'
+                        : 'Haz click en otro pin fijo para el punto final'
+                      }
+                    </div>
+                  )}
+                  {!modoSeleccionPines && puntoInicialMedida && (
+                    <div className="text-xs text-blue-700 bg-blue-50 p-2 rounded">
+                      Haz click en el mapa para el punto final
+                    </div>
+                  )}
+                </div>
+              )}
+
               <button
                 type="button"
                 onClick={cancelarHerramienta}
@@ -464,12 +529,12 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
 
           {/* Información */}
           <div className="mt-2 text-xs text-gray-600">
-            {herramientaActiva === 'pin' && 'Click en el mapa para colocar un pin'}
+            {herramientaActiva === 'pin' && 'Click en el mapa para colocar un pin. Doble-click en un pin para fijarlo/desfijarlo.'}
             {herramientaActiva === 'texto' && 'Escribe el texto y haz click donde quieras colocarlo'}
             {herramientaActiva === 'dibujo' && (dibujandoLinea ? 'Click para agregar puntos. Finaliza el dibujo cuando termines' : 'Click en el mapa para comenzar a dibujar')}
             {(herramientaActiva === 'rectangulo' || herramientaActiva === 'circulo') && (puntoInicialForma ? 'Click en el punto final' : 'Click en el punto inicial')}
-            {herramientaActiva === 'medida' && (puntoInicialMedida ? 'Click en el punto final para medir' : 'Click en el punto inicial')}
-            {!herramientaActiva && `Total: ${pins.length} pins, ${textos.length} textos, ${dibujos.length} dibujos, ${formas.length} formas, ${medidas.length} medidas`}
+            {herramientaActiva === 'medida' && !modoSeleccionPines && (puntoInicialMedida ? 'Click en el punto final para medir' : 'Click en el punto inicial o activa el modo pines fijos')}
+            {!herramientaActiva && `Total: ${pins.length} pins (${pins.filter(p => p.fijado).length} fijados), ${textos.length} textos, ${dibujos.length} dibujos, ${formas.length} formas, ${medidas.length} medidas`}
           </div>
         </div>
       )}
@@ -658,11 +723,23 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
                 height="42"
                 viewBox="0 0 32 42"
                 fill="none"
-                className="drop-shadow-lg cursor-pointer"
+                className={`drop-shadow-lg cursor-pointer ${
+                  modoSeleccionPines && pin.fijado ? 'ring-4 ring-yellow-400 rounded-full' : ''
+                } ${
+                  pinSeleccionadoParaMedida === pin.id ? 'ring-4 ring-green-500 rounded-full' : ''
+                }`}
                 onClick={(e) => {
                   e.stopPropagation();
-                  setElementoSeleccionado(pin.id);
-                  setTipoElementoSeleccionado('pin');
+                  if (modoSeleccionPines && herramientaActiva === 'medida') {
+                    seleccionarPinParaMedida(pin.id);
+                  } else {
+                    setElementoSeleccionado(pin.id);
+                    setTipoElementoSeleccionado('pin');
+                  }
+                }}
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  toggleFijarPin(pin.id);
                 }}
               >
                 <path
@@ -670,9 +747,24 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
                   fill={pin.color || '#EF4444'}
                 />
                 <circle cx="16" cy="15" r="6" fill="white" />
+                {pin.fijado && (
+                  <>
+                    <circle cx="16" cy="15" r="3" fill={pin.color || '#EF4444'} />
+                    <text
+                      x="16"
+                      y="18"
+                      textAnchor="middle"
+                      fontSize="10"
+                      fontWeight="bold"
+                      fill="white"
+                    >
+                      📌
+                    </text>
+                  </>
+                )}
               </svg>
               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-xs px-2 py-1 rounded whitespace-nowrap pointer-events-none">
-                {pin.etiqueta}
+                {pin.etiqueta} {pin.fijado && '📌'}
               </div>
             </div>
           </div>
@@ -703,23 +795,44 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
         ))}
       </div>
 
-      {/* Elemento seleccionado - Botón eliminar */}
+      {/* Elemento seleccionado - Botones */}
       {elementoSeleccionado && !readOnly && (
-        <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded flex items-center justify-between">
-          <span className="text-sm font-medium text-red-800">
-            {tipoElementoSeleccionado === 'pin' && 'Pin seleccionado'}
-            {tipoElementoSeleccionado === 'texto' && 'Texto seleccionado'}
-            {tipoElementoSeleccionado === 'dibujo' && 'Dibujo seleccionado'}
-            {tipoElementoSeleccionado === 'forma' && 'Forma seleccionada'}
-            {tipoElementoSeleccionado === 'medida' && 'Medida seleccionada'}
-          </span>
-          <button
-            type="button"
-            onClick={eliminarElemento}
-            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 font-semibold"
-          >
-            🗑️ ELIMINAR
-          </button>
+        <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-red-800">
+              {tipoElementoSeleccionado === 'pin' && 'Pin seleccionado'}
+              {tipoElementoSeleccionado === 'texto' && 'Texto seleccionado'}
+              {tipoElementoSeleccionado === 'dibujo' && 'Dibujo seleccionado'}
+              {tipoElementoSeleccionado === 'forma' && 'Forma seleccionada'}
+              {tipoElementoSeleccionado === 'medida' && 'Medida seleccionada'}
+            </span>
+            <div className="flex gap-2">
+              {tipoElementoSeleccionado === 'pin' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    toggleFijarPin(elementoSeleccionado);
+                    setElementoSeleccionado(null);
+                    setTipoElementoSeleccionado(null);
+                  }}
+                  className={`px-4 py-2 rounded font-semibold ${
+                    pins.find(p => p.id === elementoSeleccionado)?.fijado
+                      ? 'bg-yellow-600 text-white hover:bg-yellow-700'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+                >
+                  {pins.find(p => p.id === elementoSeleccionado)?.fijado ? '📌 DESFIJAR' : '📌 FIJAR'}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={eliminarElemento}
+                className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 font-semibold"
+              >
+                🗑️ ELIMINAR
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
