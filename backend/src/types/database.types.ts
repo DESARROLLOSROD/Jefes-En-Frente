@@ -304,6 +304,53 @@ export interface ReportePersonal {
   fecha_creacion: string; // TIMESTAMPTZ
 }
 
+export interface TextoAnotacion {
+  id: string; // UUID
+  reporte_id: string; // UUID foreign key
+  texto_id: string; // ID del frontend
+  x: number;
+  y: number;
+  texto: string;
+  color?: string;
+  font_size?: number;
+}
+
+export interface DibujoLibre {
+  id: string; // UUID
+  reporte_id: string; // UUID foreign key
+  dibujo_id: string; // ID del frontend
+  puntos: any; // JSONB array of points
+  color?: string;
+  grosor?: number;
+  tipo?: string;
+}
+
+export interface FormaMapa {
+  id: string; // UUID
+  reporte_id: string; // UUID foreign key
+  forma_id: string; // ID del frontend
+  tipo: string; // rectangle, circle, etc.
+  x?: number;
+  y?: number;
+  ancho?: number;
+  alto?: number;
+  radio?: number;
+  color?: string;
+  relleno?: boolean;
+}
+
+export interface MedidaMapa {
+  id: string; // UUID
+  reporte_id: string; // UUID foreign key
+  medida_id: string; // ID del frontend
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  distancia?: number;
+  color?: string;
+}
+
 // =====================================================
 // TIPOS COMPUESTOS (CON RELACIONES)
 // =====================================================
@@ -318,6 +365,10 @@ export interface ReporteCompleto extends Reporte {
   controlAgua?: ReporteAgua[];
   controlMaquinaria?: ReporteMaquinaria[];
   pinesMapa?: PinMapa[];
+  textosAnotacion?: TextoAnotacion[];
+  dibujosLibres?: DibujoLibre[];
+  formasMapa?: FormaMapa[];
+  medidasMapa?: MedidaMapa[];
   personalAsignado?: ReportePersonal[];
   historialModificaciones?: (ReporteHistorial & {
     cambios?: ReporteCambio[];
@@ -373,6 +424,10 @@ export type CreateReporteInput = Omit<Reporte, 'id' | 'fecha_creacion'> & {
   controlAgua?: Omit<ReporteAgua, 'id' | 'reporte_id'>[];
   controlMaquinaria?: Omit<ReporteMaquinaria, 'id' | 'reporte_id'>[];
   pinesMapa?: Omit<PinMapa, 'id' | 'reporte_id'>[];
+  textosAnotacion?: Omit<TextoAnotacion, 'id' | 'reporte_id'>[];
+  dibujosLibres?: Omit<DibujoLibre, 'id' | 'reporte_id'>[];
+  formasMapa?: Omit<FormaMapa, 'id' | 'reporte_id'>[];
+  medidasMapa?: Omit<MedidaMapa, 'id' | 'reporte_id'>[];
   personalAsignado?: Omit<ReportePersonal, 'id' | 'reporte_id' | 'fecha_creacion'>[];
 };
 
@@ -382,6 +437,10 @@ export type UpdateReporteInput = Partial<Omit<Reporte, 'id' | 'fecha_creacion'>>
   controlAgua?: Omit<ReporteAgua, 'id' | 'reporte_id'>[];
   controlMaquinaria?: Omit<ReporteMaquinaria, 'id' | 'reporte_id'>[];
   pinesMapa?: Omit<PinMapa, 'id' | 'reporte_id'>[];
+  textosAnotacion?: Omit<TextoAnotacion, 'id' | 'reporte_id'>[];
+  dibujosLibres?: Omit<DibujoLibre, 'id' | 'reporte_id'>[];
+  formasMapa?: Omit<FormaMapa, 'id' | 'reporte_id'>[];
+  medidasMapa?: Omit<MedidaMapa, 'id' | 'reporte_id'>[];
   personalAsignado?: Omit<ReportePersonal, 'id' | 'reporte_id' | 'fecha_creacion'>[];
 };
 

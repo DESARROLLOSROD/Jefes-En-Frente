@@ -108,6 +108,44 @@ const reporteActividadesSchema = new Schema({
             etiqueta: String,
             color: String
         }],
+    textosAnotacion: [{
+            id: String,
+            x: Number,
+            y: Number,
+            texto: String,
+            color: String,
+            fontSize: Number
+        }],
+    dibujosLibres: [{
+            id: String,
+            puntos: [{
+                    x: Number,
+                    y: Number
+                }],
+            color: String,
+            grosor: Number,
+            tipo: String
+        }],
+    formasMapa: [{
+            id: String,
+            tipo: String,
+            x: Number,
+            y: Number,
+            ancho: Number,
+            alto: Number,
+            radio: Number,
+            color: String,
+            relleno: Boolean
+        }],
+    medidasMapa: [{
+            id: String,
+            x1: Number,
+            y1: Number,
+            x2: Number,
+            y2: Number,
+            distancia: Number,
+            color: String
+        }],
     fechaCreacion: {
         type: Date,
         default: Date.now
