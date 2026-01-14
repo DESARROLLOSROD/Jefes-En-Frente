@@ -1,4 +1,4 @@
-import { Document, Types } from 'mongoose';
+// Tipos legacy - Ahora usamos database.types.ts de Supabase
 
 export interface IControlAcarreo {
   material: string;
@@ -61,7 +61,7 @@ export interface IModificacionReporte {
   observacion?: string;
 }
 
-export interface IReporteActividades extends Document {
+export interface IReporteActividades {
   fecha: Date;
   ubicacion: string;
   turno: string;
@@ -71,10 +71,10 @@ export interface IReporteActividades extends Document {
   seccionTrabajo: ISeccionTrabajo;
   jefeFrente: string;
   sobrestante: string;
-  controlAcarreo: Types.Array<IControlAcarreo>;
-  controlMaterial: Types.Array<IControlMaterial>;
-  controlAgua: Types.Array<IControlAgua>;
-  controlMaquinaria: Types.Array<IControlMaquinaria>;
+  controlAcarreo: IControlAcarreo[];
+  controlMaterial: IControlMaterial[];
+  controlAgua: IControlAgua[];
+  controlMaquinaria: IControlMaquinaria[];
   observaciones: string;
   creadoPor: string;
   proyectoId: string;
@@ -136,7 +136,7 @@ export interface IReporteActividades extends Document {
     color: string;
   }>;
   fechaCreacion: Date;
-  historialModificaciones?: Types.Array<IModificacionReporte>;
+  historialModificaciones?: IModificacionReporte[];
 }
 
 export interface ApiResponse<T> {
