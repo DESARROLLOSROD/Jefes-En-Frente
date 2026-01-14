@@ -5,7 +5,7 @@ import ListaReportes from '../reports/ListaReportes';
 import GestionUsuarios from '../users/GestionUsuarios';
 import GestionProyectos from '../projects/GestionProyectos';
 import GestionVehiculos from '../vehicles/GestionVehiculos';
-import GestionPersonal from '../personal/GestionPersonal'; // ✨ NUEVO
+import GestionPersonal from '../personal/GestionPersonal';
 import { WorkZoneManager } from '../WorkZones';
 import { EstadisticasReporte } from '../reports/EstadisticasReporte';
 import { ReporteActividades } from '../../types/reporte';
@@ -14,6 +14,7 @@ import { obtenerEstadisticas, EstadisticasResponse } from '../../services/estadi
 import { generarPDFEstadisticas } from '../../utils/pdfEstadisticasGenerator';
 import { generarExcelEstadisticas } from '../../utils/excelEstadisticasGenerator';
 import { Proyecto } from '../../types/gestion';
+import ThemeToggle from '../shared/ThemeToggle';
 import LogoROD from '../../Logo_ROD.png';
 
 const Dashboard: React.FC = () => {
@@ -210,6 +211,7 @@ const Dashboard: React.FC = () => {
                     {loadingGeneral ? '⏳' : '📊 GENERAL'}
                   </button>
                 )}
+                <ThemeToggle />
                 <button
                   onClick={cambiarProyecto}
                   className="bg-orange-500 hover:bg-orange-400 px-3 py-1 rounded text-sm"
@@ -229,7 +231,7 @@ const Dashboard: React.FC = () => {
       </header>
 
       {/* Navegación (Responsive) */}
-      <nav className={`bg-white shadow-lg relative z-10 transition-all duration-300 ${mostrarMenuMovil ? 'block' : 'hidden'} md:block`}>
+      <nav className={`bg-white dark:bg-gray-800 shadow-lg relative z-10 transition-all duration-300 ${mostrarMenuMovil ? 'block' : 'hidden'} md:block`}>
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex flex-col md:flex-row md:space-x-8 space-y-2 md:space-y-0 py-2 md:py-0 overflow-x-auto">
             <button

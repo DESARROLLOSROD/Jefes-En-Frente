@@ -197,31 +197,56 @@ class ApiService {
       let successCount = 0;
       let failedCount = 0;
 
-      for (const item of queue) {
-        try {
-          await this.api.request({
-            method: item.method,
-            url: item.endpoint,
-            data: item.data,
-            _skipOfflineQueue: true, // FLAG CRÍTICO: Evita que el interceptor lo vuelva a encolar si falla
-          } as any);
+      // OPTIMIZACIÓN: Procesar en lotes de 5 items en paralelo
+      const BATCH_SIZE = 5;
+      const batches: typeof queue[] = [];
 
-          await offlineQueue.removeFromQueue(item.id);
-          successCount++;
-        } catch (error) {
-          console.error(`❌ Error al procesar item offline ${item.id}:`, error);
-          await offlineQueue.incrementRetry(item.id);
+      for (let i = 0; i < queue.length; i += BATCH_SIZE) {
+        batches.push(queue.slice(i, i + BATCH_SIZE));
+      }
 
-          // Si ya falló muchas veces, podrías decidir conservarlo o borrarlo
-          // Por ahora lo conservamos hasta 5 intentos
-          const updatedQueue = await offlineQueue.getQueue();
-          const currentItem = updatedQueue.find(qi => qi.id === item.id);
-          if (currentItem && currentItem.retryCount >= 5) {
-            console.log(`🗑️ Eliminando item offline ${item.id} tras 5 intentos fallidos`);
-            await offlineQueue.removeFromQueue(item.id);
+      if (__DEV__) console.log(`📦 Procesando ${batches.length} lotes de hasta ${BATCH_SIZE} items`);
+
+      // Procesar cada lote en paralelo
+      for (const batch of batches) {
+        const results = await Promise.allSettled(
+          batch.map(item =>
+            this.api.request({
+              method: item.method,
+              url: item.endpoint,
+              data: item.data,
+              _skipOfflineQueue: true, // FLAG CRÍTICO: Evita que el interceptor lo vuelva a encolar si falla
+            } as any).then(() => ({ success: true, item }))
+              .catch(error => ({ success: false, item, error }))
+          )
+        );
+
+        // Procesar resultados del lote
+        for (const result of results) {
+          if (result.status === 'fulfilled') {
+            const { success, item, error } = result.value;
+
+            if (success) {
+              await offlineQueue.removeFromQueue(item.id);
+              successCount++;
+            } else {
+              console.error(`❌ Error al procesar item offline ${item.id}:`, error);
+              await offlineQueue.incrementRetry(item.id);
+
+              // Si ya falló muchas veces, eliminarlo
+              const updatedQueue = await offlineQueue.getQueue();
+              const currentItem = updatedQueue.find(qi => qi.id === item.id);
+              if (currentItem && currentItem.retryCount >= 5) {
+                console.log(`🗑️ Eliminando item offline ${item.id} tras 5 intentos fallidos`);
+                await offlineQueue.removeFromQueue(item.id);
+              }
+
+              failedCount++;
+            }
+          } else {
+            // Promise.allSettled nunca debería dar rejected, pero por seguridad
+            failedCount++;
           }
-
-          failedCount++;
         }
       }
 

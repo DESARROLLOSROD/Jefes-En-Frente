@@ -18,3 +18,4 @@ export {
   CapacidadesService,
   TiposVehiculoService
 } from './catalogos.service.js';
+export { default as bibliotecaMapasService } from './bibliotecaMapas.service.js';
