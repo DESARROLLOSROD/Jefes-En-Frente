@@ -248,15 +248,14 @@ const PersonalManagementScreen = () => {
         <View style={styles.filterContainer}>
           <Text style={styles.filterLabel}>Filtrar por cargo:</Text>
           <Picker
-            selectedValue={filterCargo}
-            onValueChange={(value) => {
+            label=""
+            value={filterCargo}
+            onChange={(value) => {
               setFilterCargo(value);
               setTimeout(() => loadPersonal(), 100);
             }}
-            items={[
-              { label: 'Todos', value: '' },
-              ...cargos.map(c => ({ label: c.nombre, value: c._id }))
-            ]}
+            placeholder="Todos"
+            options={cargos.map(c => ({ label: c.nombre, value: c._id }))}
           />
         </View>
       )}
@@ -297,14 +296,12 @@ const PersonalManagementScreen = () => {
                 placeholder="Ej: Juan Pérez López"
               />
 
-              <Text style={styles.inputLabel}>Cargo *</Text>
               <Picker
-                selectedValue={cargoId}
-                onValueChange={setCargoId}
-                items={[
-                  { label: 'Selecciona un cargo', value: '' },
-                  ...cargos.map(c => ({ label: c.nombre, value: c._id }))
-                ]}
+                label="Cargo *"
+                value={cargoId}
+                onChange={setCargoId}
+                placeholder="Selecciona un cargo"
+                options={cargos.map(c => ({ label: c.nombre, value: c._id }))}
               />
 
               <Input

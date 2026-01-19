@@ -202,27 +202,23 @@ const PersonalSection: React.FC<Props> = ({ items, onChange }) => {
                 {editingIndex !== null ? 'Editar Personal' : 'Agregar Personal'}
               </Text>
 
-              <Text style={styles.label}>Personal *</Text>
               <Picker
-                selectedValue={personalId}
-                onValueChange={setPersonalId}
-                items={[
-                  { label: 'Selecciona un personal', value: '' },
-                  ...personal.map(p => ({
-                    label: `${p.nombreCompleto} - ${p.cargo?.nombre || 'Sin cargo'}`,
-                    value: p._id
-                  }))
-                ]}
+                label="Personal *"
+                value={personalId}
+                onChange={setPersonalId}
+                placeholder="Selecciona un personal"
+                options={personal.map(p => ({
+                  label: `${p.nombreCompleto} - ${p.cargo?.nombre || 'Sin cargo'}`,
+                  value: p._id
+                }))}
               />
 
-              <Text style={styles.label}>Cargo (opcional)</Text>
               <Picker
-                selectedValue={cargoId}
-                onValueChange={setCargoId}
-                items={[
-                  { label: 'Usar cargo del personal', value: '' },
-                  ...cargos.map(c => ({ label: c.nombre, value: c._id }))
-                ]}
+                label="Cargo (opcional)"
+                value={cargoId}
+                onChange={setCargoId}
+                placeholder="Usar cargo del personal"
+                options={cargos.map(c => ({ label: c.nombre, value: c._id }))}
               />
 
               <Text style={styles.label}>Actividad Realizada</Text>
