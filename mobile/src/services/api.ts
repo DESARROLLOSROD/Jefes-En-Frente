@@ -535,24 +535,24 @@ class ApiService {
 
   // Cargos
   async getCargos(): Promise<Cargo[]> {
-    const response = await this.api.get<ApiResponse<Cargo[]>>('/personal/catalogos/cargos');
+    const response = await this.api.get<ApiResponse<Cargo[]>>('/personal/cargos');
     return response.data.data || [];
   }
 
   async createCargo(cargo: Partial<Cargo>): Promise<Cargo> {
-    const response = await this.api.post<ApiResponse<Cargo>>('/personal/catalogos/cargos', cargo);
+    const response = await this.api.post<ApiResponse<Cargo>>('/personal/cargos', cargo);
     if (!response.data.data) throw new Error(response.data.error || 'ERROR AL CREAR CARGO');
     return response.data.data;
   }
 
   async updateCargo(id: string, cargo: Partial<Cargo>): Promise<Cargo> {
-    const response = await this.api.put<ApiResponse<Cargo>>(`/personal/catalogos/cargos/${id}`, cargo);
+    const response = await this.api.put<ApiResponse<Cargo>>(`/personal/cargos/${id}`, cargo);
     if (!response.data.data) throw new Error(response.data.error || 'ERROR AL ACTUALIZAR CARGO');
     return response.data.data;
   }
 
   async deleteCargo(id: string): Promise<void> {
-    await this.api.delete(`/personal/catalogos/cargos/${id}`);
+    await this.api.delete(`/personal/cargos/${id}`);
   }
 }
 

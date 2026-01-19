@@ -47,6 +47,7 @@ import ModalControlMaquinaria from '../../components/modals/ModalControlMaquinar
 import PersonalSection from '../../components/reports/PersonalSection';
 import MapPinSelector from '../../components/MapPinSelector';
 import ProjectMap from '../../components/ProjectMap';
+import MapaConAnotaciones from '../../components/maps/MapaConAnotaciones';
 
 type ReportFormNavigationProp = StackNavigationProp<RootStackParamList, 'ReportForm'>;
 type ReportFormRouteProp = RouteProp<RootStackParamList, 'ReportForm'>;
@@ -103,6 +104,13 @@ const ReportFormWebStyle = () => {
   const [pinY, setPinY] = useState<number | undefined>(undefined);
   const [isMultiPin, setIsMultiPin] = useState(false);
   const [pinesMapa, setPinesMapa] = useState<PinMapa[]>([]);
+
+  // Modo de anotaciones avanzadas
+  const [modoAnotaciones, setModoAnotaciones] = useState(false);
+  const [textosAnotacion, setTextosAnotacion] = useState<any[]>([]);
+  const [dibujosAnotacion, setDibujosAnotacion] = useState<any[]>([]);
+  const [formasAnotacion, setFormasAnotacion] = useState<any[]>([]);
+  const [medidasAnotacion, setMedidasAnotacion] = useState<any[]>([]);
 
   // Listas de la sesión (se sincronizan con DB)
   const [sessionOrigenes, setSessionOrigenes] = useState<any[]>([]);
@@ -425,22 +433,64 @@ const ReportFormWebStyle = () => {
               <View style={styles.mapHeaderRefined}>
                 <Text style={styles.mapTitleMain}>UBICACIÓN EN MAPA DEL PROYECTO</Text>
               </View>
-              <View style={styles.multiPinToggleContainer}>
-                <Text style={styles.miniToggleLabel}>MÚLTIPLES PINES: </Text>
+
+              {/* Toggle de modo */}
+              <View style={styles.mapModeContainer}>
                 <TouchableOpacity
-                  style={[styles.miniToggleLarge, isMultiPin && styles.miniToggleActive]}
-                  onPress={() => setIsMultiPin(!isMultiPin)}
+                  style={[styles.mapModeButton, !modoAnotaciones && styles.mapModeButtonActive]}
+                  onPress={() => setModoAnotaciones(false)}
                 >
-                  <Text style={[styles.miniToggleText, isMultiPin && styles.miniToggleTextActive]}>
-                    {isMultiPin ? 'ACTIVADO' : 'DESACTIVADO'}
+                  <Text style={[styles.mapModeText, !modoAnotaciones && styles.mapModeTextActive]}>
+                    📍 PINS SIMPLES
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.mapModeButton, modoAnotaciones && styles.mapModeButtonActive]}
+                  onPress={() => setModoAnotaciones(true)}
+                >
+                  <Text style={[styles.mapModeText, modoAnotaciones && styles.mapModeTextActive]}>
+                    ✏️ ANOTACIONES
                   </Text>
                 </TouchableOpacity>
               </View>
 
-              <Text style={styles.mapInstructionUpper}>COLOQUE UN PIN EN EL MAPA PARA INDICAR DÓNDE SE REALIZÓ EL TRABAJO (OPCIONAL)</Text>
+              {!modoAnotaciones && (
+                <View style={styles.multiPinToggleContainer}>
+                  <Text style={styles.miniToggleLabel}>MÚLTIPLES PINES: </Text>
+                  <TouchableOpacity
+                    style={[styles.miniToggleLarge, isMultiPin && styles.miniToggleActive]}
+                    onPress={() => setIsMultiPin(!isMultiPin)}
+                  >
+                    <Text style={[styles.miniToggleText, isMultiPin && styles.miniToggleTextActive]}>
+                      {isMultiPin ? 'ACTIVADO' : 'DESACTIVADO'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              <Text style={styles.mapInstructionUpper}>
+                {modoAnotaciones
+                  ? 'USA LAS HERRAMIENTAS PARA AGREGAR ANOTACIONES AL MAPA'
+                  : 'COLOQUE UN PIN EN EL MAPA PARA INDICAR DÓNDE SE REALIZÓ EL TRABAJO (OPCIONAL)'}
+              </Text>
 
               <View style={styles.mapFrame}>
-                {isMultiPin ? (
+                {modoAnotaciones ? (
+                  <MapaConAnotaciones
+                    mapaImagen={`data:${selectedProject.mapa.imagen.contentType};base64,${selectedProject.mapa.imagen.data}`}
+                    pins={pinesMapa}
+                    onPinsChange={setPinesMapa}
+                    textos={textosAnotacion}
+                    onTextosChange={setTextosAnotacion}
+                    dibujos={dibujosAnotacion}
+                    onDibujosChange={setDibujosAnotacion}
+                    formas={formasAnotacion}
+                    onFormasChange={setFormasAnotacion}
+                    medidas={medidasAnotacion}
+                    onMedidasChange={setMedidasAnotacion}
+                    readOnly={false}
+                  />
+                ) : isMultiPin ? (
                   <View style={{ height: 350 }}>
                     <ProjectMap
                       proyecto={selectedProject}
@@ -461,7 +511,9 @@ const ReportFormWebStyle = () => {
                   />
                 )}
               </View>
-              <Text style={styles.mapInstructionLower}>CLICK EN EL MAPA PARA COLOCAR EL PIN</Text>
+              {!modoAnotaciones && (
+                <Text style={styles.mapInstructionLower}>CLICK EN EL MAPA PARA COLOCAR EL PIN</Text>
+              )}
             </View>
           )}
 
@@ -669,6 +721,32 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(30,64,175,0.05)',
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(30,64,175,0.1)',
+  },
+  mapModeContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 16,
+    marginVertical: 12,
+    backgroundColor: '#E2E8F0',
+    borderRadius: 10,
+    padding: 4,
+  },
+  mapModeButton: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  mapModeButtonActive: {
+    backgroundColor: '#3B82F6',
+  },
+  mapModeText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#64748B',
+  },
+  mapModeTextActive: {
+    color: '#FFFFFF',
   },
   multiPinToggleRow: { flexDirection: 'row', alignItems: 'center' },
   multiPinToggleContainer: {
