@@ -28,6 +28,7 @@ const PersonalSection: React.FC<Props> = ({ items, onChange }) => {
   const [personal, setPersonal] = useState<Personal[]>([]);
   const [cargos, setCargos] = useState<Cargo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Form state
   const [personalId, setPersonalId] = useState('');
@@ -41,15 +42,21 @@ const PersonalSection: React.FC<Props> = ({ items, onChange }) => {
   }, [selectedProject]);
 
   const loadData = async () => {
+    setLoading(true);
+    setError(null);
     try {
+      // Cargar personal SIN filtro de proyecto para obtener todo el personal disponible
       const [personalData, cargosData] = await Promise.all([
-        ApiService.getPersonal(undefined, selectedProject?._id),
+        ApiService.getPersonal(),
         ApiService.getCargos()
       ]);
+      console.log('Personal cargado:', personalData.length, 'registros');
+      console.log('Cargos cargados:', cargosData.length, 'registros');
       setPersonal(personalData);
       setCargos(cargosData);
-    } catch (error) {
-      console.error('Error cargando datos:', error);
+    } catch (err: any) {
+      console.error('Error cargando datos:', err);
+      setError(err.message || 'Error al cargar datos');
     } finally {
       setLoading(false);
     }
@@ -207,6 +214,13 @@ const PersonalSection: React.FC<Props> = ({ items, onChange }) => {
                 <View style={styles.loadingContainer}>
                   <ActivityIndicator size="large" color={COLORS.primary} />
                   <Text style={styles.loadingText}>Cargando personal...</Text>
+                </View>
+              ) : error ? (
+                <View style={styles.errorContainer}>
+                  <Text style={styles.errorText}>{error}</Text>
+                  <TouchableOpacity style={styles.retryButton} onPress={loadData}>
+                    <Text style={styles.retryButtonText}>Reintentar</Text>
+                  </TouchableOpacity>
                 </View>
               ) : (
                 <>
@@ -432,6 +446,28 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 14,
     color: COLORS.secondary,
+  },
+  errorContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  errorText: {
+    fontSize: 14,
+    color: COLORS.danger,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  retryButton: {
+    backgroundColor: COLORS.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: COLORS.white,
+    fontSize: 14,
+    fontWeight: '600',
   },
 });
 
