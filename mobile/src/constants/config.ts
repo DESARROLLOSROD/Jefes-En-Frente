@@ -22,7 +22,6 @@ if (__DEV__) {
 }
 
 // Colores de la aplicación
-// Colores de la aplicación
 export const COLORS = {
   // Primary - Blue
   primary: '#2563eb', // blue-600
@@ -37,11 +36,20 @@ export const COLORS = {
   white: '#ffffff',
   black: '#000000',
 
+  // Text Colors
+  text: '#1f2937', // gray-800
+  textSecondary: '#6b7280', // gray-500
+
+  // UI Colors
+  background: '#f3f4f6', // gray-100
+  border: '#d1d5db', // gray-300
+
   // Status Colors
   success: '#22c55e',
   danger: '#ef4444',
   warning: '#f59e0b',
   info: '#3b82f6',
+  error: '#ef4444', // alias for danger
 
   // Theme Specific
   orange: {

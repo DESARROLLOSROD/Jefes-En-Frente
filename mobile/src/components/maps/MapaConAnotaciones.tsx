@@ -13,18 +13,11 @@ import {
 } from 'react-native';
 import Svg, { Polyline, Rect, Circle, Line, Text as SvgText, G } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
+import { PinMapa } from '../../types';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-// Interfaces
-interface Pin {
-  id: string;
-  pinX: number;
-  pinY: number;
-  etiqueta: string;
-  color?: string;
-  fijado?: boolean;
-}
+// Interfaces - Usamos PinMapa del sistema de tipos
 
 interface TextoAnotacion {
   id: string;
@@ -65,8 +58,8 @@ interface Medida {
 
 interface MapaConAnotacionesProps {
   mapaImagen: string;
-  pins: Pin[];
-  onPinsChange: (pins: Pin[]) => void;
+  pins: PinMapa[];
+  onPinsChange: (pins: PinMapa[]) => void;
   textos?: TextoAnotacion[];
   onTextosChange?: (textos: TextoAnotacion[]) => void;
   dibujos?: DibujoLibre[];
@@ -195,13 +188,12 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
             text: 'Agregar',
             onPress: (etiqueta) => {
               if (etiqueta) {
-                const nuevoPin: Pin = {
+                const nuevoPin: PinMapa = {
                   id: Date.now().toString(),
                   pinX: x,
                   pinY: y,
                   etiqueta: etiqueta.toUpperCase(),
                   color: colorSeleccionado,
-                  fijado: false,
                 };
                 onPinsChange([...pins, nuevoPin]);
               }
@@ -212,13 +204,12 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
         `PIN ${pins.length + 1}`
       );
     } else {
-      const nuevoPin: Pin = {
+      const nuevoPin: PinMapa = {
         id: Date.now().toString(),
         pinX: x,
         pinY: y,
         etiqueta: etiquetaNueva.toUpperCase(),
         color: colorSeleccionado,
-        fijado: false,
       };
       onPinsChange([...pins, nuevoPin]);
       setEtiquetaNueva('');
