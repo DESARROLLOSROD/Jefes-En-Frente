@@ -51,6 +51,7 @@ const Picker: React.FC<Props> = ({
         transparent={true}
         animationType="slide"
         onRequestClose={() => setModalVisible(false)}
+        statusBarTranslucent={true}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -61,32 +62,39 @@ const Picker: React.FC<Props> = ({
               </TouchableOpacity>
             </View>
 
-            <FlatList
-              data={options}
-              keyExtractor={(item) => item.value}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={[
-                    styles.option,
-                    item.value === value && styles.selectedOption,
-                  ]}
-                  onPress={() => {
-                    onChange(item.value);
-                    setModalVisible(false);
-                  }}
-                >
-                  <Text
+            {options && options.length > 0 ? (
+              <FlatList
+                data={options}
+                keyExtractor={(item, index) => item.value || `option-${index}`}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
                     style={[
-                      styles.optionText,
-                      item.value === value && styles.selectedOptionText,
+                      styles.option,
+                      item.value === value && styles.selectedOption,
                     ]}
+                    onPress={() => {
+                      onChange(item.value);
+                      setModalVisible(false);
+                    }}
                   >
-                    {item.label}
-                  </Text>
-                  {item.value === value && <Text style={styles.checkmark}>✓</Text>}
-                </TouchableOpacity>
-              )}
-            />
+                    <Text
+                      style={[
+                        styles.optionText,
+                        item.value === value && styles.selectedOptionText,
+                      ]}
+                    >
+                      {item.label}
+                    </Text>
+                    {item.value === value && <Text style={styles.checkmark}>✓</Text>}
+                  </TouchableOpacity>
+                )}
+              />
+            ) : (
+              <View style={styles.emptyContainer}>
+                <Text style={styles.emptyText}>No hay opciones disponibles</Text>
+                <Text style={styles.emptySubtext}>Cargando datos o no hay registros</Text>
+              </View>
+            )}
           </View>
         </View>
       </Modal>
@@ -177,6 +185,21 @@ const styles = StyleSheet.create({
   checkmark: {
     fontSize: 20,
     color: COLORS.primary,
+  },
+  emptyContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: COLORS.dark,
+    marginBottom: 8,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: COLORS.secondary,
   },
 });
 

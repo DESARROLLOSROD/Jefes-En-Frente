@@ -8,6 +8,7 @@ import {
   Modal,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { PersonalReporte, Personal, Cargo } from '../../types';
 import { COLORS, THEME } from '../../constants/config';
@@ -202,24 +203,33 @@ const PersonalSection: React.FC<Props> = ({ items, onChange }) => {
                 {editingIndex !== null ? 'Editar Personal' : 'Agregar Personal'}
               </Text>
 
-              <Picker
-                label="Personal *"
-                value={personalId}
-                onChange={setPersonalId}
-                placeholder="Selecciona un personal"
-                options={personal.map(p => ({
-                  label: `${p.nombreCompleto} - ${p.cargo?.nombre || 'Sin cargo'}`,
-                  value: p._id
-                }))}
-              />
+              {loading ? (
+                <View style={styles.loadingContainer}>
+                  <ActivityIndicator size="large" color={COLORS.primary} />
+                  <Text style={styles.loadingText}>Cargando personal...</Text>
+                </View>
+              ) : (
+                <>
+                  <Picker
+                    label="Personal *"
+                    value={personalId}
+                    onChange={setPersonalId}
+                    placeholder="Selecciona un personal"
+                    options={personal.map(p => ({
+                      label: `${p.nombreCompleto} - ${p.cargo?.nombre || 'Sin cargo'}`,
+                      value: p._id
+                    }))}
+                  />
 
-              <Picker
-                label="Cargo (opcional)"
-                value={cargoId}
-                onChange={setCargoId}
-                placeholder="Usar cargo del personal"
-                options={cargos.map(c => ({ label: c.nombre, value: c._id }))}
-              />
+                  <Picker
+                    label="Cargo (opcional)"
+                    value={cargoId}
+                    onChange={setCargoId}
+                    placeholder="Usar cargo del personal"
+                    options={cargos.map(c => ({ label: c.nombre, value: c._id }))}
+                  />
+                </>
+              )}
 
               <Text style={styles.label}>Actividad Realizada</Text>
               <TextInput
@@ -412,6 +422,16 @@ const styles = StyleSheet.create({
     color: COLORS.white,
     fontSize: 16,
     fontWeight: '600',
+  },
+  loadingContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: COLORS.secondary,
   },
 });
 

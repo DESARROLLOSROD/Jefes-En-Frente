@@ -424,17 +424,17 @@ const ReportFormWebStyle = () => {
             <View style={[styles.section, styles.sectionMapBlue]}>
               <View style={styles.mapHeaderRefined}>
                 <Text style={styles.mapTitleMain}>UBICACIÓN EN MAPA DEL PROYECTO</Text>
-                <View style={styles.multiPinToggleRow}>
-                  <Text style={styles.miniToggleLabel}>MÚLTIPLES PINES: </Text>
-                  <TouchableOpacity
-                    style={[styles.miniToggleLarge, isMultiPin && styles.miniToggleActive]}
-                    onPress={() => setIsMultiPin(!isMultiPin)}
-                  >
-                    <Text style={[styles.miniToggleText, isMultiPin && styles.miniToggleTextActive]}>
-                      {isMultiPin ? 'ACTIVADO' : 'DESACTIVADO'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+              </View>
+              <View style={styles.multiPinToggleContainer}>
+                <Text style={styles.miniToggleLabel}>MÚLTIPLES PINES: </Text>
+                <TouchableOpacity
+                  style={[styles.miniToggleLarge, isMultiPin && styles.miniToggleActive]}
+                  onPress={() => setIsMultiPin(!isMultiPin)}
+                >
+                  <Text style={[styles.miniToggleText, isMultiPin && styles.miniToggleTextActive]}>
+                    {isMultiPin ? 'ACTIVADO' : 'DESACTIVADO'}
+                  </Text>
+                </TouchableOpacity>
               </View>
 
               <Text style={styles.mapInstructionUpper}>COLOQUE UN PIN EN EL MAPA PARA INDICAR DÓNDE SE REALIZÓ EL TRABAJO (OPCIONAL)</Text>
@@ -671,6 +671,17 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(30,64,175,0.1)',
   },
   multiPinToggleRow: { flexDirection: 'row', alignItems: 'center' },
+  multiPinToggleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 8,
+  },
   miniToggleLabel: { fontSize: 14, fontWeight: '700', color: '#64748B' },
   miniToggleLarge: {
     backgroundColor: '#E2E8F0',
