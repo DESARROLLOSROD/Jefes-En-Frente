@@ -44,7 +44,7 @@ const FormularioPersonal: React.FC<FormularioPersonalProps> = ({ personal, onClo
                 activo: personal.activo,
                 observaciones: personal.observaciones || '',
                 fotoUrl: personal.fotoUrl || '',
-                proyectos: personal.proyectos ? personal.proyectos.map((p: any) => p._id || p) : []
+                proyectos: personal.proyectos ? personal.proyectos.map((p: any) => p._id || p.id || p) : []
             });
         }
     }, [personal]);

@@ -250,16 +250,41 @@ export class PersonalService {
    * Asignar proyectos a personal
    */
   async asignarProyectos(personalId: string, proyectoIds: string[]): Promise<void> {
-    // Desactivar asignaciones previas
-    await supabaseAdmin
+    // Filtrar solo UUIDs válidos (excluir objetos o valores inválidos)
+    const validProyectoIds = proyectoIds.filter(id =>
+      typeof id === 'string' &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)
+    );
+
+    // Obtener asignaciones activas actuales para este personal
+    const { data: currentAssignments } = await supabaseAdmin
       .from('personal_proyectos')
-      .update({ activo: false, fecha_desasignacion: new Date().toISOString().split('T')[0] })
+      .select('proyecto_id')
       .eq('personal_id', personalId)
       .eq('activo', true);
 
-    // Crear nuevas asignaciones
-    if (proyectoIds.length > 0) {
-      const inserts = proyectoIds.map(proyectoId => ({
+    const currentProyectoIds = new Set(currentAssignments?.map(a => a.proyecto_id) || []);
+    const newProyectoIds = new Set(validProyectoIds);
+
+    // Proyectos a desactivar (están activos pero no en la nueva lista)
+    const toDeactivate = [...currentProyectoIds].filter(id => !newProyectoIds.has(id));
+
+    // Proyectos a activar (están en la nueva lista pero no están activos)
+    const toActivate = validProyectoIds.filter(id => !currentProyectoIds.has(id));
+
+    // Desactivar proyectos que ya no están asignados
+    if (toDeactivate.length > 0) {
+      await supabaseAdmin
+        .from('personal_proyectos')
+        .update({ activo: false, fecha_desasignacion: new Date().toISOString().split('T')[0] })
+        .eq('personal_id', personalId)
+        .eq('activo', true)
+        .in('proyecto_id', toDeactivate);
+    }
+
+    // Crear nuevas asignaciones solo para proyectos que no están activos
+    if (toActivate.length > 0) {
+      const inserts = toActivate.map(proyectoId => ({
         personal_id: personalId,
         proyecto_id: proyectoId,
         fecha_asignacion: new Date().toISOString().split('T')[0],
@@ -294,7 +319,14 @@ export class PersonalService {
       return [];
     }
 
-    return data?.map((item: any) => item.proyectos).filter(Boolean) || [];
+    // Formatear proyectos para que tengan _id (compatibilidad con frontend)
+    return data?.map((item: any) => {
+      if (!item.proyectos) return null;
+      return {
+        ...item.proyectos,
+        _id: item.proyectos.id
+      };
+    }).filter(Boolean) || [];
   }
 
   /**
