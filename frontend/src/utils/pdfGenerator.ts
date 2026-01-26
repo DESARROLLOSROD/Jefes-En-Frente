@@ -261,21 +261,36 @@ export const generarPDFReporte = async (
             yPosition = 20;
         }
 
-        doc.setFontSize(13);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(DARK);
-        doc.text(title, 15, yPosition);
+        // --- Custom Header Styling (Restoring Legacy Look) ---
+        // Blue/Purple background rectangle
+        doc.setFillColor(76, 78, 201); // #4C4EC9
+        doc.rect(15, yPosition, pageWidth - 30, 8, 'F');
 
-        yPosition += 5;
+        // White text for title
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(255, 255, 255);
+
+        // Centering text vertically in the 8-unit high rectangle
+        doc.text(title.toUpperCase(), 18, yPosition + 5.5);
+
+        yPosition += 8; // Move position below the header
 
         if (body.length === 0) {
+            // "Sin registros" styling
+            yPosition += 5; // Spacing before text
             doc.setFont("helvetica", "italic");
             doc.setFontSize(10);
-            doc.setTextColor(GRAY);
-            doc.text("Sin registros", 15, yPosition + 5);
-            yPosition += 15;
+            doc.setTextColor(GRAY); // Gray color for placeholder
+
+            // Centering "Sin registros" horizontally
+            doc.text("Sin registros", pageWidth / 2, yPosition, { align: "center" });
+
+            yPosition += 10; // Spacing after
             return;
         }
+
+        doc.setTextColor(DARK); // Reset text color for table
 
         autoTable(doc, {
             startY: yPosition,
@@ -283,20 +298,34 @@ export const generarPDFReporte = async (
             body,
             theme: "grid",
             headStyles: {
-                fillColor: ORANGE,
+                fillColor: [76, 78, 201], // Matches header color #4C4EC9
                 textColor: [255, 255, 255],
                 fontStyle: "bold",
+                halign: 'center' // Center header text
             },
-            alternateRowStyles: { fillColor: [245, 245, 245] },
+            alternateRowStyles: {
+                fillColor: [245, 245, 250] // Very light blue/gray for alternates
+            },
             styles: {
-                fontSize: 9,
+                fontSize: 8, // Slightly smaller font for better fit
                 textColor: DARK,
                 cellPadding: 3,
-
+                halign: 'center' // Default center alignment for data
+            },
+            columnStyles: {
+                0: { halign: 'center' }, // Specific alignments if needed
+                1: { halign: 'left' }    // Material/Description usually left-aligned
             },
             margin: { left: 15, right: 15 },
+            didDrawPage: (data) => {
+                // Ensure yPosition is updated correctly after autoTable
+                if (data.cursor) {
+                    yPosition = data.cursor.y + 10;
+                }
+            }
         });
 
+        // Manually update yPosition as well just in case
         yPosition = (doc as any).lastAutoTable.finalY + 15;
     };
 
@@ -325,7 +354,7 @@ export const generarPDFReporte = async (
 
     renderTable(
         "CONTROL DE MAQUINARIA",
-        [["Tipo", "No. Económico", "Horómetro Inicial", "Horómetro Final", "Horas", "Operador", "Actividad"]],
+        [["Tipo", "No. Econ.", "Hor. Inicial", "Hor. Final", "Horas", "Operador", "Actividad"]],
         datos.controlMaquinaria
     );
 
