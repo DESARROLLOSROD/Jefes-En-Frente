@@ -218,11 +218,11 @@ router.get('/', async (req: AuthRequest, res) => {
       filtros.proyecto_id = proyectoId as string;
     }
 
-    const reportes = await reportesService.getReportes({
-      ...filtros,
-      limit: limit ? parseInt(limit as string) : undefined,
-      offset: offset ? parseInt(offset as string) : undefined
-    });
+    const reportes = await reportesService.getReportes(
+      filtros,
+      limit ? parseInt(limit as string) : undefined,
+      offset ? parseInt(offset as string) : undefined
+    );
 
     console.log(`✅ ${reportes.length} reportes encontrados`);
 
