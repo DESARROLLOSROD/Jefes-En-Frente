@@ -23,19 +23,27 @@ const WorkZoneCard: React.FC<WorkZoneCardProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
 
+  // Valores seguros con defaults
+  const zoneName = zone?.name || 'SIN NOMBRE';
+  const zoneDescription = zone?.description || '';
+  const zoneStatus = zone?.status || 'active';
+  const zoneSections = zone?.sections || [];
+  const zoneId = zone?._id || zone?.id || '';
+
   const handleDelete = () => {
-    if (window.confirm(`¿ESTÁS SEGURO DE ELIMINAR LA ZONA "${zone.name.toUpperCase()}" Y TODAS SUS SECCIONES?`)) {
-      onDelete(zone._id);
+    if (window.confirm(`¿ESTAS SEGURO DE ELIMINAR LA ZONA "${zoneName.toUpperCase()}" Y TODAS SUS SECCIONES?`)) {
+      onDelete(zoneId);
     }
   };
 
   const handleDeleteSection = (sectionId: string, sectionName: string) => {
-    if (window.confirm(`¿ESTÁS SEGURO DE ELIMINAR LA SECCIÓN "${sectionName.toUpperCase()}"?`)) {
-      onDeleteSection(zone._id, sectionId);
+    const name = sectionName || 'SIN NOMBRE';
+    if (window.confirm(`¿ESTAS SEGURO DE ELIMINAR LA SECCION "${name.toUpperCase()}"?`)) {
+      onDeleteSection(zoneId, sectionId);
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status?: string) => {
     switch (status) {
       case 'active':
         return 'active';
@@ -48,7 +56,7 @@ const WorkZoneCard: React.FC<WorkZoneCardProps> = ({
     }
   };
 
-  const getStatusText = (status: string) => {
+  const getStatusText = (status?: string) => {
     switch (status) {
       case 'active':
         return 'ACTIVO';
@@ -57,7 +65,7 @@ const WorkZoneCard: React.FC<WorkZoneCardProps> = ({
       case 'completed':
         return 'COMPLETADO';
       default:
-        return status.toUpperCase();
+        return 'ACTIVO';
     }
   };
 
@@ -65,7 +73,7 @@ const WorkZoneCard: React.FC<WorkZoneCardProps> = ({
     <div className="work-zone-card">
       <div className="work-zone-card-header">
         <div className="work-zone-header-top">
-          <h3 className="work-zone-name">📍 {zone.name.toUpperCase()}</h3>
+          <h3 className="work-zone-name">📍 {zoneName.toUpperCase()}</h3>
           {isAdmin && (
             <div className="work-zone-actions">
               <button className="btn-icon" onClick={() => onEdit(zone)} title="EDITAR ZONA">
@@ -78,14 +86,14 @@ const WorkZoneCard: React.FC<WorkZoneCardProps> = ({
           )}
         </div>
 
-        {zone.description && <p className="work-zone-description">{zone.description.toUpperCase()}</p>}
+        {zoneDescription && <p className="work-zone-description">{zoneDescription.toUpperCase()}</p>}
 
         <div className="work-zone-meta">
-          <span className={`status-badge ${getStatusColor(zone.status)}`}>
-            {getStatusText(zone.status)}
+          <span className={`status-badge ${getStatusColor(zoneStatus)}`}>
+            {getStatusText(zoneStatus)}
           </span>
           <span className="sections-count">
-            {zone.sections.length} {zone.sections.length === 1 ? 'SECCIÓN' : 'SECCIONES'}
+            {zoneSections.length} {zoneSections.length === 1 ? 'SECCION' : 'SECCIONES'}
           </span>
         </div>
       </div>
@@ -98,39 +106,46 @@ const WorkZoneCard: React.FC<WorkZoneCardProps> = ({
 
         {isExpanded && (
           <>
-            {zone.sections.length > 0 ? (
+            {zoneSections.length > 0 ? (
               <ul className="sections-list">
-                {zone.sections.map((section) => (
-                  <li key={section.id} className="section-item">
-                    <div className="section-info">
-                      <div className="section-name">{section.name.toUpperCase()}</div>
-                      {section.description && (
-                        <div className="section-description">{section.description.toUpperCase()}</div>
-                      )}
-                      <span className={`status-badge ${getStatusColor(section.status)}`}>
-                        {getStatusText(section.status)}
-                      </span>
-                    </div>
-                    {isAdmin && (
-                      <div className="section-actions">
-                        <button
-                          className="btn-icon"
-                          onClick={() => onEditSection(zone._id, section)}
-                          title="EDITAR SECCIÓN"
-                        >
-                          ✏️
-                        </button>
-                        <button
-                          className="btn-icon"
-                          onClick={() => handleDeleteSection(section.id, section.name)}
-                          title="ELIMINAR SECCIÓN"
-                        >
-                          🗑️
-                        </button>
+                {zoneSections.map((section) => {
+                  const sectionName = section?.name || 'SIN NOMBRE';
+                  const sectionDescription = section?.description || '';
+                  const sectionStatus = section?.status || 'active';
+                  const sectionId = section?.id || '';
+
+                  return (
+                    <li key={sectionId} className="section-item">
+                      <div className="section-info">
+                        <div className="section-name">{sectionName.toUpperCase()}</div>
+                        {sectionDescription && (
+                          <div className="section-description">{sectionDescription.toUpperCase()}</div>
+                        )}
+                        <span className={`status-badge ${getStatusColor(sectionStatus)}`}>
+                          {getStatusText(sectionStatus)}
+                        </span>
                       </div>
-                    )}
-                  </li>
-                ))}
+                      {isAdmin && (
+                        <div className="section-actions">
+                          <button
+                            className="btn-icon"
+                            onClick={() => onEditSection(zoneId, section)}
+                            title="EDITAR SECCION"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            className="btn-icon"
+                            onClick={() => handleDeleteSection(sectionId, sectionName)}
+                            title="ELIMINAR SECCION"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <p style={{ color: '#6b7280', fontSize: '0.875rem', textAlign: 'center', padding: '1rem' }}>
@@ -139,8 +154,8 @@ const WorkZoneCard: React.FC<WorkZoneCardProps> = ({
             )}
 
             {isAdmin && (
-              <button className="btn-add-section" onClick={() => onAddSection(zone._id)}>
-                + AGREGAR SECCIÓN
+              <button className="btn-add-section" onClick={() => onAddSection(zoneId)}>
+                + AGREGAR SECCION
               </button>
             )}
           </>

@@ -463,8 +463,8 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
               >
                 <option value="">SELECCIONAR ZONA</option>
                 {zonasDisponibles.map((zona) => (
-                  <option key={zona._id} value={zona._id}>
-                    {zona.name.toUpperCase()}
+                  <option key={zona._id || zona.id} value={zona._id || zona.id}>
+                    {(zona.name || 'SIN NOMBRE').toUpperCase()}
                   </option>
                 ))}
               </select>
@@ -479,9 +479,9 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
                 disabled={!zonaSeleccionada || zonaSeleccionada.sections.length === 0}
               >
                 <option value="">SELECCIONAR SECCIÓN</option>
-                {zonaSeleccionada?.sections.filter(s => s.status === 'active').map((seccion) => (
+                {(zonaSeleccionada?.sections || []).filter(s => s.status === 'active').map((seccion) => (
                   <option key={seccion.id} value={seccion.id}>
-                    {seccion.name.toUpperCase()}
+                    {(seccion.name || 'SIN NOMBRE').toUpperCase()}
                   </option>
                 ))}
               </select>

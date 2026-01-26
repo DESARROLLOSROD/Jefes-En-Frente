@@ -9,6 +9,7 @@ export interface Section {
 
 export interface WorkZone {
   _id: string;
+  id?: string; // Alias para compatibilidad con backend
   projectId: string;
   name: string;
   description?: string;

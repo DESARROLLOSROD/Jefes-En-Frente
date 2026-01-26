@@ -83,13 +83,25 @@ router.post('/', verificarAdminOSupervisor, async (req, res) => {
             };
             return res.status(400).json(response);
         }
-        // Crear perfil en la tabla perfiles (el trigger debería crearlo automáticamente, pero lo hacemos explícito)
-        await usuariosService.createPerfil({
-            id: authData.user.id,
-            nombre,
-            rol: rol || 'jefe en frente',
-            activo: activo !== undefined ? activo : true
-        });
+        // Verificar si el perfil ya fue creado por el trigger
+        const existingPerfil = await usuariosService.getUsuarioById(authData.user.id);
+        if (!existingPerfil) {
+            // Si el trigger no lo creo, crearlo manualmente
+            await usuariosService.createPerfil({
+                id: authData.user.id,
+                nombre,
+                rol: rol || 'jefe en frente',
+                activo: activo !== undefined ? activo : true
+            });
+        }
+        else {
+            // Si ya existe, actualizar con los datos proporcionados
+            await usuariosService.updatePerfil(authData.user.id, {
+                nombre,
+                rol: rol || 'jefe en frente',
+                activo: activo !== undefined ? activo : true
+            });
+        }
         // Asignar proyectos si se proporcionaron
         if (proyectos && Array.isArray(proyectos) && proyectos.length > 0) {
             await usuariosService.assignProyectosToUsuario(authData.user.id, proyectos);

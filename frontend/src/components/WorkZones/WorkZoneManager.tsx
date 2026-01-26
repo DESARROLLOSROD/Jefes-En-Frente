@@ -131,7 +131,7 @@ const WorkZoneManager: React.FC<WorkZoneManagerProps> = ({ projectId, isAdmin })
   if (error) {
     return (
       <div className="error-state">
-        <p className="error-message">{error.toUpperCase()}</p>
+        <p className="error-message">{(error || 'ERROR DESCONOCIDO').toUpperCase()}</p>
         <button className="btn-primary" onClick={loadZones}>
           REINTENTAR
         </button>
