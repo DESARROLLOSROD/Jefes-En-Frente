@@ -187,12 +187,12 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
   const opcionesDestinos = listaDestinos.map(d => d.nombre);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-4 rounded-t-lg">
+        <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-t-lg">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold">{title}</h2>
+            <h2 className="text-xl sm:text-2xl font-bold">{title}</h2>
             <button
               onClick={onClose}
               className="text-white hover:text-gray-200 transition-colors text-2xl font-bold"
@@ -205,7 +205,7 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
         </div>
 
         {/* Body */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Material */}
             <div>
@@ -347,7 +347,7 @@ const ModalControlAcarreo: React.FC<ModalControlAcarreoProps> = ({
           </div>
 
           {/* Footer */}
-          <div className="flex justify-end space-x-3 mt-8 pt-6 border-t border-gray-200">
+          <div className="flex justify-end space-x-3 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
             <button
               type="button"
               onClick={onClose}

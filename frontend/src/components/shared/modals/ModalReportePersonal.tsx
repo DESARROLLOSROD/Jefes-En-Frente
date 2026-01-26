@@ -78,13 +78,15 @@ const ModalReportePersonal: React.FC<ModalReportePersonalProps> = ({
 
     if (!isOpen) return null;
 
+    const title = dataInicial ? '✏️ EDITAR PERSONAL' : '➕ ASIGNAR PERSONAL';
+
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg flex flex-col max-h-[90vh]">
-                <div className="p-6 border-b bg-green-50 rounded-t-lg flex-none">
-                    <h3 className="text-xl font-bold text-green-800">
-                        {dataInicial ? '✏️ EDITAR PERSONAL' : '➕ ASIGNAR PERSONAL'}
-                    </h3>
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-2 sm:p-4">
+            <div className="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+                <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 sm:px-6 py-3 sm:py-4 rounded-t-lg">
+                    <div className="flex justify-between items-center">
+                        <h2 className="text-xl sm:text-2xl font-bold">{title}</h2>
+                    </div>
                 </div>
 
                 <div className="flex-1 overflow-y-auto p-6">
@@ -105,11 +107,10 @@ const ModalReportePersonal: React.FC<ModalReportePersonalProps> = ({
                                     onFocus={() => setShowSuggestions(true)}
                                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                                     placeholder="BUSCAR PERSONAL..."
-                                    className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 uppercase ${
-                                        formData.personalId
+                                    className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 uppercase ${formData.personalId
                                             ? 'border-green-500 bg-green-50 focus:ring-green-500'
                                             : 'border-gray-300 focus:ring-green-500'
-                                    }`}
+                                        }`}
                                     autoComplete="off"
                                 />
                                 <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400">
@@ -198,7 +199,8 @@ const ModalReportePersonal: React.FC<ModalReportePersonalProps> = ({
                     </form>
                 </div>
 
-                <div className="flex justify-end space-x-3 p-6 border-t bg-gray-50 rounded-b-lg flex-none">
+                {/* Footer */}
+                <div className="flex justify-end space-x-3 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200 p-6 bg-gray-50 rounded-b-lg flex-none">
                     <button
                         type="button"
                         onClick={onClose}
@@ -211,8 +213,8 @@ const ModalReportePersonal: React.FC<ModalReportePersonalProps> = ({
                         onClick={handleSubmit}
                         disabled={!formData.personalId || !formData.cargoId}
                         className={`px-4 py-2 rounded-lg font-semibold shadow-md text-white ${(!formData.personalId || !formData.cargoId)
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-green-600 hover:bg-green-700'
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : 'bg-green-600 hover:bg-green-700'
                             }`}
                     >
                         GUARDAR

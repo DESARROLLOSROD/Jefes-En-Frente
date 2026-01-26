@@ -237,14 +237,14 @@ const GestionProyectos: React.FC = () => {
             </div>
 
             {mostrarModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg p-0 max-w-md w-full flex flex-col max-h-[90vh]">
-                        <div className="p-6 border-b flex-none">
+                <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-2 sm:p-4">
+                    <div className="bg-white rounded-lg p-0 max-w-md w-full flex flex-col max-h-[95vh] sm:max-h-[90vh]">
+                        <div className="p-4 sm:p-6 border-b flex-none">
                             <h3 className="text-xl font-bold">
                                 {proyectoEditar ? 'EDITAR PROYECTO' : 'NUEVO PROYECTO'}
                             </h3>
                         </div>
-                        <div className="p-6 overflow-y-auto flex-1">
+                        <div className="p-4 sm:p-6 overflow-y-auto flex-1">
                             <form onSubmit={handleSubmit}>
                                 <div className="mb-4">
                                     <label className="block text-gray-700 text-sm font-bold mb-2 uppercase">
@@ -357,8 +357,8 @@ const GestionProyectos: React.FC = () => {
 
             {/* Modal de biblioteca de mapas */}
             {mostrarBiblioteca && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
-                    <div className="bg-white rounded-lg p-6 max-w-6xl w-full m-4 max-h-[90vh] overflow-y-auto">
+                <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+                    <div className="bg-white rounded-lg p-4 sm:p-6 max-w-6xl w-full m-2 sm:m-4 max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
                         <div className="flex justify-between items-center mb-4">
                             <h3 className="text-xl font-bold">SELECCIONAR MAPA DE BIBLIOTECA</h3>
                             <button

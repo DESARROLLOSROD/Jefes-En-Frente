@@ -138,16 +138,16 @@ const FormularioPersonal: React.FC<FormularioPersonalProps> = ({ personal, onClo
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-2xl w-full max-w-lg md:max-w-2xl flex flex-col max-h-[90vh]">
-                <div className="p-6 border-b bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg flex-none">
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-2 sm:p-4">
+            <div className="bg-white rounded-lg shadow-2xl w-full max-w-2xl flex flex-col max-h-[95vh] sm:max-h-[90vh]">
+                <div className="p-4 sm:p-6 border-b bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-t-lg flex-none">
                     <h3 className="text-xl font-bold">
                         {personal ? '✏️ EDITAR PERSONAL' : '➕ NUEVO PERSONAL'}
                     </h3>
                 </div>
 
                 <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-                    <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                    <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
                         {error && (
                             <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
                                 <p>{error}</p>
@@ -236,7 +236,7 @@ const FormularioPersonal: React.FC<FormularioPersonalProps> = ({ personal, onClo
                             </div>
 
                             {/* Activo */}
-                            <div className="flex items-center mt-6">
+                            <div className="flex items-center md:mt-6">
                                 <label className="flex items-center cursor-pointer">
                                     <input
                                         type="checkbox"
@@ -287,7 +287,7 @@ const FormularioPersonal: React.FC<FormularioPersonalProps> = ({ personal, onClo
                         </div>
                     </div>
 
-                    <div className="flex justify-end space-x-3 p-6 border-t bg-gray-50 rounded-b-lg">
+                    <div className="flex justify-end space-x-3 p-4 sm:p-6 border-t bg-gray-50 rounded-b-lg">
                         <button
                             type="button"
                             onClick={onClose}

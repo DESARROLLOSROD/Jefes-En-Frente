@@ -117,17 +117,17 @@ const FormularioUsuario: React.FC<FormularioUsuarioProps> = ({ usuario, onClose,
     };
 
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-2 sm:p-4">
+            <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] flex flex-col">
                 {/* Header */}
-                <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-t-lg flex-none">
+                <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-4 sm:p-6 rounded-t-lg flex-none">
                     <h2 className="text-2xl font-bold">
                         {usuario ? '✏️ EDITAR USUARIO' : '➕ NUEVO USUARIO'}
                     </h2>
                 </div>
 
                 {/* Form */}
-                <div className="overflow-y-auto flex-1 p-6">
+                <div className="overflow-y-auto flex-1 p-4 sm:p-6">
                     <form onSubmit={handleSubmit} className="space-y-4">
                         {/* Nombre */}
                         <div>
