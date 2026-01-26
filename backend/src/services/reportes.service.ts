@@ -146,19 +146,54 @@ export class ReportesService {
 
     return {
       ...formattedReporte,
-      controlAcarreo: controlAcarreo.map((a: any) => ({ ...a, _id: a.id })),
-      controlMaterial: controlMaterial.map((m: any) => ({ ...m, _id: m.id })),
-      controlAgua: controlAgua.map((w: any) => ({ ...w, _id: w.id, noEconomico: w.no_economico })),
+      controlAcarreo: controlAcarreo.map((a: any) => ({
+        _id: a.id,
+        material: a.material,
+        noViaje: a.no_viaje,
+        capacidad: a.capacidad,
+        volSuelto: a.vol_suelto,
+        capaNo: a.capa_no,
+        elevacionAriza: a.elevacion_ariza,
+        capaOrigen: a.capa_origen,
+        destino: a.destino
+      })),
+      controlMaterial: controlMaterial.map((m: any) => ({
+        _id: m.id,
+        material: m.material,
+        unidad: m.unidad,
+        cantidad: m.cantidad,
+        zona: m.zona,
+        elevacion: m.elevacion
+      })),
+      controlAgua: controlAgua.map((w: any) => ({
+        _id: w.id,
+        noEconomico: w.no_economico,
+        viaje: w.viaje,
+        capacidad: w.capacidad,
+        volumen: w.volumen,
+        origen: w.origen,
+        destino: w.destino
+      })),
       controlMaquinaria: controlMaquinaria.map((mq: any) => ({
-        ...mq,
         _id: mq.id,
+        tipo: mq.tipo,
+        modelo: mq.modelo,
         vehiculoId: mq.vehiculo_id,
         numeroEconomico: mq.numero_economico,
         horometroInicial: mq.horometro_inicial,
         horometroFinal: mq.horometro_final,
-        horasOperacion: mq.horas_operacion
+        horasOperacion: mq.horas_operacion,
+        operador: mq.operador,
+        actividad: mq.actividad
       })),
-      pinesMapa: pinesMapa.map((p: any) => ({ ...p, _id: p.id })),
+      pinesMapa: pinesMapa.map((p: any) => ({
+        _id: p.id,
+        id: p.pin_id,
+        pinX: p.pin_x,
+        pinY: p.pin_y,
+        etiqueta: p.etiqueta,
+        color: p.color
+      })),
       textosAnotacion: textosAnotacion.map((t: any) => ({
         id: t.texto_id,
         x: parseFloat(t.x),
@@ -195,21 +230,22 @@ export class ReportesService {
         color: m.color
       })),
       personalAsignado: personalAsignado.map((p: any) => ({
-        ...p,
         _id: p.id,
         reporteId: p.reporte_id,
         personalId: p.personal_id,
         cargoId: p.cargo_id,
         actividadRealizada: p.actividad_realizada,
         horasTrabajadas: p.horas_trabajadas,
+        observaciones: p.observaciones,
         fechaCreacion: p.fecha_creacion
       })),
       historialModificaciones: historialModificaciones.map((h: any) => ({
-        ...h,
         _id: h.id,
         fechaModificacion: h.fecha_modificacion,
         usuarioId: h.usuario_id,
-        usuarioNombre: h.usuario_nombre
+        usuarioNombre: h.usuario_nombre,
+        observacion: h.observacion,
+        cambios: h.cambios || []
       }))
     };
   }
