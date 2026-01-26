@@ -3,6 +3,7 @@ export interface ApiResponse<T> {
   data?: T;
   error?: string;
   message?: string;
+  offline?: boolean; // Indica si la respuesta fue guardada offline
 }
 
 export interface ICapacidadCatalog {

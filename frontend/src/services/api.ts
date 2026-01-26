@@ -1,8 +1,9 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { ReporteActividades, ApiResponse } from '../types/reporte';
 import { Proyecto, Vehiculo } from '../types/gestion';
 import { Personal, PersonalInput, CatCargo } from '../types/personal';
 import { API_BASE_URL } from '../config/env';
+import { offlineQueue } from '../utils/offlineQueue';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -20,6 +21,25 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// Helper para verificar si estamos offline
+const isOfflineError = (error: AxiosError): boolean => {
+  return !navigator.onLine ||
+         error.code === 'ERR_NETWORK' ||
+         error.code === 'ECONNABORTED' ||
+         error.message === 'Network Error';
+};
+
+// Helper para encolar requests cuando estamos offline
+const queueOfflineRequest = (
+  method: 'POST' | 'PUT' | 'DELETE' | 'PATCH',
+  url: string,
+  data?: any,
+  priority: number = 1
+): string => {
+  const fullUrl = `${API_BASE_URL}${url}`;
+  return offlineQueue.addToQueue(method, fullUrl, data, priority);
+};
 
 // Variable para evitar múltiples refreshes simultáneos
 let isRefreshing = false;
@@ -119,9 +139,18 @@ export const reporteService = {
       const response = await api.post<ApiResponse<ReporteActividades>>('/reportes', reporte);
       return response.data;
     } catch (error: any) {
+      if (isOfflineError(error)) {
+        queueOfflineRequest('POST', '/reportes', reporte, 2);
+        return {
+          success: true,
+          data: { ...reporte, _id: `offline_${Date.now()}`, fechaCreacion: new Date().toISOString() } as ReporteActividades,
+          offline: true,
+          message: 'Guardado localmente. Se sincronizara cuando haya conexion.'
+        };
+      }
       return {
         success: false,
-        error: error.response?.data?.error || 'Error de conexión',
+        error: error.response?.data?.error || 'Error de conexion',
       };
     }
   },
@@ -132,9 +161,11 @@ export const reporteService = {
       const response = await api.get<ApiResponse<ReporteActividades[]>>(url);
       return response.data;
     } catch (error: any) {
+      // Para GET, intentar usar cache del service worker
       return {
         success: false,
-        error: error.response?.data?.error || 'Error de conexión',
+        error: error.response?.data?.error || 'Error de conexion',
+        offline: isOfflineError(error)
       };
     }
   },
@@ -144,9 +175,18 @@ export const reporteService = {
       const response = await api.put<ApiResponse<ReporteActividades>>(`/reportes/${id}`, reporte);
       return response.data;
     } catch (error: any) {
+      if (isOfflineError(error)) {
+        queueOfflineRequest('PUT', `/reportes/${id}`, reporte, 2);
+        return {
+          success: true,
+          data: { ...reporte, _id: id } as ReporteActividades,
+          offline: true,
+          message: 'Cambios guardados localmente. Se sincronizaran cuando haya conexion.'
+        };
+      }
       return {
         success: false,
-        error: error.response?.data?.error || 'Error de conexión',
+        error: error.response?.data?.error || 'Error de conexion',
       };
     }
   },
@@ -156,9 +196,17 @@ export const reporteService = {
       const response = await api.delete<ApiResponse<null>>(`/reportes/${id}`);
       return response.data;
     } catch (error: any) {
+      if (isOfflineError(error)) {
+        queueOfflineRequest('DELETE', `/reportes/${id}`, undefined, 1);
+        return {
+          success: true,
+          offline: true,
+          message: 'Eliminacion pendiente. Se sincronizara cuando haya conexion.'
+        };
+      }
       return {
         success: false,
-        error: error.response?.data?.error || 'Error de conexión',
+        error: error.response?.data?.error || 'Error de conexion',
       };
     }
   },

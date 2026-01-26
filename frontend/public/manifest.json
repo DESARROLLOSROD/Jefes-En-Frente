@@ -1,0 +1,43 @@
+{
+  "name": "Jefes en Frente - Sistema Minero",
+  "short_name": "Jefes en Frente",
+  "description": "Sistema de gestion de reportes y actividades mineras",
+  "theme_color": "#1e3a5f",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Nuevo Reporte",
+      "short_name": "Reporte",
+      "description": "Crear un nuevo reporte de actividades",
+      "url": "/reportes/nuevo",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Ver Reportes",
+      "short_name": "Reportes",
+      "description": "Ver lista de reportes",
+      "url": "/reportes",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    }
+  ]
+}

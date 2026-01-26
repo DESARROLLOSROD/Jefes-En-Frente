@@ -44,7 +44,8 @@
       "Bash(timeout 10 npm run dev:*)",
       "Bash(timeout 15 npm start)",
       "Bash(ls:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(cd:*)"
     ],
     "deny": [],
     "ask": []

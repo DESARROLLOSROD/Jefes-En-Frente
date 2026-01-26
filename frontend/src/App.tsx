@@ -3,6 +3,7 @@ import { useAuth } from './contexts/AuthContext';
 import Login from './components/auth/Login';
 import SeleccionarProyecto from './components/projects/SeleccionarProyecto';
 import Dashboard from './components/dashboard/Dashboard';
+import NetworkStatusIndicator from './components/shared/NetworkStatusIndicator';
 
 const App: React.FC = () => {
   const { user, loading, proyecto } = useAuth();
@@ -26,7 +27,12 @@ const App: React.FC = () => {
     return <SeleccionarProyecto />;
   }
 
-  return <Dashboard />;
+  return (
+    <>
+      <Dashboard />
+      <NetworkStatusIndicator />
+    </>
+  );
 };
 
 export default App;
