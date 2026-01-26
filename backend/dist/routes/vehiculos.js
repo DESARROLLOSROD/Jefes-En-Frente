@@ -4,8 +4,8 @@ import { verificarToken, verificarAdmin, verificarAdminOSupervisor } from './aut
 export const vehiculosRouter = express.Router();
 // Middleware de autenticación para todas las rutas
 vehiculosRouter.use(verificarToken);
-// Obtener todos los vehículos (admin o supervisor)
-vehiculosRouter.get('/', verificarAdminOSupervisor, async (req, res) => {
+// Obtener todos los vehículos (todos los usuarios autenticados pueden ver)
+vehiculosRouter.get('/', async (req, res) => {
     try {
         const vehiculos = await vehiculosService.getVehiculos();
         const response = {
@@ -23,8 +23,8 @@ vehiculosRouter.get('/', verificarAdminOSupervisor, async (req, res) => {
         res.status(500).json(response);
     }
 });
-// Obtener vehículos por proyecto (admin o supervisor)
-vehiculosRouter.get('/proyecto/:proyectoId', verificarAdminOSupervisor, async (req, res) => {
+// Obtener vehículos por proyecto (todos los usuarios autenticados pueden ver)
+vehiculosRouter.get('/proyecto/:proyectoId', async (req, res) => {
     try {
         const { proyectoId } = req.params;
         const vehiculos = await vehiculosService.getVehiculosByProyecto(proyectoId);
