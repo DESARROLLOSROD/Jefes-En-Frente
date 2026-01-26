@@ -237,7 +237,13 @@ export class ReportesService {
         actividadRealizada: p.actividad_realizada,
         horasTrabajadas: p.horas_trabajadas,
         observaciones: p.observaciones,
-        fechaCreacion: p.fecha_creacion
+        fechaCreacion: p.fecha_creacion,
+        personal: p.personal ? {
+          nombreCompleto: p.personal.nombre_completo
+        } : undefined,
+        cargo: p.cargo ? {
+          nombre: p.cargo.nombre
+        } : undefined
       })),
       historialModificaciones: historialModificaciones.map((h: any) => ({
         _id: h.id,
@@ -909,7 +915,7 @@ export class ReportesService {
   }
 
   private async getMedidasMapa(reporteId: string): Promise<any[]> {
-    const { data, error} = await supabaseAdmin
+    const { data, error } = await supabaseAdmin
       .from('medidas_mapa')
       .select('*')
       .eq('reporte_id', reporteId);
@@ -925,7 +931,11 @@ export class ReportesService {
   private async getPersonalAsignado(reporteId: string): Promise<ReportePersonal[]> {
     const { data, error } = await supabaseAdmin
       .from('reporte_personal')
-      .select('*')
+      .select(`
+        *,
+        personal:personal(nombre_completo),
+        cargo:cat_cargos(nombre)
+      `)
       .eq('reporte_id', reporteId);
 
     if (error) {
