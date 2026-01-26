@@ -369,6 +369,12 @@ export class ReportesService {
       formasMapa,
       medidasMapa,
       personalAsignado,
+      // @ts-ignore - Estos campos vienen del frontend pero no están en la tabla reportes
+      usuario_modificacion_id,
+      // @ts-ignore
+      usuario_modificacion_nombre,
+      // @ts-ignore
+      observacion_modificacion,
       ...reporteData
     } = input;
 
