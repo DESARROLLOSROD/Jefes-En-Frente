@@ -358,33 +358,35 @@ export const generarPDFReporte = async (
         datos.controlMaquinaria
     );
 
-    // @ts-ignore
-    if (datos.controlPersonal && datos.controlPersonal.length) {
-        renderTable(
-            "CONTROL DE PERSONAL",
-            [["Personal", "Cargo", "Actividad", "Horas", "Observaciones"]],
-            // @ts-ignore
-            datos.controlPersonal
-        );
-    }
+    renderTable(
+        "CONTROL DE PERSONAL",
+        [["Personal", "Cargo", "Actividad", "Horas", "Observaciones"]],
+        // @ts-ignore
+        datos.controlPersonal || []
+    );
 
     // ------------------------------------------------
     // OBSERVACIONES
     // ------------------------------------------------
+    if (yPosition > 240) {
+        doc.addPage();
+        addFooter();
+        yPosition = 20;
+    }
+
+    // Header styling for Observaciones match renderTable
+    doc.setFillColor(76, 78, 201); // #4C4EC9
+    doc.rect(15, yPosition, pageWidth - 30, 8, 'F');
+
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(255, 255, 255);
+    doc.text("OBSERVACIONES", 18, yPosition + 5.5);
+
+    yPosition += 8; // Move below header
+
     if (reporte.observaciones) {
-        if (yPosition > 240) {
-            doc.addPage();
-            addFooter();
-            yPosition = 20;
-        }
-
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(DARK);
-        doc.setFontSize(13);
-        doc.text("OBSERVACIONES", 15, yPosition);
-
-        yPosition += 8;
-
+        yPosition += 5;
         doc.setFont("helvetica", "normal");
         doc.setTextColor(GRAY);
         doc.setFontSize(10);
@@ -395,6 +397,16 @@ export const generarPDFReporte = async (
         );
 
         doc.text(textLines, 15, yPosition);
+        // Update yPosition based on text height
+        yPosition += textLines.length * 5 + 5;
+    } else {
+        // Empty state for Observaciones
+        yPosition += 5;
+        doc.setFont("helvetica", "italic");
+        doc.setFontSize(10);
+        doc.setTextColor(GRAY);
+        doc.text("Sin observaciones", pageWidth / 2, yPosition, { align: "center" });
+        yPosition += 10;
     }
 
     // ------------------------------------------------
