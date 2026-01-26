@@ -83,11 +83,21 @@ const ListaReportes: React.FC<ListaReportesProps> = ({ onEditar }) => {
 
   const handleDescargarPDF = async (reporte: ReporteActividades) => {
     try {
-      await generarPDFReporte(reporte, proyecto?.nombre || 'PROYECTO', proyecto?.mapa);
-      mostrarMensaje('PDF GENERADO CORRECTAMENTE');
+      // Fetch full report data to include nested arrays (Personal, etc.)
+      setLoading(true); // Optional: show loading state
+      const response = await reporteService.obtenerReporte(reporte._id!);
+
+      if (response.success && response.data) {
+        await generarPDFReporte(response.data, proyecto?.nombre || 'PROYECTO', proyecto?.mapa);
+        mostrarMensaje('PDF GENERADO CORRECTAMENTE');
+      } else {
+        mostrarMensaje('ERROR AL OBTENER DATOS COMPLETOS DEL REPORTE');
+      }
     } catch (error) {
       mostrarMensaje('ERROR AL GENERAR PDF');
       console.error('Error generando PDF:', error);
+    } finally {
+      setLoading(false);
     }
   };
 

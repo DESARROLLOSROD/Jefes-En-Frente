@@ -25,9 +25,9 @@ api.interceptors.request.use((config) => {
 // Helper para verificar si estamos offline
 const isOfflineError = (error: AxiosError): boolean => {
   return !navigator.onLine ||
-         error.code === 'ERR_NETWORK' ||
-         error.code === 'ECONNABORTED' ||
-         error.message === 'Network Error';
+    error.code === 'ERR_NETWORK' ||
+    error.code === 'ECONNABORTED' ||
+    error.message === 'Network Error';
 };
 
 // Helper para encolar requests cuando estamos offline
@@ -162,6 +162,19 @@ export const reporteService = {
       return response.data;
     } catch (error: any) {
       // Para GET, intentar usar cache del service worker
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Error de conexion',
+        offline: isOfflineError(error)
+      };
+    }
+  },
+
+  async obtenerReporte(id: string): Promise<ApiResponse<ReporteActividades>> {
+    try {
+      const response = await api.get<ApiResponse<ReporteActividades>>(`/reportes/${id}`);
+      return response.data;
+    } catch (error: any) {
       return {
         success: false,
         error: error.response?.data?.error || 'Error de conexion',
