@@ -479,7 +479,7 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
                 disabled={!zonaSeleccionada || zonaSeleccionada.sections.length === 0}
               >
                 <option value="">SELECCIONAR SECCIÓN</option>
-                {(zonaSeleccionada?.sections || []).filter(s => s.status === 'active').map((seccion) => (
+                {(zonaSeleccionada?.sections || []).filter(s => !s.status || s.status === 'active').map((seccion) => (
                   <option key={seccion.id} value={seccion.id}>
                     {(seccion.name || 'SIN NOMBRE').toUpperCase()}
                   </option>
