@@ -268,6 +268,15 @@ export const generarPDFReporte = async (
 
         yPosition += 5;
 
+        if (body.length === 0) {
+            doc.setFont("helvetica", "italic");
+            doc.setFontSize(10);
+            doc.setTextColor(GRAY);
+            doc.text("Sin registros", 15, yPosition + 5);
+            yPosition += 15;
+            return;
+        }
+
         autoTable(doc, {
             startY: yPosition,
             head,
@@ -296,37 +305,29 @@ export const generarPDFReporte = async (
     // ------------------------------------------------
     const datos = prepararDatosReporte(reporte);
 
-    if (datos.controlAcarreo.length) {
-        renderTable(
-            "CONTROL DE ACARREOS",
-            [["#", "Material", "No. Viaje", "Capacidad", "Vol. Suelto", "Capa", "Elevación", "Origen", "Destino"]],
-            datos.controlAcarreo
-        );
-    }
+    renderTable(
+        "CONTROL DE ACARREOS",
+        [["#", "Material", "No. Viaje", "Capacidad", "Vol. Suelto", "Capa", "Elevación", "Origen", "Destino"]],
+        datos.controlAcarreo
+    );
 
-    if (datos.controlMaterial.length) {
-        renderTable(
-            "CONTROL DE MATERIAL",
-            [["Material", "Unidad", "Cantidad", "Zona", "Elevación"]],
-            datos.controlMaterial
-        );
-    }
+    renderTable(
+        "CONTROL DE MATERIAL",
+        [["Material", "Unidad", "Cantidad", "Zona", "Elevación"]],
+        datos.controlMaterial
+    );
 
-    if (datos.controlAgua.length) {
-        renderTable(
-            "CONTROL DE AGUA",
-            [["No. Económico", "Viaje", "Capacidad", "Volumen", "Origen", "Destino"]],
-            datos.controlAgua
-        );
-    }
+    renderTable(
+        "CONTROL DE AGUA",
+        [["No. Económico", "Viaje", "Capacidad", "Volumen", "Origen", "Destino"]],
+        datos.controlAgua
+    );
 
-    if (datos.controlMaquinaria.length) {
-        renderTable(
-            "CONTROL DE MAQUINARIA",
-            [["Tipo", "No. Económico", "Horómetro Inicial", "Horómetro Final", "Horas", "Operador", "Actividad"]],
-            datos.controlMaquinaria
-        );
-    }
+    renderTable(
+        "CONTROL DE MAQUINARIA",
+        [["Tipo", "No. Económico", "Horómetro Inicial", "Horómetro Final", "Horas", "Operador", "Actividad"]],
+        datos.controlMaquinaria
+    );
 
     // @ts-ignore
     if (datos.controlPersonal && datos.controlPersonal.length) {

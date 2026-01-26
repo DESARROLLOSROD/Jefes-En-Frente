@@ -6,14 +6,14 @@ export const prepararDatosReporte = (reporte: ReporteActividades) => {
     const controlAcarreo: any[] = reporte.controlAcarreo?.length
         ? reporte.controlAcarreo.map((i, index) => [
             (index + 1).toString(),
-            i.material,
-            i.noViaje.toString(),
-            `${i.capacidad} m³`,
-            `${i.volSuelto} m³`,
-            i.capaNo,
-            i.elevacionAriza,
-            i.capaOrigen,
-            i.destino,
+            i.material || '-',
+            (i.noViaje || 0).toString(),
+            i.capacidad || '0',
+            i.volSuelto || '0.00',
+            i.capaNo || '-',
+            i.elevacionAriza || '-',
+            i.capaOrigen || '-',
+            i.destino || '-',
         ])
         : [];
 
@@ -25,29 +25,29 @@ export const prepararDatosReporte = (reporte: ReporteActividades) => {
         controlAcarreo.push([
             '',
             { content: 'TOTAL VOLUMEN:', colSpan: 3, styles: { fontStyle: 'bold', halign: 'right' } } as any,
-            { content: `${totalVolumenAcarreo} m³`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220] } } as any,
-            '', '', '', ''
+            { content: `${totalVolumenAcarreo} m³`, styles: { fontStyle: 'bold', fillColor: [230, 230, 230] } } as any,
+            '', '', '', '', ''
         ]);
     }
 
     const controlMaterial = reporte.controlMaterial?.length
         ? reporte.controlMaterial.map(i => [
-            i.material,
-            i.unidad,
-            i.cantidad,
-            i.zona,
-            i.elevacion,
+            i.material || '-',
+            i.unidad || '-',
+            i.cantidad || '0',
+            i.zona || '-',
+            i.elevacion || '-',
         ])
         : [];
 
     const controlAgua = reporte.controlAgua?.length
         ? reporte.controlAgua.map(i => [
-            i.noEconomico,
-            i.viaje.toString(),
-            `${i.capacidad} m³`,
-            `${i.volumen} m³`,
-            i.origen,
-            i.destino,
+            i.noEconomico || '-',
+            (i.viaje || 0).toString(),
+            i.capacidad || '0',
+            i.volumen || '0.00',
+            i.origen || '-',
+            i.destino || '-',
         ])
         : [];
 
@@ -58,7 +58,7 @@ export const prepararDatosReporte = (reporte: ReporteActividades) => {
     if (controlAgua.length > 0) {
         (controlAgua as any[]).push([
             { content: 'TOTAL VOLUMEN:', colSpan: 3, styles: { fontStyle: 'bold', halign: 'right' } } as any,
-            { content: `${totalVolumenAgua} m³`, styles: { fontStyle: 'bold', fillColor: [220, 220, 220] } } as any,
+            { content: `${totalVolumenAgua} m³`, styles: { fontStyle: 'bold', fillColor: [230, 230, 230] } } as any,
             '', ''
         ]);
     }
