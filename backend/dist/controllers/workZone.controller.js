@@ -222,7 +222,8 @@ export const addSection = async (req, res) => {
         const newSection = {
             id: uuidv4(),
             name,
-            description: description || ''
+            description: description || '',
+            status: 'active'
         };
         const updatedSections = [...(zone.sections || []), newSection];
         // Actualizar zona
