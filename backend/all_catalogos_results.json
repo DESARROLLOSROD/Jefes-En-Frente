@@ -1,0 +1,22 @@
+{
+  "Materiales": {
+    "status": "PASS",
+    "count": 5
+  },
+  "Origenes": {
+    "status": "PASS",
+    "count": 2
+  },
+  "Destinos": {
+    "status": "PASS",
+    "count": 2
+  },
+  "Capacidades": {
+    "status": "PASS",
+    "count": 4
+  },
+  "TiposVehiculo": {
+    "status": "PASS",
+    "count": 3
+  }
+}

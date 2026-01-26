@@ -30,7 +30,7 @@ router.get('/materiales', async (req: AuthRequest, res) => {
     console.error('Error en GET /materiales:', error);
     const response: ApiResponse<null> = {
       success: false,
-      error: 'Error al obtener materiales'
+      error: 'Error al obtener materiales: ' + error.message
     };
     res.status(500).json(response);
   }
@@ -49,7 +49,7 @@ router.post('/materiales', verificarAdmin, async (req: AuthRequest, res) => {
     console.error('Error en POST /materiales:', error);
     const response: ApiResponse<null> = {
       success: false,
-      error: 'Error al crear material'
+      error: 'Error al crear material: ' + (error.message || error)
     };
     res.status(500).json(response);
   }
@@ -68,7 +68,7 @@ router.put('/materiales/:id', verificarAdmin, async (req: AuthRequest, res) => {
     console.error('Error en PUT /materiales/:id:', error);
     const response: ApiResponse<null> = {
       success: false,
-      error: 'Error al actualizar material'
+      error: 'Error al actualizar material: ' + (error.message || error)
     };
     res.status(500).json(response);
   }
@@ -86,7 +86,7 @@ router.delete('/materiales/:id', verificarAdmin, async (req: AuthRequest, res) =
     console.error('Error en DELETE /materiales/:id:', error);
     const response: ApiResponse<null> = {
       success: false,
-      error: 'Error al eliminar material'
+      error: 'Error al eliminar material: ' + (error.message || error)
     };
     res.status(500).json(response);
   }
@@ -107,7 +107,7 @@ router.get('/origenes', async (req: AuthRequest, res) => {
     console.error('Error en GET /origenes:', error);
     const response: ApiResponse<null> = {
       success: false,
-      error: 'Error al obtener orígenes'
+      error: 'Error al obtener orígenes: ' + error.message
     };
     res.status(500).json(response);
   }
@@ -126,7 +126,7 @@ router.post('/origenes', verificarAdmin, async (req: AuthRequest, res) => {
     console.error('Error en POST /origenes:', error);
     const response: ApiResponse<null> = {
       success: false,
-      error: 'Error al crear origen'
+      error: 'Error al crear origen: ' + (error.message || error)
     };
     res.status(500).json(response);
   }
@@ -145,7 +145,7 @@ router.put('/origenes/:id', verificarAdmin, async (req: AuthRequest, res) => {
     console.error('Error en PUT /origenes/:id:', error);
     const response: ApiResponse<null> = {
       success: false,
-      error: 'Error al actualizar origen'
+      error: 'Error al actualizar origen: ' + (error.message || error)
     };
     res.status(500).json(response);
   }
@@ -163,7 +163,7 @@ router.delete('/origenes/:id', verificarAdmin, async (req: AuthRequest, res) => 
     console.error('Error en DELETE /origenes/:id:', error);
     const response: ApiResponse<null> = {
       success: false,
-      error: 'Error al eliminar origen'
+      error: 'Error al eliminar origen: ' + (error.message || error)
     };
     res.status(500).json(response);
   }
@@ -184,7 +184,7 @@ router.get('/destinos', async (req: AuthRequest, res) => {
     console.error('Error en GET /destinos:', error);
     const response: ApiResponse<null> = {
       success: false,
-      error: 'Error al obtener destinos'
+      error: 'Error al obtener destinos: ' + error.message
     };
     res.status(500).json(response);
   }
@@ -203,7 +203,7 @@ router.post('/destinos', verificarAdmin, async (req: AuthRequest, res) => {
     console.error('Error en POST /destinos:', error);
     const response: ApiResponse<null> = {
       success: false,
-      error: 'Error al crear destino'
+      error: 'Error al crear destino: ' + (error.message || error)
     };
     res.status(500).json(response);
   }
@@ -222,7 +222,7 @@ router.put('/destinos/:id', verificarAdmin, async (req: AuthRequest, res) => {
     console.error('Error en PUT /destinos/:id:', error);
     const response: ApiResponse<null> = {
       success: false,
-      error: 'Error al actualizar destino'
+      error: 'Error al actualizar destino: ' + (error.message || error)
     };
     res.status(500).json(response);
   }
@@ -240,7 +240,7 @@ router.delete('/destinos/:id', verificarAdmin, async (req: AuthRequest, res) => 
     console.error('Error en DELETE /destinos/:id:', error);
     const response: ApiResponse<null> = {
       success: false,
-      error: 'Error al eliminar destino'
+      error: 'Error al eliminar destino: ' + (error.message || error)
     };
     res.status(500).json(response);
   }
@@ -261,7 +261,7 @@ router.get('/capacidades', async (req: AuthRequest, res) => {
     console.error('Error en GET /capacidades:', error);
     const response: ApiResponse<null> = {
       success: false,
-      error: 'Error al obtener capacidades'
+      error: 'Error al obtener capacidades: ' + error.message
     };
     res.status(500).json(response);
   }
@@ -280,7 +280,7 @@ router.post('/capacidades', verificarAdmin, async (req: AuthRequest, res) => {
     console.error('Error en POST /capacidades:', error);
     const response: ApiResponse<null> = {
       success: false,
-      error: 'Error al crear capacidad'
+      error: 'Error al crear capacidad: ' + (error.message || error)
     };
     res.status(500).json(response);
   }
@@ -299,7 +299,7 @@ router.put('/capacidades/:id', verificarAdmin, async (req: AuthRequest, res) => 
     console.error('Error en PUT /capacidades/:id:', error);
     const response: ApiResponse<null> = {
       success: false,
-      error: 'Error al actualizar capacidad'
+      error: 'Error al actualizar capacidad: ' + (error.message || error)
     };
     res.status(500).json(response);
   }
@@ -317,7 +317,7 @@ router.delete('/capacidades/:id', verificarAdmin, async (req: AuthRequest, res) 
     console.error('Error en DELETE /capacidades/:id:', error);
     const response: ApiResponse<null> = {
       success: false,
-      error: 'Error al eliminar capacidad'
+      error: 'Error al eliminar capacidad: ' + (error.message || error)
     };
     res.status(500).json(response);
   }
@@ -338,7 +338,7 @@ router.get('/tipos-vehiculo', async (req: AuthRequest, res) => {
     console.error('Error en GET /tipos-vehiculo:', error);
     const response: ApiResponse<null> = {
       success: false,
-      error: 'Error al obtener tipos de vehículo'
+      error: 'Error al obtener tipos de vehículo: ' + error.message
     };
     res.status(500).json(response);
   }

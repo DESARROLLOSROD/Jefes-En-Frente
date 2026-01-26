@@ -40,7 +40,7 @@ class CatalogoService<T extends { id: string; activo: boolean; fecha_creacion: s
 
     if (error) {
       console.error(`Error obteniendo ${this.tableName}:`, error);
-      throw new Error(`Error obteniendo ${this.tableName}: ${error.message}`);
+      throw new Error(`DB_ERROR: ${error.message} (${error.code})`);
     }
 
     return (data || []).map(item => this.formatForFrontend(item));
