@@ -332,14 +332,18 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
     if (vehiculo) {
       setFormData(prev => {
         const nuevaMaquinaria = [...prev.controlMaquinaria];
+        // Use the last known final horometer as the start for this new entry
+        // If no final exists yet, fall back to the initial one
+        const startHorometer = vehiculo.horometroFinal || vehiculo.horometroInicial || 0;
+
         nuevaMaquinaria[index] = {
           ...nuevaMaquinaria[index],
           vehiculoId: vehiculo._id,
           nombre: vehiculo.nombre,
           tipo: vehiculo.tipo,
           numeroEconomico: vehiculo.noEconomico,
-          horometroInicial: vehiculo.horometroInicial,
-          horometroFinal: vehiculo.horometroFinal || vehiculo.horometroInicial,
+          horometroInicial: startHorometer,
+          horometroFinal: startHorometer, // Initialize final same as start (0 hours)
           horasOperacion: 0
         };
         return { ...prev, controlMaquinaria: nuevaMaquinaria };
