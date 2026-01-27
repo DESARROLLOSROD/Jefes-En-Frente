@@ -26,6 +26,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
         nombre: '',
         tipo: '' as string,
         horometroInicial: 0,
+        horometroLlegada: 0,
         horometroFinal: 0,
         horasOperacion: 0,
         noEconomico: '',
@@ -141,6 +142,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                 nombre: vehiculo.nombre,
                 tipo: vehiculo.tipo,
                 horometroInicial: vehiculo.horometroInicial,
+                horometroLlegada: vehiculo.horometroLlegada || 0,
                 horometroFinal: vehiculo.horometroFinal || 0,
                 horasOperacion: vehiculo.horasOperacion || 0,
                 noEconomico: vehiculo.noEconomico,
@@ -154,6 +156,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                 nombre: '',
                 tipo: '',
                 horometroInicial: 0,
+                horometroLlegada: 0,
                 horometroFinal: 0,
                 horasOperacion: 0,
                 noEconomico: '',
@@ -235,6 +238,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">TIPO</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">NO. ECONÓMICO</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">HORÓMETRO INICIAL</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">HORÓMETRO LLEGADA</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">HORÓMETRO FINAL</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">HORAS OPERACIÓN</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">PROYECTOS</th>
@@ -252,6 +256,9 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                         </td>
                                         <td className="px-6 py-4 text-sm text-gray-900 font-semibold">{vehiculo.noEconomico}</td>
                                         <td className="px-6 py-4 text-sm text-gray-900">{vehiculo.horometroInicial.toLocaleString()}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-900">
+                                            {vehiculo.horometroLlegada ? vehiculo.horometroLlegada.toLocaleString() : '-'}
+                                        </td>
                                         <td className="px-6 py-4 text-sm text-gray-900">
                                             {vehiculo.horometroFinal ? vehiculo.horometroFinal.toLocaleString() : '-'}
                                         </td>
@@ -382,7 +389,7 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                 {/* Horómetro Inicial */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        HORÓMETRO INICIAL *{editando && <span className="text-xs text-gray-500"> (SE ACTUALIZA AUTOMÁTICAMENTE DESDE REPORTES)</span>}
+                                        HORÓMETRO INICIAL {editando && <span className="text-xs text-gray-500"> (NO EDITABLE)</span>}
                                     </label>
                                     <input
                                         type="number"
@@ -394,6 +401,22 @@ const GestionVehiculos: React.FC<GestionVehiculosProps> = ({ userRol = 'admin' }
                                         className={`w-full px-3 py-2 border border-gray-300 rounded-lg ${editando ? 'bg-gray-100 cursor-not-allowed' : 'focus:ring-2 focus:ring-orange-500'}`}
                                         placeholder="0"
                                     />
+                                </div>
+                                {/* Horómetro Llegada */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        HORÓMETRO LLEGADA {editando && <span className="text-xs text-gray-500"> (NO EDITABLE)</span>}
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={formData.horometroLlegada}
+                                        readOnly={editando}
+                                        onChange={e => setFormData({ ...formData, horometroLlegada: Number(e.target.value) })}
+                                        className={`w-full px-3 py-2 border border-gray-300 rounded-lg ${editando ? 'bg-gray-100 cursor-not-allowed' : 'focus:ring-2 focus:ring-orange-500'}`}
+                                        placeholder="0"
+                                    />
+                                    <p className="text-xs text-gray-500 mt-1">VALOR CON EL QUE LA MÁQUINA LLEGÓ AL PROYECTO (ESTÁTICO)</p>
                                 </div>
                                 {/* Horómetro Final */}
                                 <div>

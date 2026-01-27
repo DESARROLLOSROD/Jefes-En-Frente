@@ -54,6 +54,7 @@ export const generarPDFVehiculos = (vehiculos: Vehiculo[]) => {
             vehiculo.tipo.toUpperCase(),
             vehiculo.noEconomico.toUpperCase(),
             vehiculo.horometroInicial.toLocaleString(),
+            vehiculo.horometroLlegada ? vehiculo.horometroLlegada.toLocaleString() : '-',
             vehiculo.horometroFinal ? vehiculo.horometroFinal.toLocaleString() : '-',
             vehiculo.horasOperacion ? vehiculo.horasOperacion.toLocaleString() : '0',
             proyectosStr.toUpperCase()
@@ -62,7 +63,7 @@ export const generarPDFVehiculos = (vehiculos: Vehiculo[]) => {
 
     autoTable(doc, {
         startY: yPosition,
-        head: [['Nombre', 'Tipo', 'No. Económico', 'H. Inicial', 'H. Final', 'H. Operación', 'Proyectos']],
+        head: [['Nombre', 'Tipo', 'No. Económico', 'H. Inicial', 'H. Llegada', 'H. Final', 'H. Operación', 'Proyectos']],
         body: tableBody,
         theme: 'grid',
         headStyles: { fillColor: ORANGE, textColor: 255, fontStyle: 'bold' }, // Naranja (matching theme)

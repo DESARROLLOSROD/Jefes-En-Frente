@@ -46,6 +46,7 @@ export interface Vehiculo {
   tipo: string;
   no_economico: string; // UNIQUE
   horometro_inicial: number;
+  horometro_llegada?: number; // ✨ NUEVO
   horometro_final?: number;
   horas_operacion: number;
   capacidad?: string;

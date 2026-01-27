@@ -27,6 +27,7 @@ export interface Vehiculo {
     nombre: string;
     tipo: string;
     horometroInicial: number;
+    horometroLlegada?: number;
     horometroFinal?: number;
     horasOperacion: number;
     noEconomico: string;

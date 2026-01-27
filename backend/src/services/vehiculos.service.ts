@@ -21,6 +21,7 @@ export class VehiculosService {
       _id: v.id,
       noEconomico: v.no_economico,
       horometroInicial: v.horometro_inicial,
+      horometroLlegada: v.horometro_llegada,
       horometroFinal: v.horometro_final,
       horasOperacion: v.horas_operacion,
       fechaCreacion: v.fecha_creacion,
