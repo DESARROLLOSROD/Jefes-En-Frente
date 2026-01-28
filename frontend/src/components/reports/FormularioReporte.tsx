@@ -104,6 +104,11 @@ const FormularioReporteNew: React.FC<FormularioReporteProps> = ({ reporteInicial
 
       const { _id, fechaCreacion, ...restoDatos } = datosCargados;
       setFormData(restoDatos);
+
+      // Detectar si debe usar múltiples pins
+      if (reporteInicial.pinesMapa && reporteInicial.pinesMapa.length > 0) {
+        setUsarMultiplesPins(true);
+      }
     }
   }, [reporteInicial]);
 

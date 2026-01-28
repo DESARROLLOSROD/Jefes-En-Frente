@@ -237,15 +237,13 @@ const MapaMultiplesPins: React.FC<MapaMultiplesPinsProps> = ({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        className={`relative w-full bg-gray-100 border-2 border-gray-300 rounded-lg overflow-hidden ${
-          modoAgregar ? 'cursor-crosshair' : isPanning ? 'cursor-move' : ''
-        }`}
-        style={{ minHeight: '400px' }}
+        className={`relative w-full bg-gray-100 border-2 border-gray-300 rounded-lg overflow-hidden ${modoAgregar ? 'cursor-crosshair' : isPanning ? 'cursor-move' : ''
+          }`}
       >
         <img
           src={mapaImagen}
           alt="Mapa del proyecto"
-          className="w-full h-full object-contain transition-transform duration-100"
+          className="w-full h-auto object-contain transition-transform duration-100"
           style={{
             transform: `scale(${zoom}) translate(${panX / zoom}px, ${panY / zoom}px)`,
             transformOrigin: '0 0'
@@ -300,9 +298,8 @@ const MapaMultiplesPins: React.FC<MapaMultiplesPinsProps> = ({
             {pins.map(pin => (
               <div
                 key={pin.id}
-                className={`flex items-center justify-between p-2 rounded ${
-                  pinSeleccionado === pin.id ? 'bg-blue-100 border border-blue-300' : 'bg-white border border-gray-200'
-                }`}
+                className={`flex items-center justify-between p-2 rounded ${pinSeleccionado === pin.id ? 'bg-blue-100 border border-blue-300' : 'bg-white border border-gray-200'
+                  }`}
               >
                 <div className="flex items-center gap-2 flex-1">
                   <div

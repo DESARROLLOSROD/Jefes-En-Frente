@@ -320,11 +320,8 @@ export const generarExcelReporte = async (
     const zona = (typeof reporte.zonaTrabajo === 'string' ? reporte.zonaTrabajo : (reporte.zonaTrabajo?.zonaNombre || 'Zona')).substring(0, 15).replace(/\s+/g, '_');
     const filename = `Reporte_${fechaArchivo}_${zona}.xlsx`;
 
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
-    URL.revokeObjectURL(link.href);
+    const { saveFile } = await import('./mobileFileSaver');
+    await saveFile(filename, blob, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 };
 
 // Función para generar y descargar un archivo Excel a partir de una lista de vehículos
@@ -501,8 +498,6 @@ export const generarExcelGeneral = async (reportes: ReporteActividades[], proyec
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const filename = `Reporte_General_Consolidado_${new Date().toISOString().split('T')[0]}.xlsx`;
 
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = filename;
-    link.click();
+    const { saveFile } = await import('./mobileFileSaver');
+    await saveFile(filename, blob, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 };

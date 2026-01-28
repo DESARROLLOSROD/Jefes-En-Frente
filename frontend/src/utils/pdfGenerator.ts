@@ -417,5 +417,10 @@ export const generarPDFReporte = async (
     const zona = zonaNombre.replace(/\s+/g, "_").substring(0, 20);
     const filename = `Reporte_${fechaArchivo}_${zona}.pdf`;
 
-    doc.save(filename);
+    // Generar Blob y guardar usando utilidad compatible con móvil
+    const pdfBlob = doc.output('blob');
+
+    // Importación dinámica para evitar ciclos o importar si no se usa arriba
+    const { saveFile } = await import('./mobileFileSaver');
+    await saveFile(filename, pdfBlob, 'application/pdf');
 };

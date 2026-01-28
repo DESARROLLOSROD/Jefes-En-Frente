@@ -132,15 +132,13 @@ const MapaPinSelector: React.FC<MapaPinSelectorProps> = ({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        className={`relative w-full bg-gray-100 border-2 border-gray-300 rounded-lg overflow-hidden ${
-          !readOnly && !isPanning ? 'cursor-crosshair' : isPanning ? 'cursor-move' : ''
-        }`}
-        style={{ minHeight: '400px' }}
+        className={`relative w-full bg-gray-100 border-2 border-gray-300 rounded-lg overflow-hidden ${!readOnly && !isPanning ? 'cursor-crosshair' : isPanning ? 'cursor-move' : ''
+          }`}
       >
         <img
           src={mapaImagen}
           alt="Mapa del proyecto"
-          className="w-full h-full object-contain transition-transform duration-100"
+          className="w-full h-auto object-contain transition-transform duration-100"
           style={{
             transform: `scale(${zoom}) translate(${panX / zoom}px, ${panY / zoom}px)`,
             transformOrigin: '0 0'
