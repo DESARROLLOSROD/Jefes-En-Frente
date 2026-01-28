@@ -9,8 +9,6 @@ import { prepararDatosReporte } from "./reportGenerator";
 const dibujarMapaCompleto = (
     mapaBase64: string,
     mapaContentType: string,
-    width: number,
-    height: number,
     reporte: ReporteActividades
 ): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -344,8 +342,6 @@ export const generarPDFReporte = async (
             const mapaConPines = await dibujarMapaCompleto(
                 proyectoMapa.imagen.data,
                 proyectoMapa.imagen.contentType,
-                proyectoMapa.width,
-                proyectoMapa.height,
                 reporte
             );
 
