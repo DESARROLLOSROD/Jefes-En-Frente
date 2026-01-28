@@ -6,7 +6,9 @@ const config: CapacitorConfig = {
   webDir: 'dist',
   server: {
     androidScheme: 'https',
-    hostname: 'localhost'
+    hostname: 'jefes-en-frente.up.railway.app',
+    url: 'https://jefes-en-frente.up.railway.app',
+    cleartext: true
   }
 };
 
