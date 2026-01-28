@@ -33,6 +33,10 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://localhost:5173',
   'https://jefes-en-frente.up.railway.app', // Frontend de producción
+  'https://localhost', // Capacitor Android/iOS
+  'http://localhost', // Capacitor Web View fallback
+  'capacitor://localhost', // iOS Scheme
+  'http://localhost:5173', // Vite Preview
   process.env.FRONTEND_URL
 ].filter(Boolean);
 
