@@ -45,10 +45,28 @@ const SeleccionarProyecto: React.FC = () => {
     );
   }
 
+  // Configuracion debug para Capacitor
+  console.log('🔍 SeleccionarProyecto Debug:', {
+    userRole: user?.rol,
+    userName: user?.nombre,
+    totalProyectosAPI: proyectos.length,
+    userProyectosCount: user?.proyectos?.length || 0,
+    userProyectosIDs: user?.proyectos?.map(p => p._id)
+  });
+
   // Filtrar proyectos según el rol del usuario
   const proyectosFiltrados = user?.rol === 'admin'
     ? proyectos
-    : proyectos.filter(p => user?.proyectos.some(up => up._id === p._id));
+    : proyectos.filter(p => {
+      const hasProject = user?.proyectos.some(up => up._id === p._id);
+      if (!hasProject && proyectos.length > 0) {
+        // Log para ver por qué falló la comparación en el primer item si hay fallo
+        // console.log(`Comparando API project ${p._id} con User projects`, user?.proyectos?.map(up => up._id));
+      }
+      return hasProject;
+    });
+
+  console.log('🔍 Proyectos Filtrados:', proyectosFiltrados.length);
 
   return (
     <div
