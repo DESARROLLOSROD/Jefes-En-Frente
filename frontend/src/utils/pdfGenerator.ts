@@ -5,10 +5,13 @@ import { ReporteActividades } from "../types/reporte";
 import { prepararDatosReporte } from "./reportGenerator";
 
 // Función auxiliar para dibujar el mapa con pines
-const dibujarMapaConPines = (
+// Función auxiliar para dibujar el mapa con todas las anotaciones
+const dibujarMapaCompleto = (
     mapaBase64: string,
     mapaContentType: string,
-    pines: Array<{ pinX: number; pinY: number; etiqueta?: string; color?: string }>
+    width: number,
+    height: number,
+    reporte: ReporteActividades
 ): Promise<string> => {
     return new Promise((resolve, reject) => {
         const canvas = document.createElement('canvas');
@@ -24,45 +27,168 @@ const dibujarMapaConPines = (
             canvas.width = img.width;
             canvas.height = img.height;
 
-            // Dibujar el mapa
+            // Dibujar el mapa base
             ctx.drawImage(img, 0, 0);
 
-            // Tamaño base del pin
-            const pinSize = Math.max(img.width, img.height) * 0.03; // Reducido un poco para múltiples pines
+            // Escala relativa (para grosores de línea y textos)
+            const scaleFactor = Math.max(img.width, img.height) / 1000;
+
+            // 1. Dibujar Formas (Rectángulos y Círculos)
+            if (reporte.formasMapa) {
+                reporte.formasMapa.forEach(forma => {
+                    const x = (forma.x / 100) * img.width;
+                    const y = (forma.y / 100) * img.height;
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = forma.color;
+                    ctx.lineWidth = 3 * scaleFactor;
+
+                    if (forma.tipo === 'rectangulo' && forma.ancho !== undefined && forma.alto !== undefined) {
+                        const w = (forma.ancho / 100) * img.width;
+                        const h = (forma.alto / 100) * img.height;
+                        ctx.rect(x, y, w, h);
+                    } else if (forma.tipo === 'circulo' && forma.radio !== undefined) {
+                        const r = (forma.radio / 100) * Math.max(img.width, img.height); // Radio relativo al lado mayor/menor? Usualmente promedio o max.
+                        // Nota: En SVG el radio es absoluto en coordenadas viewBox. Aquí escalamos.
+                        // Asumiendo que radio viene en porcentaje del canvas size:
+                        ctx.arc(x, y, r, 0, Math.PI * 2);
+                    }
+
+                    if (forma.relleno) {
+                        ctx.fillStyle = forma.color + '33'; // 20% opacidad (hex 33)
+                        ctx.fill();
+                    }
+                    ctx.stroke();
+                });
+            }
+
+            // 2. Dibujar Dibujos Libres (Líneas)
+            if (reporte.dibujosLibres) {
+                reporte.dibujosLibres.forEach(dibujo => {
+                    if (dibujo.puntos.length < 2) return;
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = dibujo.color;
+                    ctx.lineWidth = dibujo.grosor * scaleFactor;
+                    ctx.lineCap = 'round';
+                    ctx.lineJoin = 'round';
+
+                    const startX = (dibujo.puntos[0].x / 100) * img.width;
+                    const startY = (dibujo.puntos[0].y / 100) * img.height;
+                    ctx.moveTo(startX, startY);
+
+                    for (let i = 1; i < dibujo.puntos.length; i++) {
+                        const px = (dibujo.puntos[i].x / 100) * img.width;
+                        const py = (dibujo.puntos[i].y / 100) * img.height;
+                        ctx.lineTo(px, py);
+                    }
+                    ctx.stroke();
+                });
+            }
+
+            // 3. Dibujar Medidas
+            if (reporte.medidasMapa) {
+                reporte.medidasMapa.forEach(medida => {
+                    const x1 = (medida.x1 / 100) * img.width;
+                    const y1 = (medida.y1 / 100) * img.height;
+                    const x2 = (medida.x2 / 100) * img.width;
+                    const y2 = (medida.y2 / 100) * img.height;
+
+                    // Línea principal
+                    ctx.beginPath();
+                    ctx.strokeStyle = medida.color;
+                    ctx.lineWidth = 3 * scaleFactor;
+                    ctx.moveTo(x1, y1);
+                    ctx.lineTo(x2, y2);
+                    ctx.stroke();
+
+                    // Texto de la distancia
+                    const midX = (x1 + x2) / 2;
+                    const midY = (y1 + y2) / 2;
+                    const text = `${medida.distancia.toFixed(1)}m`;
+
+                    ctx.font = `bold ${20 * scaleFactor}px Arial`;
+                    ctx.fillStyle = medida.color;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+
+                    // Fondo blanco semitransparente para el texto
+                    const textWidth = ctx.measureText(text).width;
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+                    ctx.fillRect(midX - textWidth / 2 - 5, midY - 15 * scaleFactor, textWidth + 10, 30 * scaleFactor);
+
+                    ctx.fillStyle = medida.color;
+                    ctx.fillText(text, midX, midY);
+                });
+            }
+
+            // 4. Dibujar Pines
+            const pines = reporte.pinesMapa || (reporte.ubicacionMapa?.colocado ? [{
+                pinX: reporte.ubicacionMapa.pinX,
+                pinY: reporte.ubicacionMapa.pinY,
+                id: 'legacy', etiqueta: ''
+            }] : []);
+
+            const pinSize = Math.max(img.width, img.height) * 0.03;
 
             pines.forEach(pin => {
-                // Calcular posición del pin en píxeles
                 const pinXPx = (pin.pinX / 100) * img.width;
                 const pinYPx = (pin.pinY / 100) * img.height;
 
-                // Dibujar el pin
+                // Pin Outer
                 ctx.beginPath();
                 ctx.arc(pinXPx, pinYPx, pinSize, 0, Math.PI * 2);
-                ctx.fillStyle = pin.color || '#EF4444'; // Color personalizado o rojo por defecto
+                ctx.fillStyle = pin.color || '#EF4444';
                 ctx.fill();
                 ctx.strokeStyle = '#FFFFFF';
                 ctx.lineWidth = pinSize * 0.2;
                 ctx.stroke();
 
-                // Círculo blanco interior
+                // Pin Inner
                 ctx.beginPath();
                 ctx.arc(pinXPx, pinYPx, pinSize * 0.4, 0, Math.PI * 2);
                 ctx.fillStyle = '#FFFFFF';
                 ctx.fill();
 
-                // Dibujar etiqueta si existe
+                // Etiqueta Pin
                 if (pin.etiqueta) {
                     ctx.font = `bold ${pinSize}px Arial`;
                     ctx.fillStyle = '#FFFFFF';
                     ctx.strokeStyle = '#000000';
                     ctx.lineWidth = pinSize * 0.1;
                     ctx.textAlign = 'center';
-
-                    // Contorno del texto para legibilidad
                     ctx.strokeText(pin.etiqueta, pinXPx, pinYPx - pinSize * 1.5);
                     ctx.fillText(pin.etiqueta, pinXPx, pinYPx - pinSize * 1.5);
                 }
             });
+
+            // 5. Dibujar Textos de Anotación
+            if (reporte.textosAnotacion) {
+                reporte.textosAnotacion.forEach(t => {
+                    const x = (t.x / 100) * img.width;
+                    const y = (t.y / 100) * img.height;
+
+                    // Ajustar tamaño fuente relativo al canvas
+                    // t.fontSize viene en px de pantalla (aprox 14-32). Escalamos.
+                    const fontSize = t.fontSize * (img.width / 1000) * 1.5;
+
+                    ctx.font = `bold ${fontSize}px Arial`;
+                    ctx.fillStyle = t.color;
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+
+                    // Sombra para legibilidad
+                    ctx.shadowColor = "rgba(0,0,0,0.5)";
+                    ctx.shadowBlur = 4;
+                    ctx.shadowOffsetX = 2;
+                    ctx.shadowOffsetY = 2;
+
+                    ctx.fillText(t.texto, x, y);
+
+                    // Reset shadow
+                    ctx.shadowColor = "transparent";
+                });
+            }
 
             // Convertir canvas a base64
             const resultado = canvas.toDataURL('image/png').split(',')[1];
@@ -215,10 +341,12 @@ export const generarPDFReporte = async (
         yPosition += 5;
 
         try {
-            const mapaConPines = await dibujarMapaConPines(
+            const mapaConPines = await dibujarMapaCompleto(
                 proyectoMapa.imagen.data,
                 proyectoMapa.imagen.contentType,
-                pinesParaDibujar
+                proyectoMapa.width,
+                proyectoMapa.height,
+                reporte
             );
 
             // Calcular dimensiones para el PDF manteniendo el aspect ratio
