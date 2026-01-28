@@ -81,13 +81,13 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
   pins,
   onPinsChange,
   textos = [],
-  onTextosChange = () => {},
+  onTextosChange = () => { },
   dibujos = [],
-  onDibujosChange = () => {},
+  onDibujosChange = () => { },
   formas = [],
-  onFormasChange = () => {},
+  onFormasChange = () => { },
   medidas = [],
-  onMedidasChange = () => {},
+  onMedidasChange = () => { },
   readOnly = false
 }) => {
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -353,54 +353,48 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
             <button
               type="button"
               onClick={() => setHerramientaActiva('pin')}
-              className={`px-3 py-2 rounded font-semibold text-sm ${
-                herramientaActiva === 'pin' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300 hover:bg-gray-100'
-              }`}
+              className={`px-3 py-2 rounded font-semibold text-sm ${herramientaActiva === 'pin' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300 hover:bg-gray-100'
+                }`}
             >
               📍 PIN
             </button>
             <button
               type="button"
               onClick={() => setHerramientaActiva('texto')}
-              className={`px-3 py-2 rounded font-semibold text-sm ${
-                herramientaActiva === 'texto' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300 hover:bg-gray-100'
-              }`}
+              className={`px-3 py-2 rounded font-semibold text-sm ${herramientaActiva === 'texto' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300 hover:bg-gray-100'
+                }`}
             >
               📝 TEXTO
             </button>
             <button
               type="button"
               onClick={() => setHerramientaActiva('dibujo')}
-              className={`px-3 py-2 rounded font-semibold text-sm ${
-                herramientaActiva === 'dibujo' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300 hover:bg-gray-100'
-              }`}
+              className={`px-3 py-2 rounded font-semibold text-sm ${herramientaActiva === 'dibujo' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300 hover:bg-gray-100'
+                }`}
             >
               ✏️ DIBUJAR
             </button>
             <button
               type="button"
               onClick={() => setHerramientaActiva('rectangulo')}
-              className={`px-3 py-2 rounded font-semibold text-sm ${
-                herramientaActiva === 'rectangulo' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300 hover:bg-gray-100'
-              }`}
+              className={`px-3 py-2 rounded font-semibold text-sm ${herramientaActiva === 'rectangulo' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300 hover:bg-gray-100'
+                }`}
             >
               ▭ RECTÁNGULO
             </button>
             <button
               type="button"
               onClick={() => setHerramientaActiva('circulo')}
-              className={`px-3 py-2 rounded font-semibold text-sm ${
-                herramientaActiva === 'circulo' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300 hover:bg-gray-100'
-              }`}
+              className={`px-3 py-2 rounded font-semibold text-sm ${herramientaActiva === 'circulo' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300 hover:bg-gray-100'
+                }`}
             >
               ⭕ CÍRCULO
             </button>
             <button
               type="button"
               onClick={() => setHerramientaActiva('medida')}
-              className={`px-3 py-2 rounded font-semibold text-sm ${
-                herramientaActiva === 'medida' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300 hover:bg-gray-100'
-              }`}
+              className={`px-3 py-2 rounded font-semibold text-sm ${herramientaActiva === 'medida' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300 hover:bg-gray-100'
+                }`}
             >
               📏 MEDIDA
             </button>
@@ -417,9 +411,8 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
                     key={color}
                     type="button"
                     onClick={() => setColorSeleccionado(color)}
-                    className={`w-8 h-8 rounded border-2 ${
-                      colorSeleccionado === color ? 'border-black' : 'border-gray-300'
-                    }`}
+                    className={`w-8 h-8 rounded border-2 ${colorSeleccionado === color ? 'border-black' : 'border-gray-300'
+                      }`}
                     style={{ backgroundColor: color }}
                   />
                 ))}
@@ -492,11 +485,10 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
                     <button
                       type="button"
                       onClick={() => setModoSeleccionPines(!modoSeleccionPines)}
-                      className={`w-full px-3 py-2 rounded font-semibold text-sm ${
-                        modoSeleccionPines
+                      className={`w-full px-3 py-2 rounded font-semibold text-sm ${modoSeleccionPines
                           ? 'bg-green-600 text-white hover:bg-green-700'
                           : 'bg-blue-600 text-white hover:bg-blue-700'
-                      }`}
+                        }`}
                     >
                       {modoSeleccionPines ? '✓ MODO PINES FIJOS' : '📍 USAR PINES FIJOS'}
                     </button>
@@ -576,15 +568,13 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        className={`relative w-full bg-gray-100 border-2 border-gray-300 rounded-lg overflow-hidden ${
-          herramientaActiva ? 'cursor-crosshair' : isPanning ? 'cursor-move' : ''
-        }`}
-        style={{ minHeight: '500px' }}
+        className={`relative w-full bg-gray-100 border-2 border-gray-300 rounded-lg overflow-hidden ${herramientaActiva ? 'cursor-crosshair' : isPanning ? 'cursor-move' : ''
+          }`}
       >
         <img
           src={mapaImagen}
           alt="Mapa del proyecto"
-          className="w-full h-full object-contain transition-transform duration-100"
+          className="w-full h-auto object-contain transition-transform duration-100"
           style={{
             transform: `scale(${zoom}) translate(${panX / zoom}px, ${panY / zoom}px)`,
             transformOrigin: '0 0'
@@ -723,11 +713,9 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
                 height="42"
                 viewBox="0 0 32 42"
                 fill="none"
-                className={`drop-shadow-lg cursor-pointer ${
-                  modoSeleccionPines && pin.fijado ? 'ring-4 ring-yellow-400 rounded-full' : ''
-                } ${
-                  pinSeleccionadoParaMedida === pin.id ? 'ring-4 ring-green-500 rounded-full' : ''
-                }`}
+                className={`drop-shadow-lg cursor-pointer ${modoSeleccionPines && pin.fijado ? 'ring-4 ring-yellow-400 rounded-full' : ''
+                  } ${pinSeleccionadoParaMedida === pin.id ? 'ring-4 ring-green-500 rounded-full' : ''
+                  }`}
                 onClick={(e) => {
                   e.stopPropagation();
                   if (modoSeleccionPines && herramientaActiva === 'medida') {
@@ -815,11 +803,10 @@ const MapaConAnotaciones: React.FC<MapaConAnotacionesProps> = ({
                     setElementoSeleccionado(null);
                     setTipoElementoSeleccionado(null);
                   }}
-                  className={`px-4 py-2 rounded font-semibold ${
-                    pins.find(p => p.id === elementoSeleccionado)?.fijado
+                  className={`px-4 py-2 rounded font-semibold ${pins.find(p => p.id === elementoSeleccionado)?.fijado
                       ? 'bg-yellow-600 text-white hover:bg-yellow-700'
                       : 'bg-blue-600 text-white hover:bg-blue-700'
-                  }`}
+                    }`}
                 >
                   {pins.find(p => p.id === elementoSeleccionado)?.fijado ? '📌 DESFIJAR' : '📌 FIJAR'}
                 </button>
