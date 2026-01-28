@@ -204,10 +204,6 @@ export class UsuariosService {
           nombre,
           ubicacion,
           descripcion,
-          mapa_imagen_data,
-          mapa_content_type,
-          mapa_width,
-          mapa_height,
           activo,
           fecha_creacion
         )

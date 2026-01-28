@@ -12,7 +12,7 @@ export class ProyectosService {
   async getProyectos(activo?: boolean): Promise<any[]> {
     let query = supabaseAdmin
       .from('proyectos')
-      .select('*')
+      .select('id, nombre, ubicacion, descripcion, activo, fecha_creacion')
       .order('fecha_creacion', { ascending: false });
 
     if (activo !== undefined) {
@@ -147,7 +147,7 @@ export class ProyectosService {
   async getProyectosByUsuario(usuarioId: string): Promise<Proyecto[]> {
     const { data, error } = await supabaseAdmin
       .from('proyecto_usuarios')
-      .select('proyectos(*)')
+      .select('proyectos(id, nombre, ubicacion, descripcion, activo, fecha_creacion)')
       .eq('usuario_id', usuarioId);
 
     if (error) {
